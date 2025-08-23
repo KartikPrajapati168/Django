@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ restaurant.name }} - Feedback & Alerts</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'restaurants/css/dashboard.css' %}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #4a6cf7;
+            --primary-dark: #3a5af5;
+            --secondary: #7e57c2;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ff9800;
+            --info: #17a2b8;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --text: #333333;
+            --text-light: #777777;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-logo-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), #6a11cb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-labels h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .logo-labels small {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .nav {
+            padding: 15px;
+            flex-grow: 1;
+        }
+        
+        .nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
+        }
+        
+        .nav a i {
+            margin-right: 12px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav a span {
+            font-size: 15px;
+        }
+        
+        .nav a:hover, .nav a.active {
+            background: rgba(74, 108, 247, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav a.active {
+            font-weight: 500;
+        }
+        
+        .admin-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .admin-footer img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .admin-footer div {
+            flex-grow: 1;
+        }
+        
+        .admin-footer div p {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .admin-footer div small {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .admin-footer a {
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+        
+        .admin-footer a:hover {
+            color: var(--danger);
+        }
+        
+        /* Main content styles */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .page-subtitle {
+            font-size: 16px;
+            color: var(--text-light);
+            width: 100%;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* Card styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 18px 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.25);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .btn-outline:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Filter tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: #f0f4ff;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .filter-tab.active, .filter-tab:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Alert card styles */
+        .alert-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .alert-card.high-priority {
+            border-left-color: var(--danger);
+        }
+        
+        .alert-card.medium-priority {
+            border-left-color: var(--warning);
+        }
+        
+        .alert-card.low-priority {
+            border-left-color: var(--success);
+        }
+        
+        .alert-card.system {
+            border-left-color: var(--info);
+        }
+        
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .alert-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .alert-content {
+            margin-bottom: 15px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+        
+        .alert-meta {
+            display: flex;
+            gap: 15px;
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .alert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .alert-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .alert-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Priority badges */
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .priority-medium {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .priority-low {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .priority-system {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 220px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+                width: 100%;
+            }
+            
+            .card-header {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .page-header h1 {
+                font-size: 22px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .filter-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 5px;
+            }
+            
+            .alert-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .alert-footer {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .alert-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .alert-meta {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+        
+        /* Sidebar toggle */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo-box">
+                    <i data-lucide="chef-hat" style="width: 28px; height: 28px; color: white;"></i>
+                </div>
+                <div class="logo-labels">
+                    <h3>{{ restaurant.name }}</h3>
+                    <small>Restaurant Panel</small>
+                </div>
+            </div>
+
+            <div class="nav">
+                <a href="{% url 'restaurants:dashboard' slug=restaurant.slug %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'restaurants:menu' slug=restaurant.slug %}">
+                    <i data-lucide="utensils"></i>
+                    <span>Manage Menu</span>
+                </a>
+                <a href="{% url 'restaurants:order' slug=restaurant.slug %}">
+                    <i data-lucide="shopping-bag"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="{% url 'restaurants:user' slug=restaurant.slug %}">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="{% url 'restaurants:table' slug=restaurant.slug %}">
+                    <i data-lucide="calendar-clock"></i>
+                    <span>Table Bookings</span>
+                </a>
+                <a href="{% url 'restaurants:feedback' slug=restaurant.slug %}" class="active">
+                    <i data-lucide="message-square"></i>
+                    <span>Feedback & Alerts</span>
+                </a>
+                <a href="{% url 'restaurants:profile' slug=restaurant.slug %}">
+                    <i data-lucide="user-cog"></i>
+                    <span>Profile Settings</span>
+                </a>
+                <a href="#">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+        <div class="admin-footer">
+            <img src="https://ui-avatars.com/api/?name={{ request.user.get_full_name|urlencode }}&background=random" alt="Admin" />
+            <div>
+                <p>{{ request.user.get_full_name }}</p>
+                <small>Owner</small>
+            </div>
+            <a href="{% url 'users:logout' %}">
+                <span class="material-icons">logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Alerts & Notifications</h1>
+            <div class="page-subtitle">Manage your restaurant alerts and notifications</div>
+            <div class="header-actions">
+                <button class="btn btn-outline">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Alert
+                </button>
+            </div>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <div class="filter-tab active" data-filter="all">All Alerts</div>
+            <div class="filter-tab" data-filter="high">High Priority</div>
+            <div class="filter-tab" data-filter="medium">Medium Priority</div>
+            <div class="filter-tab" data-filter="low">Low Priority</div>
+            <div class="filter-tab" data-filter="system">System Alerts</div>
+        </div>
+        
+        <!-- Alerts Container -->
+        <div class="alerts-container">
+            <!-- Sample Alert 1 -->
+            <div class="alert-card high-priority" data-priority="high">
+                <div class="alert-header">
+                    <div>
+                        <h3 class="alert-title">New Restaurant Approval Request</h3>
+                        <div class="priority-badge priority-high">High Priority</div>
+                    </div>
+                    <div class="alert-time">1 day, 9 hours ago</div>
+                </div>
+                <div class="alert-content">
+                    <p>naveen store has requested approval.</p>
+                    <p>Owner: kartikpraj (admin123@gmail.com)</p>
+                </div>
+                <div class="alert-meta">
+                    <div class="alert-meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Received: 24 Jun 2023</span>
+                    </div>
+                    <div class="alert-meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>Restaurant</span>
+                    </div>
+                </div>
+                <div class="alert-footer">
+                    <div class="alert-checkbox">
+                        <input type="checkbox" id="alert1">
+                        <label for="alert1">Mark as resolved</label>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-ellipsis-h"></i> More
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sample Alert 2 -->
+            <div class="alert-card medium-priority" data-priority="medium">
+                <div class="alert-header">
+                    <div>
+                        <h3 class="alert-title">Customer Feedback Received</h3>
+                        <div class="priority-badge priority-medium">Medium Priority</div>
+                    </div>
+                    <div class="alert-time">3 hours ago</div>
+                </div>
+                <div class="alert-content">
+                    <p>Customer John Doe submitted feedback about service quality.</p>
+                    <p>Rating: ★★★☆☆ (3/5)</p>
+                </div>
+                <div class="alert-meta">
+                    <div class="alert-meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Received: Today</span>
+                    </div>
+                    <div class="alert-meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>Feedback</span>
+                    </div>
+                </div>
+                <div class="alert-footer">
+                    <div class="alert-checkbox">
+                        <input type="checkbox" id="alert2">
+                        <label for="alert2">Mark as resolved</label>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-reply"></i> Respond
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sample Alert 3 -->
+            <div class="alert-card system" data-priority="system">
+                <div class="alert-header">
+                    <div>
+                        <h3 class="alert-title">System Maintenance Notification</h3>
+                        <div class="priority-badge priority-system">System Alert</div>
+                    </div>
+                    <div class="alert-time">2 days ago</div>
+                </div>
+                <div class="alert-content">
+                    <p>Scheduled maintenance will occur this Saturday from 2:00 AM to 4:00 AM. System may be unavailable during this period.</p>
+                </div>
+                <div class="alert-meta">
+                    <div class="alert-meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Scheduled: 29 Jun 2023</span>
+                    </div>
+                    <div class="alert-meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>System</span>
+                    </div>
+                </div>
+                <div class="alert-footer">
+                    <div class="alert-checkbox">
+                        <input type="checkbox" id="alert3">
+                        <label for="alert3">Mark as read</label>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sample Alert 4 -->
+            <div class="alert-card low-priority" data-priority="low">
+                <div class="alert-header">
+                    <div>
+                        <h3 class="alert-title">New Follower Notification</h3>
+                        <div class="priority-badge priority-low">Low Priority</div>
+                    </div>
+                    <div class="alert-time">1 week ago</div>
+                </div>
+                <div class="alert-content">
+                    <p>Sarah Johnson started following your restaurant.</p>
+                </div>
+                <div class="alert-meta">
+                    <div class="alert-meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Received: 17 Jun 2023</span>
+                    </div>
+                    <div class="alert-meta-item">
+                        <i class="fas fa-tag"></i>
+                        <span>Social</span>
+                    </div>
+                </div>
+                <div class="alert-footer">
+                    <div class="alert-checkbox">
+                        <input type="checkbox" id="alert4">
+                        <label for="alert4">Mark as read</label>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-user"></i> View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Alerts State -->
+            <div class="no-alerts" style="display: none; padding: 40px; text-align: center;">
+                <i class="fas fa-bell-slash" style="font-size: 48px; color: #cbd5e0; margin-bottom: 20px;"></i>
+                <h3>No Alerts Found</h3>
+                <p>You're all caught up! No new alerts or notifications.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+        
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const filterTabs = document.querySelectorAll('.filter-tab');
+        const alertCards = document.querySelectorAll('.alert-card');
+        const noAlerts = document.querySelector('.no-alerts');
+        
+        // Toggle sidebar
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        // Filter functionality
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                filterTabs.forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                const filter = tab.getAttribute('data-filter');
+                let visibleCount = 0;
+                
+                // Filter alerts
+                alertCards.forEach(card => {
+                    const priority = card.getAttribute('data-priority');
+                    
+                    if (filter === 'all' || filter === priority) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide no alerts message
+                if (visibleCount > 0) {
+                    noAlerts.style.display = 'none';
+                } else {
+                    noAlerts.style.display = 'block';
+                }
+            });
+        });
+        
+        // Mark as read functionality
+        document.querySelectorAll('.alert-checkbox input').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.alert-card');
+                if (this.checked) {
+                    card.style.opacity = '0.7';
+                    card.style.backgroundColor = '#f9f9f9';
+                } else {
+                    card.style.opacity = '1';
+                    card.style.backgroundColor = '';
+                }
+            });
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth < 992 && 
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) && 
+                e.target !== sidebarToggle) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pepito Restaurant Panel</title>
+    {% load static %}
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'restaurants/css/dashboard.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      html,
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        background-color: #f7f7f7;
+        color: #333;
+        overflow: hidden; /* Hide page scrollbar */
+        height: 100%;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto; /* Allow vertical scroll only for this area */
+        height: 100vh;
+        scroll-behavior: smooth;
+      }
+
+      .profile-container {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        max-width: 1140px; /* increased width */
+        margin: auto;
+        border-radius: 20px;
+        padding: 20px 32px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .section-title {
+        font-size: 20px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #333;
+        border-left: 5px solid #ff4b2b;
+        padding-left: 12px;
+      }
+
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .form-group {
+        flex: 1 1 45%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 8px 10px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: #fff;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        border-color: #ff4b2b;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(255, 75, 43, 0.12);
+      }
+
+      .checkbox-group {
+        flex: 1 1 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .submit-btn,
+      .update-btn {
+        background: #ff4b2b;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.3s ease, transform 0.2s ease;
+        margin-top: 20px;
+        margin-right: 12px;
+      }
+
+      .submit-btn:hover,
+      .update-btn:hover {
+        background: #e64322;
+        transform: scale(1.03);
+      }
+
+      .phone-wrapper {
+        display: flex;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        overflow: hidden;
+        align-items: center;
+        background: white;
+      }
+
+      .phone-prefix {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: #f5f5f5;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .countryDropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ccc;
+        width: 100%;
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 999;
+        display: none;
+      }
+
+      .countryDropdown div {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .countryDropdown div:hover {
+        background-color: #eee;
+      }
+
+      input[type="tel"] {
+        border: none;
+        flex: 1;
+        padding: 8px;
+        font-size: 13px;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="sidebar-logo-box">
+            <i data-lucide="chef-hat" style="width: 28px; height: 28px"></i>
+          </div>
+          <div class="logo-labels">
+            <h3 class="pepito-logo-text">Pepito</h3>
+            <small class="text-muted">Restaurant Panel</small>
+          </div>
+        </div>
+
+        <div class="nav">
+          <a href="{% url 'restaurants:dashboard' slug=restaurant.slug %}"
+            ><i data-lucide="layout-dashboard" style="color: #ff4b2b"></i
+            ><span>Dashboard</span></a
+          >
+          <a href="{% url 'restaurants:menu' slug=restaurant.slug %}"
+            ><i data-lucide="utensils" style="color: #4caf50"></i
+            ><span>Manage Menu</span></a
+          >
+          <a href="{% url 'restaurants:order' slug=restaurant.slug %}"
+            ><i data-lucide="shopping-bag" style="color: #2196f3"></i
+            ><span>Orders</span></a
+          >
+          <a href="{% url 'restaurants:user' slug=restaurant.slug %}"
+            ><i data-lucide="users" style="color: #9c27b0"></i
+            ><span>Users</span></a
+          >
+          <a href="{% url 'restaurants:table' slug=restaurant.slug %}"
+            ><i data-lucide="calendar-clock" style="color: #ff9800"></i
+            ><span>Table Bookings</span></a
+          >
+          <a href="{% url 'restaurants:feedback' slug=restaurant.slug %}" class="active"
+            ><i data-lucide="message-square" style="color: #009688"></i
+            ><span>Feedback</span></a
+          >
+          <a href="{% url 'restaurants:profile' slug=restaurant.slug %}"
+            ><i data-lucide="user-cog" style="color: #795548"></i
+            ><span>Profile Settings</span></a
+          >
+          <a href="#"
+            ><i data-lucide="restaurants:settings" style="color: #607d8b"></i
+            ><span>Settings</span></a
+          >
+        </div>
+      </div>
+
+      <div class="admin-footer">
+        <img
+          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
+          alt="Admin"
+        />
+        <div>
+          <p style="margin: 0; font-weight: bold; font-size: 15px">
+            Kartik Prajapati
+          </p>
+          <small class="text-muted">Owner</small>
+        </div>
+        <span class="material-icons">logout</span>
+      </div>
+    </div>
+
+    <!-- Sidebar Toggle -->
+    <button class="external-toggle-btn" onclick="toggleSidebar()">
+      <span class="material-icons">menu</span>
+    </button>
+
+    <script src="{% static 'restaurants/js/dashboard.js' %}"></script>
+  </body>
+</html> {% endcomment %}

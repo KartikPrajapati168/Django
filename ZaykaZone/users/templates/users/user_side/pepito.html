@@ -1,0 +1,2725 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>ZaykaZone - {{ restaurant.name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/img/ChatGPT Image Jun 15, 2025, 07_05_20 PM.png" />
+
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'users/css/pepito.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        /* ... (all previous styles remain the same) ... */
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: #e53935 !important;
+        }
+        
+        .navbar-icon {
+            font-size: 1.4rem;
+            vertical-align: middle;
+        }
+        
+        .restaurant-header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        /* Enhanced item card styling */
+        .menu-item-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .menu-item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-color: #e53935;
+        }
+        
+        .menu-item-image {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .menu-item-body {
+            padding: 15px;
+        }
+        
+        .menu-item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .menu-item-description {
+            font-size: 0.85rem;
+            color: #666;
+            min-height: 40px;
+            margin-bottom: 10px;
+        }
+        
+        .menu-item-price {
+            color: #e53935;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f5f5f5;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: #e53935;
+            color: white;
+        }
+        
+        .quantity-display {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+        
+        .add-to-cart-btn {
+            background: #e53935;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background: #c62828;
+        }
+        
+        .pulse {
+            animation: pulse 0.3s;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Tab Navigation Enhancement */
+        .tab-nav-container {
+            z-index: 100;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Dropdown menu styling */
+        .user-dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .user-dropdown:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: #e53935;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .full-name {
+            font-weight: 500;
+        }
+        
+        .dropdown-icon {
+            margin-left: 4px;
+        }
+        
+        .user-dropdown .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 180px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 8px 0;
+            margin-top: 8px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .user-dropdown .dropdown-menu.show {
+            display: block;
+        }
+        
+        .user-dropdown .dropdown-menu li {
+            list-style: none;
+        }
+        
+        .user-dropdown .dropdown-menu a {
+            display: block;
+            padding: 10px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+        
+        .user-dropdown .dropdown-menu a:hover {
+            background-color: #f5f5f5;
+            color: #e53935;
+        }
+    </style>
+
+    <style>
+        .cart-toggle {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .cart-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .content {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .products-grid {
+            flex: 1;
+            min-width: 300px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .cart-container {
+            width: 350px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 25px;
+            height: fit-content;
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 20;
+        }
+
+        .cart-container.show {
+            transform: translateX(0);
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-header h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-cart:hover {
+            color: #e74c3c;
+        }
+
+        .cart-items {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .cart-item-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-right: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .cart-item-price {
+            color: #e74c3c;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #555;
+        }
+
+        .quantity-btn:hover {
+            background: #3498db;
+            color: white;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #95a5a6;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.2s;
+        }
+
+        .remove-btn:hover {
+            color: #e74c3c;
+        }
+
+        .cart-summary {
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .place-order {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .place-order:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.5);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 0;
+            color: #95a5a6;
+        }
+
+        .empty-cart i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-body {
+            padding: 20px;
+        }
+
+        .product-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .product-desc {
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+
+        .product-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quantity-display {
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .add-to-cart {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-to-cart:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2ecc71;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .notification-content {
+            line-height: 1.4;
+        }
+
+        .notification-content h4 {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 15;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        @media (max-width: 900px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .cart-container {
+                width: 90%;
+                max-width: 500px;
+                margin: 0 auto;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) translateX(150%);
+            }
+            
+            .cart-container.show {
+                transform: translate(-50%, -50%) translateX(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cart-toggle {
+                top: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Cart Sidebar Styling */
+        @keyframes slideIn {
+            to { transform: translateX(0); }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        
+        .add-to-cart-animation {
+            position: fixed;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            z-index: 10000;
+            display: none;
+            pointer-events: none;
+            animation: flyToCart 1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+        }
+        
+        @keyframes flyToCart {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0.1);
+                opacity: 0;
+            }
+        }
+    </style>
+
+     {% comment %} <style>
+        .cart-container {
+            position: fixed;
+            top: 30;
+            right: -400px;
+            width: 350px;
+            height: 90vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-container.show {
+            right: 0;
+        }
+        
+        .cart-container.show {
+            transform:translateX(-20px);
+        }
+
+        .cart-header {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+            flex-shrink: 0;
+        }
+        
+        .cart-items-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            max-height: calc(100vh - 200px); /* Adjust based on header and footer height */
+        }
+        
+        .cart-items-wrapper::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .cart-items-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .cart-items-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        
+        .cart-items-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .cart-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            background: white;
+            flex-shrink: 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .cart-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .cart-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cart-item-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1040;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .cart-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .menu-item-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 20px;
+        }
+        
+        .menu-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .quantity-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quantity-btn:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+        
+        .quantity-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(10px);
+        }
+        
+        .total-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .place-order-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .place-order-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.4);
+        }
+        
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-cart:hover {
+            color: #dc3545;
+        }
+        
+    </style> {% endcomment %}
+
+<style>
+.slot {
+    display: inline-block;
+    padding: 8px 15px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.slot:hover {
+    background-color: #f1f1f1;
+}
+.slot.active {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+</style>
+    
+</head>
+
+<body>
+
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid px-4 py-2">
+            <!-- Left: Site Name -->
+            <a class="navbar-brand sitename" href="index.html">ZaykaZone</a>
+
+            <!-- Center: Location + Search -->
+            <form class="d-flex mx-auto search-group" role="search">
+                <div class="input-group">
+                    <!-- Location Input with Icon -->
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-geo-alt-fill text-danger"></i>
+                    </span>
+                    <input type="search" class="form-control border-start-0 location-input" placeholder="Ahmedabad"
+                        aria-label="Location" />
+                    <!-- Search Input -->
+                    <input type="search" class="form-control" placeholder="Search for restaurants, cuisine or dish"
+                        aria-label="Search" />
+                </div>
+            </form>
+
+            <!-- Right: Sign In then Cart -->
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated and user.role == 'customer' %}
+                    <div class="user-dropdown me-3" onclick="toggleDropdown(this)">
+                        <div class="avatar">{{ user.full_name|slice:":1" }}</div>
+                        <span class="full-name">{{ user.full_name }}</span>
+                        <div class="dropdown-icon">
+                            <i class="arrow down"></i>
+                        </div>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                            <li><a href="{% url 'users:login_signup' %}">Switch Account</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'users:login_signup' %}" class="btn btn-danger me-3">
+                        <i class="bi bi-person-fill navbar-icon"></i> Sign In
+                    </a>
+                {% endif %}
+                
+                <a href="#" class="btn btn-outline-dark" class="cart-toggle" id="cart-toggle">
+                  <i class="bi bi-cart navbar-icon"></i> Cart
+                  <span class="card-badge" id="cart-count" class="badge bg-danger ms-1" style="display: none;">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar End -->
+
+    <!-- Restaurant Detail Section -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-lg-7 col-md-12 mb-4">
+                <h2 class="fw-bold text-dark"><span><img src="{{ restaurant.logo.url }}" style="height: 50px; width: auto; margin-right: 10px;" alt="Logo" /></span>{{ restaurant.name }}</h2>
+                <p class="text-muted mb-1">{{ restaurant.description }}</p>
+                <p class="text-muted mb-1">Specialized in {{ restaurant.cuisine }} cuisine</p>
+                <p class="text-muted">{{ restaurant.address }}</p>
+
+                <p class="px-3 py-2 rounded-pill border d-inline-block text-danger fw-semibold bg-light">
+                    {% if restaurant.is_approved %}
+                        Open Now &nbsp;
+                        <span class="text-dark">Opens at {{ restaurant.timings }}</span>
+                    {% else %}
+                        Closed for dining &nbsp;
+                        <span class="text-dark">Until approved</span>
+                    {% endif %}
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <div class="d-flex align-items-center px-3 py-2 border rounded-pill text-secondary bg-white">
+                        <i class="bi bi-geo-alt-fill text-danger me-2"></i> Direction
+                    </div>
+                    <div class="d-flex align-items-center px-3 py-2 border rounded-pill text-secondary bg-white">
+                        <i class="bi bi-share-fill text-success me-2"></i> Share
+                    </div>
+                    <div class="d-flex align-items-center px-3 py-2 border rounded-pill text-secondary bg-white">
+                        <i class="bi bi-chat-left-dots-fill text-warning me-2"></i> Reviews
+                    </div>
+                    <div onclick="scrollToBooking()" class="d-flex align-items-center px-3 py-2 border rounded-pill text-secondary bg-white">
+                        <i class="bi bi-calendar-check-fill text-danger me-2"></i> Book Table
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Rating Section -->
+            <div class="col-lg-5 col-md-12">
+                <div class="rounded-4 p-4" style="background-color: #f8f9fa">
+                    <!-- Dining Rating -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center">
+                            <span class="fs-4 fw-bold text-dark">{{ restaurant.dining_rating|default:"N/A" }}</span>
+                            <i class="bi bi-star-fill text-warning ms-2"></i>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-dark">{{ restaurant.dining_count }}</div>
+                            <small class="text-muted">Dining Ratings</small>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary opacity-25" />
+
+                    <!-- Delivery Rating -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <span class="fs-4 fw-bold text-dark">{{ restaurant.delivery_rating|default:"N/A" }}</span>
+                            <i class="bi bi-star-fill text-warning ms-2"></i>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold text-dark">{{ restaurant.delivery_count }}</div>
+                            <small class="text-muted">Delivery Ratings</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Layout Section -->
+    <div class="container my-5">
+        <div class="row gx-4 align-items-start">
+            <!-- LEFT — Big Image -->
+            {% with main_image=preview_images|first %}
+                {% if main_image %}
+                <div class="col-lg-7 mb-4">
+                    <img src="{{ main_image.image.url }}" class="img-fluid"
+                        style="cursor:pointer;height:300px;width:100%;object-fit:cover;"
+                        alt="{{ main_image.category }} Image">
+                </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- RIGHT — 3 Images -->
+            {% with right_images=images|slice:"1:4" %}
+            <div class="col-lg-5 d-flex flex-wrap gap-3" style="height:300px;">
+
+                <!-- Two Small Images -->
+                <div class="d-flex flex-column justify-content-between" style="width:48%;gap:6px;">
+                    {% for img in right_images|slice:":2" %}
+                    <img src="{{ img.image.url }}" class="img-fluid"
+                        style="height:147px;cursor:pointer;object-fit:cover;" alt="{{ img.category }} Image">
+                    {% endfor %}
+                </div>
+
+                <!-- Tall Image with Overlay -->
+                {% with overlay_img=right_images|last %}
+                <div class="position-relative" style="width:48%;height:300px;" onclick="scrollToPhotos()">
+                    <div style="
+                        position:absolute;top:45%;left:28px;
+                        background:rgba(211,211,211,0.8);color:#333;
+                        padding:4px 8px;font-weight:bold;font-size:20px;
+                        border-radius:4px;z-index:2;cursor:pointer;">
+                        View in Gallery
+                    </div>
+                    <img src="{{ overlay_img.image.url }}" class="img-fluid"
+                        style="height:100%;width:100%;object-fit:cover;cursor:pointer;" alt="{{ overlay_img.category }}">
+                </div>
+                {% endwith %}
+            </div>
+            {% endwith %}
+        </div>
+    </div>
+
+    <!-- Navigation Tabs Section -->
+    <div class="tab-nav-container">
+        <div class="container">
+            <div class="d-flex flex-wrap gap-2">
+                <button class="tab-btn active" onclick="showSection('overview')">Overview</button>
+                <button class="tab-btn" onclick="showSection('order')">Order Online</button>
+                <button class="tab-btn" onclick="showSection('reviews')">Reviews</button>
+                <button class="tab-btn" onclick="showSection('photos')">Photos</button>
+                <button class="tab-btn" onclick="showSection('menu')">Menu</button>
+                <button class="tab-btn" onclick="showSection('book')">Book a Table</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overview Placeholder -->
+    <div id="overview-section" class="tab-section active">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="owner-details-card">
+                        <div class="owner-details-header">
+                            <div class="owner-details-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <h4 class="mb-0">Owner Details</h4>
+                        </div>
+                        
+                        {% if restaurant.owner.owner_profile %}
+                            {% with profile=restaurant.owner.owner_profile %}
+                                <div class="detail-item">
+                                    <span class="detail-label">Full Name:</span>
+                                    <span class="detail-value">{{ profile.full_name }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Email:</span>
+                                    <span class="detail-value">{{ profile.email }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">Phone:</span>
+                                    <span class="detail-value">{{ profile.phone }}</span>
+                                </div>
+                                
+                                <div class="detail-item">
+                                    <span class="detail-label">GST Number:</span>
+                                    <span class="detail-value">{{ profile.gst_number }}</span>
+                                </div>
+                            {% endwith %}
+                        {% else %}
+                            <div class="detail-item">
+                                <span class="detail-label">Restaurant Owner:</span>
+                                <span class="detail-value">{{ restaurant.owner_name }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Online Section -->
+    <div id="order-section" class="tab-section">
+        <div class="container-fluid my-4 px-3" style="background: transparent;">
+            <div class="row" style="margin-left: 0; margin-right: 0;">
+                <div class="col-md-3 p-3"
+                    style="background-color: #f8f9fa; height: 500px; overflow-y: auto; cursor:pointer">
+                    <ul class="list-group" id="category-list">
+                        {% for data in menu_data %}
+                            <li class="list-group-item d-flex align-items-center {% if forloop.first %}active{% endif %}"
+                                onclick="selectCategory(this, 'category_{{ data.category.id }}')">
+                                <!-- Category image added here -->
+                                {% if data.category.image %}
+                                    <img src="{{ data.category.image.url }}" 
+                                        class="me-2 rounded" 
+                                        style="width: 40px; height: 40px; object-fit: cover;"
+                                        alt="{{ data.category.name }}">
+                                {% else %}
+                                    <div class="me-2 bg-light rounded d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;">
+                                        <i class="fas fa-utensils text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div class="fw-medium">{{ data.category.name }}</div>
+                                    <small class="text-muted">{{ data.items|length }} items</small>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No menu categories found.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="col-md-9 p-4 text-black" style="background: transparent;">
+                    {% for data in menu_data %}
+                        <div id="category_{{ data.category.id }}" class="category-section {% if not forloop.first %}d-none{% endif %}">
+                            <div class="d-flex align-items-center mb-4">
+                                <h4 class="mb-0">{{ data.category.name }} Counter</h4>
+                            </div>
+                            
+                            {% if data.items %}
+                                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                                    {% for item in data.items %}
+                                        <div class="col">
+                                            <div class="card menu-item-card h-100" data-item-id="{{ item.id }}" onclick="handleItemClick(event, this)">
+                                                {% if item.image %}
+                                                    <img src="{{ item.image.url }}" class="card-img-top menu-item-image"
+                                                        alt="{{ item.name }}">
+                                                {% else %}
+                                                    <div class="card-img-top d-flex align-items-center justify-content-center bg-light"
+                                                        style="height: 150px;">
+                                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div class="card-body menu-item-body">
+                                                    <h5 class="menu-item-title">{{ item.name }}</h5>
+                                                    <!-- Item description added here -->
+                                                    {% if item.description %}
+                                                        <p class="menu-item-description">
+                                                            {{ item.description|truncatechars:80 }}
+                                                        </p>
+                                                    {% endif %}
+                                                    <p class="menu-item-price">₹{{ item.price }}</p>
+                                                    <div class="quantity-controls">
+                                                        <div class="d-flex align-items-center">
+                                                            <button class="quantity-btn minus-btn">-</button>
+                                                            <span class="quantity-display mx-2">1</span>
+                                                            <button class="quantity-btn plus-btn">+</button>
+                                                        </div>
+                                                        <button class="add-to-cart-btn">Add</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">No items available in this category.</div>
+                            {% endif %}
+                        </div>
+                    {% empty %}
+                        <div class="alert alert-warning">No menu data found for this restaurant.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    {% comment %} <div id="reviews-section" class="tab-section">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-4 animate__animated animate__fadeInUp">
+              <div class="card-body p-5">
+                <h3 class="mb-4 text-center text-primary fw-bold">Leave a Review</h3>
+
+                <form method="POST" id="review-form">
+                  {% csrf_token %}
+
+                  <!-- Visit Date -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Date of Visit</label>
+                    <input type="date" name="visit_date" class="form-control shadow-sm" required>
+                  </div>
+
+                  <!-- Visit Type -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Visit Type</label>
+                    <select name="visit_type" class="form-select shadow-sm" required>
+                      <option value="">-- Select --</option>
+                      <option value="Dine-In">Dine-In</option>
+                      <option value="Takeaway">Takeaway</option>
+                      <option value="Delivery">Delivery</option>
+                    </select>
+                  </div>
+
+                  <!-- Overall Rating -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Overall Rating</label>
+                    <div class="star-rating" data-field="rating">
+                      {% for i in "12345"|make_list %}
+                        <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                      {% endfor %}
+                      <input type="hidden" name="rating" required>
+                    </div>
+                  </div>
+
+                  <!-- Food Quality -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Food Quality</label>
+                    <div class="star-rating" data-field="food_quality">
+                      {% for i in "12345"|make_list %}
+                        <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                      {% endfor %}
+                      <input type="hidden" name="food_quality" required>
+                    </div>
+                  </div>
+
+                  <!-- Service Quality -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Service Quality</label>
+                    <div class="star-rating" data-field="service_quality">
+                      {% for i in "12345"|make_list %}
+                        <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                      {% endfor %}
+                      <input type="hidden" name="service_quality" required>
+                    </div>
+                  </div>
+
+                  <!-- Comment -->
+                  <div class="mb-4">
+                    <label class="form-label fw-semibold">Your Comments</label>
+                    <textarea name="comment" class="form-control shadow-sm" rows="4" placeholder="What did you like/dislike?" required></textarea>
+                  </div>
+
+                  <!-- Submit -->
+                  <div class="text-center">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">Submit Review</button>
+                  </div>
+                </form>
+
+                <hr class="my-5">
+
+                <!-- Reviews will be displayed here -->
+                <h4 class="mb-4">Recent Reviews</h4>
+                <div class="review-list">
+                  {% for review in restaurant.reviews.all|slice:":5" %}
+                  <div class="review-item mb-4 p-3 border rounded">
+                    <div class="d-flex justify-content-between mb-2">
+                      <div class="fw-bold">{{ review.user.full_name }}</div>
+                      <div class="text-muted">{{ review.created_at|date:"M d, Y" }}</div>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <div class="text-warning">
+                        {% for i in "12345"|make_list %}
+                          <i class="fa fa-star{% if i > review.rating|stringformat:"i" %}-o{% endif %}"></i>
+                        {% endfor %}
+                      </div>
+                      <span class="ms-2">{{ review.rating }} / 5</span>
+                    </div>
+                    <div class="mb-2">
+                      <span class="badge bg-light text-dark">{{ review.visit_type }}</span>
+                    </div>
+                    <p>{{ review.comment }}</p>
+                  </div>
+                  {% empty %}
+                  <div class="text-center py-4">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No reviews yet. Be the first to review!</p>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> {% endcomment %}
+
+{% load review_extras %}
+<div id="reviews-section" class="tab-section">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-5">
+            <h3 class="mb-4 text-center text-primary fw-bold">Leave a Review</h3>
+
+            {% if user.is_authenticated %}
+            <form method="POST" id="review-form"action="{% url 'restaurants:submit_review' restaurant.slug %}">
+              {% csrf_token %}
+
+              <!-- Visit Date -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Date of Visit</label>
+                <input type="date" name="visit_date" class="form-control" required>
+              </div>
+
+              <!-- Visit Type -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Visit Type</label>
+                <select name="visit_type" class="form-select" required>
+                  <option value="">-- Select --</option>
+                  <option value="Dine-In">Dine-In</option>
+                  <option value="Takeaway">Takeaway</option>
+                  <option value="Delivery">Delivery</option>
+                </select>
+              </div>
+
+              <!-- Overall Rating -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Overall Rating</label>
+                <div class="star-rating" data-field="rating">
+                  {% for i in 5|times %}
+                    <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                  {% endfor %}
+                  <input type="hidden" name="rating" required>
+                </div>
+              </div>
+
+              <!-- Food Quality -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Food Quality</label>
+                <div class="star-rating" data-field="food_quality">
+                  {% for i in 5|times %}
+                    <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                  {% endfor %}
+                  <input type="hidden" name="food_quality" required>
+                </div>
+              </div>
+
+              <!-- Service Quality -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Service Quality</label>
+                <div class="star-rating" data-field="service_quality">
+                  {% for i in 5|times %}
+                    <i class="fa fa-star-o star" data-value="{{ i }}"></i>
+                  {% endfor %}
+                  <input type="hidden" name="service_quality" required>
+                </div>
+              </div>
+
+              <!-- Comment -->
+              <div class="mb-4">
+                <label class="form-label fw-semibold">Your Comments</label>
+                <textarea name="comment" class="form-control" rows="4" required></textarea>
+              </div>
+
+              <!-- Submit -->
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill">Submit Review</button>
+              </div>
+            </form>
+            {% else %}
+              <p class="text-center">⚠️ You must <a href="{% url 'login' %}">login</a> to submit a review.</p>
+            {% endif %}
+
+            <hr class="my-5">
+
+            <!-- Reviews -->
+            <h4 class="mb-4">Recent Reviews</h4>
+            <div id="submitted-reviews" class="review-list">
+              {% for review in restaurant.reviews.all|slice:":5" %}
+                {% include "partials/single_review.html" with review=review %}
+              {% empty %}
+              <div class="text-center py-4">
+                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No reviews yet. Be the first to review!</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Photos Section -->
+    <div id="photos-section" class="tab-section">
+        <div class="container my-5" style="margin-left:45px; margin-right:15px;">
+            <h3 class="fw-bold mb-1">{{restaurant.name}}</h3>
+            <span class="text-muted fs-5 mt-2 mb-5">Photos</span>
+
+            <!-- Filter Buttons -->
+            <div class="d-flex gap-3 mb-4">
+                <button class="btn btn-danger rounded-pill px-4 py-1 filter-btn active" onclick="filterPhotos('all')">
+                    All ({{ images|length }})
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill px-4 py-1 filter-btn" onclick="filterPhotos('food')">
+                    Food ({{ food_count }})
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill px-4 py-1 filter-btn" onclick="filterPhotos('ambience')">
+                    Ambience ({{ ambience_count }})
+                </button>
+            </div>
+
+            <!-- Photo Grid -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-4 mt-3" id="photo-gallery">
+                {% if images %}
+                    {% for image in images %}
+                    <div class="col photo-item all {{ image.category }}">
+                        <img src="{{ image.image.url }}" class="img-fluid rounded" alt="{{ image.category|title }} Image">
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Section -->
+    <div id="menu-section" class="tab-section">
+        <div class="container my-5">
+            <h3 class="fw-bold mb-4">{{ restaurant.name }} Menu</h3>
+            
+            {% for data in menu_data %}
+            <div class="mb-5">
+                <h4 class="border-bottom pb-2 mb-4">{{ data.category.name }}</h4>
+                
+                <div class="row">
+                    {% for item in data.items %}
+                    <div class="col-md-6 mb-4">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" 
+                                    class="img-fluid rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                    style="width: 100px; height: 100px;">
+                                    <i class="fas fa-utensils fa-2x text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">{{ item.name }}</h5>
+                                <p class="text-muted mb-1 small">{{ item.description|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="fw-bold">₹{{ item.price }}</span>
+                                    <button class="btn btn-sm btn-outline-primary">Add to Order</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="alert alert-info">Menu not available at this time.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Book Table Section -->
+    <div id="book-section" class="tab-section">
+     <div style="margin-bottom:40px" class="container">
+        <div class="fancy-booking-form">
+            <div class="form-container">
+                <div class="form-header">
+                    <h3>Book a Table at {{ restaurant.name }}</h3>
+                    <div class="divider"></div>
+                    <p class="text-muted mt-2">Experience fine dining in our elegant ambiance</p>
+                </div>
+                
+                <div class="row">
+                    <!-- Left Column: Booking Form with colorful icons -->
+                    <div class="col-lg-7">
+                        <!-- FIXED: Changed restaurant.id to restaurant.slug -->
+                        <form method="POST" action="{% url 'restaurants:book_table_cuisine' restaurant.slug %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="name">Your Name</label>
+                                <i class="fas fa-user input-icon name-icon"></i>
+                                <input type="text" id="name" name="name" class="form-control" placeholder="Enter your full name" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email">Your Email</label>
+                                        <i class="fas fa-envelope input-icon email-icon"></i>
+                                        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone">Your Phone</label>
+                                        <i class="fas fa-phone input-icon phone-icon"></i>
+                                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter your phone" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="date">Reservation Date</label>
+                                        <i class="fas fa-calendar input-icon date-icon"></i>
+                                        <input type="date" id="date" name="date" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="guests">No. of Guests</label>
+                                        <i class="fas fa-users input-icon guests-icon"></i>
+                                        <div class="select-wrapper">
+                                            <select id="guests" name="no_of_guests" class="form-control" required>
+                                                <option value="1">1 Guest</option>
+                                                <option value="2" selected>2 Guests</option>
+                                                <option value="3">3 Guests</option>
+                                                <option value="4">4 Guests</option>
+                                                <option value="5">5 Guests</option>
+                                                <option value="6">6 Guests</option>
+                                                <option value="7">7 Guests</option>
+                                                <option value="8">8 Guests</option>
+                                                <option value="9">9+ Guests</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="meal">Select Meal Type</label>
+                                <i class="fas fa-utensils input-icon meal-icon"></i>
+                                <div class="select-wrapper">
+                                    <select id="meal" name="meal_type" class="form-control" required>
+                                        <option value="breakfast">Breakfast</option>
+                                        <option value="brunch">Brunch</option>
+                                        <option value="lunch">Lunch</option>
+                                        <option value="dinner" selected>Dinner</option>
+                                        <option value="dessert">Dessert Only</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="time">Select Time Slot</label>
+                                <i class="fas fa-clock input-icon time-icon"></i>
+                                <div class="time-slots">
+                                    <div class="slots-container">
+                                        <div class="slot" data-time="18:00">6:00 PM</div>
+                                        <div class="slot" data-time="18:30">6:30 PM</div>
+                                        <div class="slot active" data-time="19:00">7:00 PM</div>
+                                        <div class="slot" data-time="19:30">7:30 PM</div>
+                                        <div class="slot" data-time="20:00">8:00 PM</div>
+                                        <div class="slot" data-time="20:30">8:30 PM</div>
+                                        <div class="slot" data-time="21:00">9:00 PM</div>
+                                        <div class="slot" data-time="21:30">9:30 PM</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="time" name="time" value="19:00">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="message">Special Requests</label>
+                                <i class="fas fa-comment input-icon message-icon"></i>
+                                <textarea id="message" name="message" class="form-control" placeholder="Any special requests or notes for your reservation..." rows="3"></textarea>
+                            </div>
+                            
+                            <div class="btn-container">
+                                <button type="submit" class="btn-book">
+                                    <i class="fas fa-calendar-check"></i> Confirm Reservation
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Right Column: Ambience Showcase -->
+                    <div class="col-lg-5">
+                        <div class="ambience-showcase rounded-4 p-3 h-100">
+                            <div class="text-center mb-3">
+                                <h4 class="text-white mb-1">Our Ambience</h4>
+                                <p class="text-light">Experience fine dining in style</p>
+                            </div>
+                            
+                            <!-- Carousel with actual ambience images -->
+                            <div id="ambience-carousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner rounded-3 overflow-hidden">
+                                    {% for image in images %}
+                                        {% if image.category == 'ambience' %}
+                                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                               <img src="{{ image.image.url }}" class="d-block w-100 carousel-image" alt="Ambience Image">
+                                            </div>
+                                        {% endif %}
+                                    {% empty %}
+                                        <!-- Fallback if no ambience images -->
+                                        <div class="carousel-item active">
+                                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 250px; border-radius: 8px;">
+                                                <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="carousel-item">
+                                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 250px; border-radius: 8px;">
+                                                <i class="fas fa-utensils text-muted" style="font-size: 3rem;"></i>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#ambience-carousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#ambience-carousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h5 class="text-white mb-0">Dining Features</h5>
+                                        <p class="text-light mb-0">Premium experience</p>
+                                    </div>
+                                    <div class="bg-danger rounded-pill px-3 py-1">
+                                        <span class="text-white">Luxury</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="features-grid">
+                                    <div class="feature-item">
+                                        <i class="fas fa-wifi text-warning"></i>
+                                        <span class="text-light">Free WiFi</span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <i class="fas fa-music text-warning"></i>
+                                        <span class="text-light">Live Music</span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <i class="fas fa-parking text-warning"></i>
+                                        <span class="text-light">Valet Parking</span>
+                                    </div>
+                                    <div class="feature-item">
+                                        <i class="fas fa-umbrella-beach text-warning"></i>
+                                        <span class="text-light">Outdoor Seating</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     </div>
+    </div>
+    
+
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="cart-container" id="cart-container">
+        <div class="cart-header">
+            <h2>Your Order</h2>
+            <button class="close-cart" id="close-cart">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="cart-items" id="cart-items">
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>Your cart is empty</p>
+            </div>
+        </div>
+        
+        <div class="cart-summary">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span>₹<span id="cart-total">0.00</span></span>
+            </div>
+            <form action="{% url 'restaurants:place_order' %}" method="post">
+             {% csrf_token %}
+             <button type="submit" id="place-order" class="place-order">
+               <i class="fas fa-shopping-bag"></i> Place Order
+             </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="notification-content">
+            <h4>Item Added!</h4>
+            <p>Product has been added to your cart</p>
+        </div>
+    </div>
+
+    <!-- BootstrapJS Bundle -->
+<script src="{% static 'users/js/pepito.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    
+    
+    <!-- Add this script section right after the <body> tag and before your main JavaScript -->
+        <script>
+            // Get authentication status from Django template variables
+            var userAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+            var userRoleType = {% if user.is_authenticated %}'{{ user.role|default:"customer" }}'{% else %}null{% endif %};
+            
+            console.log('Django authentication status:', userAuthenticated);
+            console.log('User role:', userRoleType);
+        </script>
+        
+        
+        {% comment %}
+        <script>
+            document.getElementById("place-order").addEventListener("click", function() {
+                fetch("{% url 'restaurants:place_order' %}", {
+                  method: "POST",
+                  headers: {
+                  "X-CSRFToken": "{{ csrf_token }}",  // Django ke liye zaroori
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({})  // agar extra data bhejna ho to yahan
+                })
+                .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // Django agar redirect kare to follow karo
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                   console.log("Order placed:", data);
+                })
+                .catch(err => console.error("Error:", err));
+                });
+</script> {% endcomment %}
+
+
+<!-- Then update your main cart script -->
+<script>
+    // Cart state (using in-memory storage instead of localStorage)
+    let cart = {};
+    
+    // Authentication state - Get from Django template variables
+    let isUserLoggedIn = userAuthenticated || false;
+let userRole = userRoleType || null;
+
+console.log('Initial auth state:', { isUserLoggedIn, userRole });
+
+// DOM Elements
+const cartItemsEl = document.getElementById('cart-items');
+const cartCountEl = document.getElementById('cart-count');
+const cartTotalEl = document.getElementById('cart-total');
+const placeOrderBtn = document.getElementById('place-order');
+const notificationEl = document.getElementById('notification');
+const cartToggle = document.getElementById('cart-toggle');
+const cartContainer = document.getElementById('cart-container');
+const closeCartBtn = document.getElementById('close-cart');
+const overlay = document.getElementById('overlay');
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing cart...');
+    
+    // Check authentication status from server/session
+    checkAuthenticationStatus();
+    
+    // Setup event listeners
+    setupEventListeners();
+    updateCartUI();
+    
+    // Show first category by default
+    const firstCategory = document.querySelector('#category-list .list-group-item.active');
+    if (firstCategory) {
+        const categoryMatch = firstCategory.getAttribute('onclick');
+        if (categoryMatch) {
+            const categoryId = categoryMatch.match(/'(category_\d+)'/);
+            if (categoryId && categoryId[1]) {
+                const categoryElement = document.getElementById(categoryId[1]);
+                if (categoryElement) {
+                    categoryElement.classList.remove('d-none');
+                }
+            }
+        }
+    }
+});
+
+// Function to check if user is authenticated
+function checkAuthenticationStatus() {
+    // Get authentication status from Django template variables
+    isUserLoggedIn = userAuthenticated || false;
+    userRole = userRoleType || null;
+    
+    console.log('Authentication status updated:', { isUserLoggedIn, userRole });
+    updatePlaceOrderButton();
+}
+
+// Update place order button based on authentication
+function updatePlaceOrderButton() {
+    if (!placeOrderBtn) return;
+    
+    if (!isUserLoggedIn) {
+        placeOrderBtn.innerHTML = `
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Login to Place Order
+            `;
+            placeOrderBtn.classList.add('btn-warning');
+            placeOrderBtn.classList.remove('btn-success');
+        placeOrderBtn.disabled = false; // Allow clicking for redirect
+    } else if (userRole === 'customer') {
+        placeOrderBtn.innerHTML = `
+        <i class="fas fa-shopping-bag me-2"></i>
+        Place Order
+        `;
+        placeOrderBtn.classList.add('btn-success');
+        placeOrderBtn.classList.remove('btn-warning');
+        placeOrderBtn.disabled = false;
+    } else {
+        placeOrderBtn.innerHTML = `
+        <i class="fas fa-user-slash me-2"></i>
+        Customer Access Required
+        `;
+        placeOrderBtn.classList.add('btn-secondary');
+        placeOrderBtn.classList.remove('btn-success', 'btn-warning');
+        placeOrderBtn.disabled = true;
+    }
+}
+
+function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // Use event delegation for dynamic content
+    document.body.addEventListener('click', function(e) {
+        console.log('Click detected on:', e.target);
+        
+        // Handle plus buttons
+        if (e.target.matches('.plus-btn') || 
+        e.target.matches('.quantity-btn.plus-btn') || 
+        e.target.closest('.plus-btn') || 
+        e.target.closest('.quantity-btn.plus-btn')) {
+            
+            console.log('Plus button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const quantityDisplay = card.querySelector('.quantity-display');
+                if (quantityDisplay) {
+                    let quantity = parseInt(quantityDisplay.textContent) + 1;
+                    quantityDisplay.textContent = quantity;
+                    quantityDisplay.classList.add('pulse');
+                    setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
+                }
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle minus buttons
+        if (e.target.matches('.minus-btn') || 
+            e.target.matches('.quantity-btn.minus-btn') || 
+            e.target.closest('.minus-btn') || 
+            e.target.closest('.quantity-btn.minus-btn')) {
+            
+            console.log('Minus button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const quantityDisplay = card.querySelector('.quantity-display');
+                if (quantityDisplay) {
+                    let quantity = parseInt(quantityDisplay.textContent) - 1;
+                    if (quantity < 1) quantity = 1;
+                    quantityDisplay.textContent = quantity;
+                    quantityDisplay.classList.add('pulse');
+                    setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
+                }
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle add-to-cart buttons
+        if (e.target.matches('.add-to-cart-btn') || e.target.closest('.add-to-cart-btn')) {
+            console.log('Add to cart button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
+                const quantityDisplay = card.querySelector('.quantity-display');
+                const quantity = quantityDisplay ? parseInt(quantityDisplay.textContent) : 1;
+                console.log('Adding to cart:', itemId, quantity);
+                addToCart(itemId, quantity);
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle card click (add 1 item) - but exclude clicks on buttons
+        if ((e.target.matches('.menu-item-card') || e.target.closest('.menu-item-card')) && 
+        !e.target.closest('.quantity-controls') && 
+        !e.target.closest('.add-to-cart-btn') &&
+        !e.target.matches('button') &&
+        !e.target.closest('button')) {
+            
+            console.log('Card clicked');
+            const card = e.target.closest('.card') || e.target.closest('.menu-item-card');
+            if (card) {
+                const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
+                console.log('Adding to cart from card click:', itemId);
+                addToCart(itemId, 1);
+            }
+            return;
+        }
+        
+        // Handle cart quantity buttons
+        if (e.target.matches('.cart-plus-btn')) {
+            const id = e.target.dataset.id;
+            if (cart[id]) {
+                cart[id].quantity++;
+                updateCartUI();
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        if (e.target.matches('.cart-minus-btn')) {
+            const id = e.target.dataset.id;
+            if (cart[id]) {
+                if (cart[id].quantity > 1) {
+                    cart[id].quantity--;
+                } else {
+                    delete cart[id];
+                }
+                updateCartUI();
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // Handle remove buttons
+        if (e.target.matches('.remove-btn') || e.target.closest('.remove-btn')) {
+            const btn = e.target.matches('.remove-btn') ? e.target : e.target.closest('.remove-btn');
+            const id = btn.dataset.id;
+            if (cart[id]) {
+                delete cart[id];
+                updateCartUI();
+                showNotification('Item removed from cart');
+            }
+            e.preventDefault();
+            return;
+        }
+    });
+    
+    // Place order button
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', handlePlaceOrderClick);
+    }
+    
+    // Cart toggle
+    if (cartToggle) {
+        cartToggle.addEventListener('click', toggleCart);
+    }
+    
+    // Close cart
+    if (closeCartBtn) {
+        closeCartBtn.addEventListener('click', closeCart);
+    }
+    
+    // Close cart when clicking overlay
+    if (overlay) {
+        overlay.addEventListener('click', closeCart);
+    }
+}
+
+function addToCart(itemId, quantity) {
+    console.log('addToCart called:', itemId, quantity);
+    
+    if (!itemId) {
+        console.error('No item ID provided');
+        return;
+    }
+    
+    // Find the item details
+    const card = document.querySelector(`[data-item-id="${itemId}"]`) || 
+                 document.querySelector(`.card[data-item-id="${itemId}"]`);
+    
+    if (!card) {
+        console.error('Card not found for item ID:', itemId);
+        return;
+    }
+    
+    console.log('Card found:', card);
+    
+    // Get item details with fallbacks
+    const titleElement = card.querySelector('.menu-item-title') || 
+                        card.querySelector('.card-title') || 
+                        card.querySelector('h5') || 
+                        card.querySelector('h6');
+    
+    const priceElement = card.querySelector('.menu-item-price') || 
+                        card.querySelector('.price') || 
+                        card.querySelector('[class*="price"]');
+    
+    const imageElement = card.querySelector('img');
+    
+    const name = titleElement ? titleElement.textContent.trim() : `Item ${itemId}`;
+    const priceText = priceElement ? priceElement.textContent.trim() : '0';
+    const price = parseFloat(priceText.replace(/[₹$£€,]/g, '')) || 0;
+    const image = imageElement ? imageElement.src : '';
+    
+    console.log('Item details:', { name, price, image, quantity });
+    
+    if (cart[itemId]) {
+        cart[itemId].quantity += quantity;
+    } else {
+        cart[itemId] = {
+            id: itemId,
+            name: name,
+            price: price,
+            image: image,
+            quantity: quantity
+        };
+    }
+    
+    console.log('Cart updated:', cart);
+    
+    // Reset quantity display
+    const quantityDisplay = card.querySelector('.quantity-display');
+    if (quantityDisplay) {
+        quantityDisplay.textContent = '1';
+    }
+    
+    // Show notification
+    showNotification(`${quantity} ${name} added to cart!`);
+    
+    // Update cart UI
+    updateCartUI();
+    
+    // Open cart automatically when adding items
+    openCart();
+    
+    // Add animation if image exists
+    if (image) {
+        animateAddToCart(card, image);
+    }
+}
+
+function updateCartUI() {
+    console.log('Updating cart UI, current cart:', cart);
+    
+    if (!cartCountEl || !cartItemsEl || !cartTotalEl) {
+        console.error('Cart UI elements not found');
+        return;
+    }
+    
+    // Update cart count
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    cartCountEl.textContent = itemCount;
+    cartCountEl.style.display = itemCount > 0 ? 'inline-block' : 'none';
+    
+    console.log('Cart count updated:', itemCount);
+    
+    // Update cart items
+    if (itemCount === 0) {
+        cartItemsEl.innerHTML = `
+        <div class="empty-cart text-center p-4">
+            <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+                <p class="text-muted">Your cart is empty</p>
+                <p class="text-sm text-muted">Add some items to get started!</p>
+            </div>
+        `;
+        cartTotalEl.textContent = '0.00';
+        
+        // Update place order button state
+        updatePlaceOrderButton();
+        return;
+    }
+    
+    // Generate cart items HTML
+    let cartItemsHTML = '';
+    let total = 0;
+    
+    Object.values(cart).forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        
+        cartItemsHTML += `
+        <div class="cart-item d-flex align-items-center p-3 border-bottom">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-img me-3" 
+                    style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+                    onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23f5f5f5\'/%3E%3Ctext x=\'30\' y=\'35\' font-family=\'Arial\' font-size=\'10\' fill=\'%23888\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E'">
+                <div class="cart-item-details flex-grow-1">
+                    <div class="cart-item-name fw-bold">${item.name}</div>
+                    <div class="cart-item-price text-primary">₹${item.price.toFixed(2)}</div>
+                    <div class="cart-item-quantity d-flex align-items-center mt-2">
+                        <button class="btn btn-outline-secondary btn-sm cart-minus-btn" data-id="${item.id}">-</button>
+                        <span class="mx-3">${item.quantity}</span>
+                        <button class="btn btn-outline-secondary btn-sm cart-plus-btn" data-id="${item.id}">+</button>
+                        <button class="btn btn-outline-danger btn-sm ms-3 remove-btn" data-id="${item.id}" title="Remove from cart">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="cart-item-total fw-bold">
+                    ₹${itemTotal.toFixed(2)}
+                </div>
+            </div>
+        `;
+    });
+    
+    cartItemsEl.innerHTML = cartItemsHTML;
+    cartTotalEl.textContent = total.toFixed(2);
+    
+    // Update place order button state
+    updatePlaceOrderButton();
+    
+    console.log('Cart UI updated, total:', total);
+}
+
+function handlePlaceOrderClick() {
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    
+    // Check if cart is empty
+    if (itemCount === 0) {
+        showNotification('Your cart is empty! Add some items first.');
+        return;
+    }
+    
+    // Re-check authentication status from current page state
+    checkAuthenticationStatus();
+    
+    // Check authentication status
+    if (!isUserLoggedIn) {
+        showNotification('Please login to place an order', 'warning');
+        
+        // Redirect to login page after showing notification
+        setTimeout(() => {
+            // Replace with your actual login URL
+            window.location.href = "{% url 'users:login_signup' %}";
+        }, 2000);
+        return;
+    }
+    
+    // Check user role
+    if (userRole !== 'customer') {
+        showNotification('Only customers can place orders', 'error');
+        return;
+    }
+    
+    // All checks passed, proceed with order
+    placeOrder();
+}
+
+function placeOrder() {
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    
+    console.log('Placing order with authentication check passed');
+    
+    // Show loading state
+    const originalButtonContent = placeOrderBtn.innerHTML;
+    placeOrderBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Placing Order...
+    `;
+    placeOrderBtn.disabled = true;
+    
+    // Send order to server
+    sendOrder(originalButtonContent);
+}
+
+function showNotification(message, type = 'success') {
+    if (!notificationEl) {
+        console.log('Notification:', message);
+        return;
+    }
+    
+    // Remove existing type classes
+    notificationEl.classList.remove('alert-success', 'alert-warning', 'alert-danger', 'alert-info');
+    
+    // Add appropriate type class
+    switch(type) {
+        case 'success':
+            notificationEl.classList.add('alert-success');
+            break;
+        case 'warning':
+            notificationEl.classList.add('alert-warning');
+            break;
+            case 'error':
+            notificationEl.classList.add('alert-danger');
+            break;
+        case 'info':
+            notificationEl.classList.add('alert-info');
+            break;
+        default:
+            notificationEl.classList.add('alert-success');
+        }
+    
+    const messageEl = notificationEl.querySelector('p') || notificationEl;
+    messageEl.textContent = message;
+    notificationEl.classList.add('show');
+    
+    setTimeout(() => {
+        notificationEl.classList.remove('show');
+    }, 3000);
+}
+
+function toggleCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.toggle('show');
+        overlay.classList.toggle('show');
+    }
+}
+
+function openCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.add('show');
+        overlay.classList.add('show');
+    }
+}
+
+function closeCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+}
+
+function animateAddToCart(sourceElement, imageSrc) {
+    const animationElement = document.createElement('div');
+    animationElement.className = 'add-to-cart-animation';
+    animationElement.style.position = 'fixed';
+    animationElement.style.zIndex = '9999';
+    animationElement.style.pointerEvents = 'none';
+    animationElement.style.transition = 'all 0.8s ease-in-out';
+    
+    const rect = sourceElement.getBoundingClientRect();
+    animationElement.style.left = `${rect.left + rect.width/2 - 25}px`;
+    animationElement.style.top = `${rect.top + rect.height/2 - 25}px`;
+    animationElement.innerHTML = `<img src="${imageSrc}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">`;
+    document.body.appendChild(animationElement);
+    
+    const cartIcon = document.querySelector('.bi-cart') || cartToggle;
+    if (cartIcon) {
+        const cartRect = cartIcon.getBoundingClientRect();
+        setTimeout(() => {
+            animationElement.style.left = `${cartRect.left + cartRect.width/2 - 25}px`;
+            animationElement.style.top = `${cartRect.top + cartRect.height/2 - 25}px`;
+            animationElement.style.transform = 'scale(0.1)';
+            animationElement.style.opacity = '0';
+        }, 100);
+    }
+    
+    setTimeout(() => {
+        if (animationElement.parentNode) {
+            animationElement.remove();
+        }
+    }, 1000);
+}
+
+function sendOrder(originalButtonContent) {
+    const orderData = {
+        restaurant_id: {{ restaurant.id }},
+        items: Object.values(cart).map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        })),
+        total: parseFloat(cartTotalEl.textContent)
+    };
+    
+    console.log('Sending order:', orderData);
+    
+    fetch("{% url 'restaurants:place_order' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(orderData)
+        /*orderData ek JS object hai (items, price, etc.).
+        → JSON.stringify(...) usko JSON string me convert karta hai kyunki server raw text JSON hi expect karta hai.*/
+    })
+    /*fetch() ek Promise return karta hai.
+    then(...) tab run hota hai jab server se response aa jata hai.
+    👉 response ek raw HTTP Response object hai (status code, headers, body, etc.).
+    👉 response.json() ek aur promise return karta hai jo server ki body ko JSON object me parse karta hai.*/
+    .then(response => response.json())
+    
+
+    /*Yaha data ek JS object hai jo server ne JSON format me bheja tha.
+    Example server response ho sakta hai:
+    {"success": true,"order_id": 123,"message": "Order placed"}*/
+    .then(data => {
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
+        
+        if (data.success) {
+            cart = {};
+            updateCartUI();
+            closeCart();
+            showNotification('Order placed successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = `/order-confirmation/${data.order_id}/`; // if you have a confirmation page
+            }, 1500);
+        } else {
+            showNotification('Failed to place order: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
+        console.error('Order error:', error);
+        showNotification('An error occurred while placing your order.', 'error');
+    });
+    
+    // For demo purposes - replace with actual API call
+    setTimeout(() => {
+        // Reset button state
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
+        
+        // Clear cart and show success
+        cart = {};
+        updateCartUI();
+        closeCart();
+        showNotification('Order placed successfully!', 'success');
+        
+        // Optional: Redirect to order confirmation page
+        // setTimeout(() => {
+            //     window.location.href = '/order-confirmation/';
+            // }, 2000);
+        
+        }, 2000);
+
+
+    /*
+    Overall Flow (Hinglish)
+
+    [1]  .JS object ko JSON banake POST request me bheja server ko.
+    [2]  Server ne ek response diya (jaise {"success": true, "order_id": 123} ).
+    [3]  .then(response => response.json()) → raw response ko JSON object me convert kiya.
+    [4]  .then(data => {...}) → JSON object ke andar ka data handle kiya.
+    [5]  .catch(error => {...}) → agar beech me koi problem hui toh handle kiya.
+    */
+    
+    // Uncomment and modify this for actual implementation:
+    /*
+    fetch("{% url 'restaurants:create_order' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(orderData)
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Reset button state
+                placeOrderBtn.innerHTML = originalButtonContent;
+                placeOrderBtn.disabled = false;
+                
+                if (data.success) {
+                    cart = {};
+                    updateCartUI();
+                    closeCart();
+                    showNotification('Order placed successfully!', 'success');
+                    setTimeout(() => window.location.href = `/confirmation/${data.order_id}/`, 1500);
+                    } else {
+                        showNotification('Failed to place order: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        // Reset button state
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
+        
+        console.error('Order error:', error);
+        showNotification('An error occurred while placing your order.', 'error');
+        });
+        */
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Category selection function
+function selectCategory(listItem, categoryId) {
+    // Deactivate all category list items
+    document.querySelectorAll('#category-list .list-group-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Hide all category sections
+    document.querySelectorAll('.category-section').forEach(section => {
+        section.classList.add('d-none');
+    });
+    
+    // Activate selected category
+    if (listItem) listItem.classList.add('active');
+    const categoryElement = document.getElementById(categoryId);
+    if (categoryElement) categoryElement.classList.remove('d-none');
+}
+
+// Function to simulate login (for demo purposes)
+function simulateLogin(role = 'customer') {
+    isUserLoggedIn = true;
+    userRole = role;
+    updatePlaceOrderButton();
+    showNotification(`Logged in as ${role}`, 'success');
+}
+
+// Function to simulate logout (for demo purposes)
+function simulateLogout() {
+    isUserLoggedIn = false;
+    userRole = null;
+    updatePlaceOrderButton();
+    showNotification('Logged out successfully', 'info');
+}
+
+// Debug functions
+function debugCart() {
+    console.log('Current cart:', cart);
+    console.log('Cart count:', Object.values(cart).reduce((total, item) => total + item.quantity, 0));
+    console.log('Authentication status:', { isUserLoggedIn, userRole });
+    return { cart, isUserLoggedIn, userRole };
+}
+
+// Export functions for external use
+window.cartFunctions = {
+    simulateLogin,
+    simulateLogout,
+    debugCart,
+    checkAuthenticationStatus
+};
+
+// Toggle dropdown function
+function toggleDropdown(element) {
+    const dropdownMenu = element.querySelector('.dropdown-menu');
+    if (dropdownMenu) {
+        dropdownMenu.classList.toggle('show');
+    }
+    
+    // Close other dropdowns
+    document.querySelectorAll('.user-dropdown .dropdown-menu').forEach(menu => {
+        if (menu !== dropdownMenu) {
+            menu.classList.remove('show');
+        }
+    });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-dropdown')) {
+        document.querySelectorAll('.user-dropdown .dropdown-menu').forEach(menu => {
+            menu.classList.remove('show');
+        });
+    }
+});
+</script>
+
+<script>
+    // =================== STAR RATING + REVIEW FORM ===================
+document.addEventListener("DOMContentLoaded", function () {
+    // ⭐ Star Rating
+    document.querySelectorAll(".star-rating").forEach(function (group) {
+        const stars = group.querySelectorAll(".star");
+        const input = group.querySelector("input");
+
+        stars.forEach(function (star) {
+            star.addEventListener("click", function () {
+                const value = this.dataset.value;
+                input.value = value;
+                
+                stars.forEach(s => {
+                    if (s.dataset.value <= value) {
+                        s.classList.remove("fa-star-o");
+                        s.classList.add("fa-star", "text-warning"); // Golden
+                    } else {
+                        s.classList.remove("fa-star", "text-warning");
+                        s.classList.add("fa-star-o");
+                    }
+                });
+            });
+        });
+    });
+    
+    // 📌 Review Form Submit (AJAX)
+    const reviewForm = document.getElementById("review-form");
+    if (reviewForm) {
+        reviewForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            fetch(form.action || window.location.pathname + "submit-review/", {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+                },
+                body: formData,
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // ✅ नया review सबसे ऊपर add होगा
+                    const reviewContainer = document.getElementById("submitted-reviews");
+                    
+                    // अगर पहले से same review है तो हटा दो (duplicate रोकने के लिए)
+                    const existing = reviewContainer.querySelector(`[data-id='${data.review_id}']`);
+                    if (existing) existing.remove();
+                    
+                    // नया review add कर दो
+                    reviewContainer.insertAdjacentHTML("afterbegin", data.html);
+                    
+                    // ⭐ Reset form + stars
+                    form.reset();
+                    document.querySelectorAll(".star").forEach(star => {
+                        star.classList.remove("fa-star", "text-warning");
+                        star.classList.add("fa-star-o");
+                    });
+                } else {
+                    alert(data.message || "Review failed. Try again.");
+                }
+            })
+            .catch(err => console.error("Error:", err));
+        });
+    }
+});
+
+</script>
+
+<!-- time slot for booking -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const slots = document.querySelectorAll(".slot");
+        const hiddenInput = document.getElementById("time");
+
+    slots.forEach(slot => {
+        slot.addEventListener("click", function () {
+            // Sab slots se active class hatao
+            slots.forEach(s => s.classList.remove("active"));
+
+            // Jo slot click hua usko active karo
+            this.classList.add("active");
+
+            // Hidden input me data-time set karo
+            hiddenInput.value = this.dataset.time;
+        });
+    });
+});
+
+</script>
+
+<!-- sending request for table booking -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bookingForm = document.getElementById("bookingForm");
+    const bookingMessage = document.getElementById("bookingMessage");
+
+    bookingForm.addEventListener("submit", function(e) {
+        e.preventDefault();  // stop normal form submit
+
+        // Get form data
+        const formData = new FormData(bookingForm);
+
+        fetch(bookingForm.action, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",  
+                "X-CSRFToken": formData.get("csrfmiddlewaretoken") 
+            },
+            body: formData
+        })
+        .then(response => {
+            if (response.status === 401) {  
+                // User not logged in
+                window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+            }
+            return response.json();
+        })
+        /*.then(data => {
+            if (data.success) {
+                bookingMessage.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> ${data.message}
+                    </div>`;
+                bookingForm.reset();
+            } else {
+                bookingMessage.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-times-circle"></i> ${data.error}
+                    </div>`;
+            }
+        */
+        .then(data => {
+           if (data.success) {
+             window.location.href = data.redirect_url;  // 👈 server se redirect_url bhejna hoga
+           } 
+           else {
+            bookingMessage.innerHTML = `
+               <div class="alert alert-danger">
+                 <i class="fas fa-times-circle"></i> ${data.error}
+               </div>`;
+           }
+        })
+        .catch(error => {
+            bookingMessage.innerHTML = `
+                <div class="alert alert-warning">
+                    Something went wrong! Please try again.
+                </div>`;
+            console.error("Error:", error);
+        });
+    });
+});
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restaurant Profile Settings</title>
+    {% load static %}
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: url("https://images.unsplash.com/photo-1552566626-52f8b828add9")
+          no-repeat center center fixed;
+        background-size: cover;
+        color: #333;
+      }
+
+      .profile-container {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        max-width: 960px;
+        margin: auto;
+        border-radius: 20px;
+        padding: 14px 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+
+      .section-title {
+        font-size: 20px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #333;
+        border-left: 5px solid #ff4b2b;
+        padding-left: 12px;
+      }
+
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .form-group {
+        flex: 1 1 45%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .form-group label {
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        padding: 8px 10px;
+        font-size: 13px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background: #fff;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus {
+        border-color: #ff4b2b;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(255, 75, 43, 0.12);
+      }
+
+      .checkbox-group {
+        flex: 1 1 100%;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .submit-btn {
+        background: #ff4b2b;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.3s ease, transform 0.2s ease;
+        margin-top: 20px;
+      }
+
+      .submit-btn:hover {
+        background: #e64322;
+        transform: scale(1.03);
+      }
+
+      .phone-wrapper {
+        display: flex;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        overflow: hidden;
+        align-items: center;
+        background: white;
+      }
+
+      .phone-prefix {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: #f5f5f5;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .countryDropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ccc;
+        width: 100%;
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 999;
+        display: none;
+      }
+
+      .countryDropdown div {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .countryDropdown div:hover {
+        background-color: #eee;
+      }
+
+      input[type="tel"] {
+        border: none;
+        flex: 1;
+        padding: 8px;
+        font-size: 13px;
+        outline: none;
+      }
+    </style>
+
+    <script>
+      function toggleCountryDropdown(form) {
+        document.getElementById(`${form}CountryDropdown`).style.display =
+          "block";
+      }
+
+      function selectCountry(form, code, flagUrl) {
+        document.getElementById(`${form}DialCode`).textContent = code;
+        document.getElementById(`${form}FlagImg`).src = flagUrl;
+        document.getElementById(`${form}CountryDropdown`).style.display =
+          "none";
+      }
+
+      document.addEventListener("click", function (e) {
+        const dropdown = document.getElementById("loginCountryDropdown");
+        const prefix = document.getElementById("loginPrefix");
+        if (dropdown && prefix && !prefix.contains(e.target)) {
+          dropdown.style.display = "none";
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div class="profile-container">
+      <h2 class="section-title">Restaurant Details</h2>
+      {% comment %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="logo">Restaurant Logo</label>
+          <input type="file" name="logo" id="logo" />
+        </div>
+        <div class="form-group">
+          <label for="name">Restaurant Name</label>
+          <input type="text" name="name" id="name" required />
+        </div>
+        <div class="form-group" style="flex: 1 1 100%">
+          <label for="description">Description</label>
+          <textarea
+            name="description"
+            id="description"
+            rows="2"
+            required
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input type="text" name="address" id="address" required />
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" name="dining_out" id="dining_out" />
+          <label for="dining_out">Dining Out Available</label>
+        </div>
+        <div class="form-group">
+          <label for="timings">Timings</label>
+          <input
+            type="text"
+            name="timings"
+            id="timings"
+            placeholder="E.g. 10AM - 11PM"
+            required
+          />
+        </div>
+
+        <h2 class="section-title" style="margin-top: 30px">Owner Details</h2>
+        <div class="form-group">
+          <label for="owner_name">Full Name</label>
+          <input type="text" name="owner_name" id="owner_name" required />
+        </div>
+        <div class="form-group">
+          <label for="owner_email">Email</label>
+          <input type="email" name="owner_email" id="owner_email" required />
+        </div>
+
+        <div class="form-group" style="position: relative">
+          <label>Phone Number</label>
+          <div class="phone-wrapper">
+            <div
+              class="phone-prefix"
+              id="loginPrefix"
+              onclick="toggleCountryDropdown('login')"
+            >
+              <img
+                id="loginFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 16px"
+              />
+              <span id="loginDialCode">+91</span>
+              <span style="font-size: 10px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 20px; margin: 0 6px"
+            ></div>
+            <input
+              type="tel"
+              name="owner_phone"
+              placeholder="Phone number"
+              required
+            />
+          </div>
+          <div id="loginCountryDropdown" class="countryDropdown">
+            <div
+              onclick="selectCountry('login', '+91', 'https://flagcdn.com/in.svg')"
+            >
+              <img src="https://flagcdn.com/in.svg" style="width: 14px" /> India
+              (+91)
+            </div>
+            <div
+              onclick="selectCountry('login', '+1', 'https://flagcdn.com/us.svg')"
+            >
+              <img src="https://flagcdn.com/us.svg" style="width: 14px" /> USA
+              (+1)
+            </div>
+            <div
+              onclick="selectCountry('login', '+44', 'https://flagcdn.com/gb.svg')"
+            >
+              <img src="https://flagcdn.com/gb.svg" style="width: 14px" /> UK
+              (+44)
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gst_number">GST Number</label>
+          <input type="text" name="gst_number" id="gst_number" />
+        </div>
+
+        <button type="submit" class="submit-btn">Save & Go to Dashboard</button>
+      </form>
+      {% endcomment %}
+      <form
+        method="post"
+        action="{% url 'restaurants:restaurant_profile_settings' %}"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+
+        <!-- Logo (file inputs cannot retain values for security reasons) -->
+        <div class="form-group">
+          <label for="logo">Restaurant Logo</label>
+          <input type="file" name="logo" id="logo" />
+        </div>
+
+        <div class="form-group">
+          <label for="name">Restaurant Name</label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            value="{{ form.name.value|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <div class="form-group" style="flex: 1 1 100%">
+          <label for="description">Description</label>
+          <textarea name="description" id="description" rows="2" required>
+              {{ form.description.value|default_if_none:'' }}</textarea
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address</label>
+          <input
+            type="text"
+            name="address"
+            id="address"
+            value="{{ form.address.value|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <div class="checkbox-group">
+          <input
+            type="checkbox"
+            name="dining_out"
+            {%
+            if
+            dining_out_available
+            %}checked{%
+            endif
+            %}
+          />
+          <label for="dining_out">Dining Out Available</label>
+        </div>
+
+        <div class="form-group">
+          <label for="timings">Timings</label>
+          <input
+            type="text"
+            name="timings"
+            id="timings"
+            value="{{ form.timings.value|default_if_none:'' }}"
+            placeholder="E.g. 10AM - 11PM"
+            required
+          />
+        </div>
+
+        <!-- 🔽 Owner fields handled manually -->
+        <h2 class="section-title" style="margin-top: 30px">Owner Details</h2>
+
+        <div class="form-group">
+          <label for="owner_name">Full Name</label>
+          <input
+            type="text"
+            name="owner_name"
+            id="owner_name"
+            value="{{ owner_name|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="owner_email">Email</label>
+          <input
+            type="email"
+            name="owner_email"
+            id="owner_email"
+            value="{{ owner_email|default_if_none:'' }}"
+            required
+          />
+        </div>
+
+        <div class="form-group" style="position: relative">
+          <label>Phone Number</label>
+          <div class="phone-wrapper">
+            <!-- Leave static prefix -->
+            <div
+              class="phone-prefix"
+              id="loginPrefix"
+              onclick="toggleCountryDropdown('login')"
+            >
+              <img
+                id="loginFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 16px"
+              />
+              <span id="loginDialCode">+91</span>
+              <span style="font-size: 10px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 20px; margin: 0 6px"
+            ></div>
+            <input
+              type="tel"
+              name="owner_phone"
+              placeholder="Phone number"
+              value="{{ owner_phone|default_if_none:'' }}"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="gst_number">GST Number</label>
+          <input
+            type="text"
+            name="gst_number"
+            id="gst_number"
+            value="{{ gst_number|default_if_none:'' }}"
+          />
+        </div>
+
+        <button type="submit" class="submit-btn">Save & Go to Dashboard</button>
+      </form>
+    </div>
+  </body>
+</html>

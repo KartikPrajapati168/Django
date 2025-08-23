@@ -1,0 +1,159 @@
+{% load static %}
+
+{% block content %}
+<div class="restaurant-selection-container">
+    <div class="header">
+        <h1>Select Your Restaurant</h1>
+        <p>Choose which restaurant you want to manage</p>
+    </div>
+    
+    <div class="restaurant-grid">
+        {% for restaurant in restaurants %}
+        <div class="restaurant-card" 
+             onclick="location.href='{% url 'restaurants:dashboard' restaurant.slug %}'">
+            <div class="card-image"
+                 style="background-image: url('{% if restaurant.logo %}{{ restaurant.logo.url }}{% else %}{% static 'users/assets/img/about.jpg' %}{% endif %}')">
+            </div>
+            <div class="card-content">
+                <h3>{{ restaurant.name }}</h3>
+                <p>{{ restaurant.address|truncatechars:30 }}</p>
+                <a class="select-btn">Select & Manage</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="footer">
+        <p>Not seeing your restaurant? <a href="#" class="support-link">Contact Support</a></p>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #ff6b6b;
+        --secondary: #4ecdc4;
+        --dark: #292f36;
+        --light: #f7f7f7;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
+    .restaurant-selection-container {
+        width: 100%;
+        max-width: 1200px;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .header {
+        background: var(--dark);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+    
+    .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .header p {
+        opacity: 0.8;
+    }
+    
+    .restaurant-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 25px;
+        padding: 40px;
+    }
+    
+    .restaurant-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 2px solid transparent;
+    }
+    
+    .restaurant-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary);
+    }
+    
+    .card-image {
+        height: 180px;
+        background-size: cover;
+        background-position: center;
+    }
+    
+    .card-content {
+        padding: 20px;
+    }
+    
+    .card-content h3 {
+        color: var(--dark);
+        margin-bottom: 10px;
+    }
+    
+    .card-content p {
+        color: #666;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .select-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: var(--primary);
+        color: white;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.3s;
+    }
+    
+    .select-btn:hover {
+        background: #ff5252;
+    }
+    
+    .footer {
+        text-align: center;
+        padding: 20px;
+        border-top: 1px solid #eee;
+    }
+    
+    .logout-link {
+        color: var(--secondary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    @media (max-width: 768px) {
+        .restaurant-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

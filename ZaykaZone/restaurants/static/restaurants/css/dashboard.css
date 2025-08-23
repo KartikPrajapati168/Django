@@ -1,0 +1,255 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+/* VERY THIN scrollbar for WebKit browsers */
+.sidebar::-webkit-scrollbar {
+  width: 1.5px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 8px;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+}
+
+.sidebar-logo-box {
+  background: linear-gradient(to right, #ff416c, #ff4b2b);
+  min-width: 58px;
+  position: relative;
+  left: 10px;
+  height: 58px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.pepito-logo-text {
+  font-size: 26px;
+  font-weight: 900;
+  color: #ff3f6c;
+  white-space: nowrap;
+}
+
+.text-muted {
+  font-size: 13px;
+  color: #888;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+}
+
+.sidebar.collapsed .pepito-logo-text,
+.sidebar.collapsed .text-muted,
+.sidebar.collapsed .nav span,
+.sidebar.collapsed .admin-footer div,
+.sidebar.collapsed .admin-footer img {
+  display: none;
+}
+
+.external-toggle-btn {
+  position: absolute;
+  top: 5px;
+  left: 260px;
+  z-index: 1001;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: #ff4b2b;
+  transition: left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .external-toggle-btn {
+  left: 70px;
+}
+
+.nav {
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  text-decoration: none;
+  color: #555;
+  transition: background 0.3s;
+}
+
+.nav a:hover,
+.nav a.active {
+  background-color: #ffe9ee;
+  color: #000;
+}
+
+.nav a i {
+  width: 24px;
+  height: 24px;
+}
+
+.admin-footer {
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-footer .material-icons {
+  margin-left: auto;
+  cursor: pointer;
+  color: #ff4b2b;
+}
+
+.sidebar.collapsed .admin-footer {
+  justify-content: center;
+}
+
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  padding: 10px 36px 10px 36px;
+  border: 1px solid #ccc;
+  border-radius: 24px;
+  font-size: 14px;
+  width: 320px;
+  outline: none;
+}
+
+.search-bar .material-icons.search-icon {
+  position: absolute;
+  left: 10px;
+  color: #ff4b2b;
+  font-size: 20px;
+}
+
+.search-bar .material-icons.clear-icon {
+  position: absolute;
+  right: 50px;
+  font-size: 18px;
+  color: #ff4b2b;
+  cursor: pointer;
+  display: none;
+}
+
+.material-icons.bell-icon {
+  color: #ff4b2b;
+  font-size: 24px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.overview-subtext {
+  margin-left: 20px;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-left: 20px;
+}
+
+.stat-card {
+  background: #fdfdfd;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #ff4b2b;
+  margin-bottom: 10px;
+}
+
+.stat-card h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.stat-card p {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.stat-card p.positive {
+  color: #28a745;
+}
+
+.stat-card p.negative {
+  color: #dc3545;
+}

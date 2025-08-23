@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZaykaZone Auth</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background: url("https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1500&q=80")
+          no-repeat center center/cover;
+        height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 0;
+      }
+
+      .auth-box {
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.95);
+        width: 100%;
+        max-width: 400px;
+        padding: 10px 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #222;
+        font-weight: 600;
+        font-size: 20px;
+      }
+
+      .form-group {
+        position: relative;
+        margin-bottom: 15px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 10px 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: none;
+        outline: none;
+      }
+
+      .form-input:focus {
+        border-color: #e23744;
+      }
+
+      .form-label {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 14px;
+        color: #888;
+        background-color: #fff;
+        padding: 0 4px;
+        transition: 0.2s ease all;
+        pointer-events: none;
+      }
+
+      .form-input:focus + .form-label,
+      .form-input:not(:placeholder-shown) + .form-label,
+      select.form-input:valid + .form-label {
+        top: -8px;
+        left: 8px;
+        font-size: 11px;
+        color: #e23744;
+      }
+
+      select.form-input {
+        padding-right: 26px;
+      }
+
+      button[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        background-color: #e23744;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        border-radius: 6px;
+        margin-top: 16px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #c62f3a;
+      }
+
+      .note {
+        text-align: center;
+        font-size: 12px;
+        margin-top: 10px;
+        color: #333;
+      }
+
+      .link {
+        color: #e23744;
+        cursor: pointer;
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .divider {
+        margin: 10px 0;
+        text-align: center;
+        color: #888;
+        font-size: 12px;
+      }
+
+      .phone-wrapper {
+        display: flex;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        overflow: hidden;
+        align-items: center;
+        background: white;
+      }
+
+      .phone-prefix {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        background: #f5f5f5;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .countryDropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 1px solid #ccc;
+        width: 100%;
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 999;
+        display: none;
+      }
+
+      .countryDropdown div {
+        padding: 8px 12px;
+        cursor: pointer;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .countryDropdown div:hover {
+        background-color: #eee;
+      }
+
+      input[type="tel"] {
+        border: none;
+        flex: 1;
+        padding: 10px 8px;
+        font-size: 14px;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="auth-box">
+      <!-- Signup Form -->
+      <form id="signupForm" method="POST" action="/register">
+        <h2>Create Account</h2>
+
+        <div class="form-group">
+          <input
+            type="text"
+            name="name"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Full Name</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="email"
+            name="email"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Email</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            name="password"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Password</label>
+        </div>
+
+        <div class="form-group">
+          <select name="role" class="form-input" required>
+            <option value="" disabled selected hidden></option>
+            <option value="user">Customer</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="admin">Admin</option>
+          </select>
+          <label class="form-label">I am a:</label>
+        </div>
+
+        <div class="divider">or</div>
+
+        <div class="form-group" style="position: relative">
+          <div class="phone-wrapper">
+            <div
+              class="phone-prefix"
+              id="signupPrefix"
+              onclick="toggleCountryDropdown('signup')"
+            >
+              <img
+                id="signupFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 20px"
+              />
+              <span id="signupDialCode">+91</span>
+              <span style="font-size: 12px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 24px; margin: 0 8px"
+            ></div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone number"
+              required
+            />
+          </div>
+
+          <div id="signupCountryDropdown" class="countryDropdown">
+            <div
+              onclick="selectCountry('signup', '+91', 'https://flagcdn.com/in.svg')"
+            >
+              <img src="https://flagcdn.com/in.svg" style="width: 18px" /> India
+              (+91)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+1', 'https://flagcdn.com/us.svg')"
+            >
+              <img src="https://flagcdn.com/us.svg" style="width: 18px" /> USA
+              (+1)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+44', 'https://flagcdn.com/gb.svg')"
+            >
+              <img src="https://flagcdn.com/gb.svg" style="width: 18px" /> UK
+              (+44)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+61', 'https://flagcdn.com/au.svg')"
+            >
+              <img src="https://flagcdn.com/au.svg" style="width: 18px" />
+              Australia (+61)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+7', 'https://flagcdn.com/ru.svg')"
+            >
+              <img src="https://flagcdn.com/ru.svg" style="width: 18px" />
+              Russia (+7)
+            </div>
+
+            <div
+              onclick="selectCountry('signup', '+86', 'https://flagcdn.com/cn.svg')"
+            >
+              <img src="https://flagcdn.com/cn.svg" style="width: 18px" /> China
+              (+86)
+            </div>
+
+            <div
+              onclick="selectCountry('signup', '+81', 'https://flagcdn.com/jp.svg')"
+            >
+              <img src="https://flagcdn.com/jp.svg" style="width: 18px" /> Japan
+              (+81)
+            </div>
+
+            <div
+              onclick="selectCountry('signup', '+27', 'https://flagcdn.com/za.svg')"
+            >
+              <img src="https://flagcdn.com/za.svg" style="width: 18px" /> South
+              Africa (+27)
+            </div>
+          </div>
+        </div>
+
+        <div class="divider">or</div>
+
+        {% load socialaccount %}
+        <a
+          href="{% url 'google_redirect' %}"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid #ccc;
+            color: #333;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 10px;
+          "
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            style="width: 18px; height: 18px"
+          />
+          Sign up with Google
+        </a>
+
+        <button type="submit">Create account</button>
+
+        <div class="note">
+          Already have an account?
+          <span class="link" onclick="toggleForm()">Log in</span>
+        </div>
+      </form>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="hidden" method="POST" action="/login">
+        <h2>Log in</h2>
+
+        <div class="form-group">
+          <input
+            type="email"
+            name="email"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Email</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            name="password"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Password</label>
+        </div>
+
+        <div class="divider">or</div>
+
+        <div class="form-group" style="position: relative">
+          <div class="phone-wrapper">
+            <div
+              class="phone-prefix"
+              id="loginPrefix"
+              onclick="toggleCountryDropdown('login')"
+            >
+              <img
+                id="loginFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 20px"
+              />
+              <span id="loginDialCode">+91</span>
+              <span style="font-size: 12px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 24px; margin: 0 8px"
+            ></div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone number"
+              required
+            />
+          </div>
+
+          <div id="loginCountryDropdown" class="countryDropdown">
+            <div
+              onclick="selectCountry('login', '+91', 'https://flagcdn.com/in.svg')"
+            >
+              <img src="https://flagcdn.com/in.svg" style="width: 18px" /> India
+              (+91)
+            </div>
+            <div
+              onclick="selectCountry('login', '+1', 'https://flagcdn.com/us.svg')"
+            >
+              <img src="https://flagcdn.com/us.svg" style="width: 18px" /> USA
+              (+1)
+            </div>
+            <div
+              onclick="selectCountry('login', '+44', 'https://flagcdn.com/gb.svg')"
+            >
+              <img src="https://flagcdn.com/gb.svg" style="width: 18px" /> UK
+              (+44)
+            </div>
+            <div
+              onclick="selectCountry('login', '+61', 'https://flagcdn.com/au.svg')"
+            >
+              <img src="https://flagcdn.com/au.svg" style="width: 18px" />
+              Australia (+61)
+            </div>
+            <div
+              onclick="selectCountry('login', '+7', 'https://flagcdn.com/ru.svg')"
+            >
+              <img src="https://flagcdn.com/ru.svg" style="width: 18px" />
+              Russia (+7)
+            </div>
+
+            <div
+              onclick="selectCountry('login', '+81', 'https://flagcdn.com/jp.svg')"
+            >
+              <img src="https://flagcdn.com/jp.svg" style="width: 18px" /> Japan
+              (+81)
+            </div>
+
+            <div
+              onclick="selectCountry('login', '+86', 'https://flagcdn.com/cn.svg')"
+            >
+              <img src="https://flagcdn.com/cn.svg" style="width: 18px" /> China
+              (+86)
+            </div>
+
+            <div
+              onclick="selectCountry('login', '+27', 'https://flagcdn.com/za.svg')"
+            >
+              <img src="https://flagcdn.com/za.svg" style="width: 18px" /> South
+              Africa (+27)
+            </div>
+          </div>
+        </div>
+
+        <button type="submit">Login</button>
+
+        <div class="note">
+          Don't have an account?
+          <span class="link" onclick="toggleForm()">Create Account</span>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      function toggleForm() {
+        document.getElementById("signupForm").classList.toggle("hidden");
+        document.getElementById("loginForm").classList.toggle("hidden");
+      }
+
+      function toggleCountryDropdown(form) {
+        document.getElementById(`${form}CountryDropdown`).style.display =
+          "block";
+      }
+
+      function selectCountry(form, code, flagUrl) {
+        document.getElementById(`${form}DialCode`).textContent = code;
+        document.getElementById(`${form}FlagImg`).src = flagUrl;
+        document.getElementById(`${form}CountryDropdown`).style.display =
+          "none";
+      }
+
+      document.addEventListener("click", function (e) {
+        ["signup", "login"].forEach((form) => {
+          const dropdown = document.getElementById(`${form}CountryDropdown`);
+          const prefix = document.getElementById(`${form}Prefix`);
+          if (dropdown && prefix && !prefix.contains(e.target)) {
+            dropdown.style.display = "none";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

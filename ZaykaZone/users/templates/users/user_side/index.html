@@ -1,0 +1,2245 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ZaykaZone</title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+
+    <!-- Favicons -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="{% static 'users/assets/img/ChatGPT Image Jun 15, 2025, 07_05_20 PM.png' %}"
+    />
+    <link
+      href="{% static 'users/assets/img/apple-touch-icon.png' %}"
+      rel="apple-touch-icon"
+    />
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Amatic+SC:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Vendor CSS Files -->
+    <link
+      href="{% static 'users/assets/vendor/bootstrap/css/bootstrap.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'users/assets/vendor/bootstrap-icons/bootstrap-icons.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'users/assets/vendor/aos/aos.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'users/assets/vendor/glightbox/css/glightbox.min.css' %}"
+      rel="stylesheet"
+    />
+    <link
+      href="{% static 'users/assets/vendor/swiper/swiper-bundle.min.css' %}"
+      rel="stylesheet"
+    />
+
+    <!-- Main CSS File -->
+    <link href="{% static 'users/assets/css/main.css' %}" rel="stylesheet" />
+    
+    <style>
+      /* is_authenticated code */
+      .user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.user-dropdown .avatar {
+  background-color: #dc3545; /* Red color matching theme */
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.user-dropdown .full-name {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.user-dropdown .dropdown-icon {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown .arrow.down {
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 150px;
+  display: none;
+  z-index: 1000;
+}
+
+.user-dropdown .dropdown-menu li {
+  padding: 8px 12px;
+}
+
+.user-dropdown .dropdown-menu li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+}
+
+.user-dropdown .dropdown-menu li:hover {
+  background-color: #f5f5f5;
+}
+
+.user-dropdown .dropdown-menu.show {
+  display: block;
+}
+    </style>
+
+    <!-- =======================================================
+  * Template Name: Yummy
+  * Template URL: https://bootstrapmade.com/yummy-bootstrap-restaurant-website-template/
+  * Updated: Aug 07 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+  </head>
+
+  <body class="index-page">
+    {% comment %} {% if user.is_authenticated and user.role == 'customer' %} {% endcomment %}
+  <!-- User logged in UI -->
+  {% comment %} <div class="user-dropdown">
+    <div class="avatar">{{ user.full_name|slice:":1" }}</div>
+    <span class="full-name">{{ user.full_name }}</span>
+    <div class="dropdown-icon">&#9662;</div>
+    <ul class="dropdown-menu">
+      <li><a href="{% url 'logout' %}">Logout</a></li>
+      <li><a href="{% url 'switch_account' %}">Switch Account</a></li>
+    </ul>
+  </div>
+{% else %}
+  <!-- Default Signup Button -->
+  <a class="btn-getstarted" href="{% url 'login_signup' %}">Signup</a>
+{% endif %} {% endcomment %}
+
+{% comment %} <script>
+  function toggleDropdown(el) {
+    el.classList.toggle('open');
+  }
+</script> {% endcomment %}
+<script>
+  function toggleDropdown(element) {
+    const menu = element.querySelector('.dropdown-menu');
+    menu.classList.toggle('show');
+  }
+
+  // Close dropdown when clicking elsewhere
+  document.addEventListener('click', function(event) {
+    const dropdowns = document.querySelectorAll('.user-dropdown');
+    dropdowns.forEach(function(dropdown) {
+      if (!dropdown.contains(event.target)) {
+        const menu = dropdown.querySelector('.dropdown-menu');
+        menu.classList.remove('show');
+      }
+    });
+  });
+</script>
+
+<header id="header" class="header d-flex align-items-center sticky-top">
+  <div class="container position-relative d-flex align-items-center justify-content-between">
+    <a href="{% url 'users:index' %}" class="logo d-flex align-items-center me-auto me-xl-0">
+      <h1 style="color: red" class="sitename">ZaykaZone</h1><span style="color: red">.</span>
+    </a>
+
+    <nav id="navmenu" class="navmenu">
+      <ul>
+        <li><a href="#hero" class="active">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#menu">Menu</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#chefs">Chefs</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+    </nav>
+
+    {% if user.is_authenticated and user.role == 'customer' %}
+    <div class="user-dropdown me-3" onclick="toggleDropdown(this)">
+      <div class="avatar">{{ user.full_name|slice:":1" }}</div>
+      <span class="full-name">{{ user.full_name }}</span>
+      <div class="dropdown-icon">
+        <i class="arrow down"></i>
+      </div>
+      <ul class="dropdown-menu">
+        <li><a href="{% url 'users:logout' %}">Logout</a></li>
+        <li><a href="{% url 'users:switch_account' %}">Switch Account</a></li>
+      </ul>
+    </div>
+  {% else %}
+    <a href="{% url 'users:login_signup' %}" class="btn btn-danger me-3">
+      <i class="bi bi-person-fill navbar-icon"></i> Sign In
+    </a>
+  {% endif %}
+  </div>
+</header>
+
+    <main class="main">
+      <!-- Hero Section -->
+      <section id="hero" class="hero section light-background">
+        <div class="container">
+          <div
+            class="row gy-4 justify-content-center justify-content-lg-between"
+          >
+            <div
+              class="col-lg-5 order-2 order-lg-1 d-flex flex-column justify-content-center"
+            >
+              <h1 data-aos="fade-up">Craving Something Delicious?</h1>
+              <p data-aos="fade-up" data-aos-delay="100">
+                ZaykaZone brings your favorite dishes right to your doorstep.
+                Order online and enjoy restaurant-style food from the comfort of
+                your home.
+              </p>
+              <div class="d-flex" data-aos="fade-up" data-aos-delay="200">
+                <a href="#book-a-table" class="btn-get-started"
+                  >Booka a Table</a
+                >
+                <a
+                  href="https://www.youtube.com/watch?v=Y7f98aduVJ8"
+                  class="glightbox btn-watch-video d-flex align-items-center"
+                  ><i class="bi bi-play-circle"></i><span>Watch Video</span></a
+                >
+              </div>
+            </div>
+            <div
+              class="col-lg-5 order-1 order-lg-2 hero-img"
+              data-aos="zoom-out"
+            >
+              <img
+                src="{% static 'users/assets/img/hero-img.png' %}"
+                class="img-fluid animated"
+                alt=""
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dining and Delivery Toggle with Slider Section -->
+      <section id="dining-delivery-toggle" class="py-5 bg-light">
+        <div class="container">
+          <!-- Toggle Buttons -->
+          <div class="d-flex justify-content-center gap-4 mb-4">
+            <button
+              class="btn btn-outline-danger active d-flex align-items-center gap-2"
+              id="diningBtn"
+              onclick="showDining()"
+            >
+              <img
+                src="{% static 'users/assets/img/30fa0a844f3ba82073e5f78c65c18b371616149662.avif' %}"
+                alt="#"
+                width="30"
+              />
+              Dining Out
+            </button>
+            <button
+              class="btn btn-outline-danger d-flex align-items-center gap-2"
+              id="deliveryBtn"
+              onclick="showDelivery()"
+            >
+              <img
+                src="{% static 'users/assets/img/246bbd71fbba420d5996452be3024d351616150055.webp' %}"
+                alt="#"
+                width="30"
+              />
+              Delivery
+            </button>
+          </div>
+
+          <!-- Dining Out Section -->
+          <div id="diningSection">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 class="fw-bold">Collections</h2>
+                <p class="text-muted">
+                  Explore curated lists of top restaurants, cafes, pubs, and
+                  bars in Ahmedabad, based on trends
+                </p>
+              </div>
+              <a href="#" class="text-danger fw-bold"
+                >All collections in Ahmedabad <i class="bi bi-chevron-right"></i
+              ></a>
+            </div>
+
+            <div class="position-relative">
+              <!-- Left Arrow -->
+              <button
+                class="btn btn-light rounded-circle shadow position-absolute start-0 top-50 translate-middle-y"
+                style="z-index: 3; transform: translate(-50%, -50%)"
+                onclick="slide(-1)"
+              >
+                <i class="bi bi-chevron-left"></i>
+              </button>
+
+              <!-- Slider Content -->
+              <div class="overflow-hidden">
+                <div
+                  class="d-flex slider"
+                  id="slider"
+                  style="transition: transform 0.5s ease; gap: 1rem"
+                >
+                  <!-- Card 1 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='spots' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/jason-leung-poI7DelFiVA-unsplash.jpg' %}"
+                        class="card-img"
+                        alt="Top Trending Spots"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          Top Trending Spots
+                        </h5>
+                        <small>31 Places</small>
+                      </div>
+                    </div>
+                  </a>
+
+                  <!-- Card 2 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='legendary' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/m-b-oJhuuCJrRCs-unsplash.jpg' %}"
+                        class="card-img"
+                        alt="Legendary Outlets"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          Legendary Outlets
+                        </h5>
+                        <small>16 Places</small>
+                      </div>
+                    </div>
+                  </a>
+
+                  <!-- Card 3 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='buffets' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/mufei-xu-yH18-oXg0z4-unsplash.jpg' %}"
+                        class="card-img"
+                        alt="Best Buffets In Town"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          Best Buffets In Town
+                        </h5>
+                        <small>25 Places</small>
+                      </div>
+                    </div>
+                  </a>
+
+                  <!-- Card 4 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='gujarati-thali' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/zoshua-colah-dncjnYtmWHo-unsplash.jpg' %}"
+                        class="card-img"
+                        alt="Gujarati Thalis"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          Gujarati Thalis
+                        </h5>
+                        <small>18 Places</small>
+                      </div>
+                    </div>
+                  </a>
+
+                  <!-- Card 5 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='asian-restaurant' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/claire-zhu-Q8GPMX3MKfs-unsplash.jpg' %}"
+                        class="card-img"
+                        alt="Asian Restaurants"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          Asian Restaurants
+                        </h5>
+                        <small>18 Places</small>
+                      </div>
+                    </div>
+                  </a>
+
+                  <!-- Card 6 -->
+                  <a
+                    href="{% url 'restaurants:cuisine_page' slug='rollins-with-dosas' %}"
+                    class="text-decoration-none"
+                  >
+                    <div
+                      class="card border-0 text-white position-relative overflow-hidden"
+                      style="min-width: 250px; border-radius: 15px"
+                    >
+                      <img
+                        src="{% static 'users/assets/img/istockphoto-902933510-612x612.webp' %}"
+                        class="card-img"
+                        alt="Rollin' with Dosas"
+                        style="
+                          height: 250px;
+                          object-fit: cover;
+                          border-radius: 15px;
+                        "
+                      />
+                      <div
+                        class="position-absolute bottom-0 start-0 p-3 w-100"
+                        style="
+                          background: linear-gradient(
+                            to top,
+                            rgba(0, 0, 0, 0.6),
+                            transparent
+                          );
+                        "
+                      >
+                        <h5 class="mb-0" style="color: white">
+                          'Rollin' with Dosas
+                        </h5>
+                        <small>18 Places</small>
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Right Arrow -->
+              <button
+                class="btn btn-light rounded-circle shadow position-absolute end-0 top-50 translate-middle-y"
+                style="z-index: 3; transform: translate(50%, -50%)"
+                onclick="slide(1)"
+              >
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- /Hero Section -->
+
+      <!-- Why Us Section -->
+      <section id="why-us" class="why-us section light-background">
+        <div class="container">
+          <div class="row gy-4">
+            <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
+              <div class="why-box">
+                <h3>Why Choose Yummy</h3>
+                <p>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Duis aute irure dolor in reprehenderit Asperiores dolores sed
+                  et. Tenetur quia eos. Autem tempore quibusdam vel
+                  necessitatibus optio ad corporis.
+                </p>
+                <div class="text-center">
+                  <a href="#" class="more-btn"
+                    ><span>Learn More</span> <i class="bi bi-chevron-right"></i
+                  ></a>
+                </div>
+              </div>
+            </div>
+            <!-- End Why Box -->
+
+            <div class="col-lg-8 d-flex align-items-stretch">
+              <div class="row gy-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-xl-4">
+                  <div
+                    class="icon-box d-flex flex-column justify-content-center align-items-center"
+                  >
+                    <i class="bi bi-clipboard-data"></i>
+                    <h4>Corporis voluptates officia eiusmod</h4>
+                    <p>
+                      Consequuntur sunt aut quasi enim aliquam quae harum
+                      pariatur laboris nisi ut aliquip
+                    </p>
+                  </div>
+                </div>
+                <!-- End Icon Box -->
+
+                <div class="col-xl-4" data-aos="fade-up" data-aos-delay="300">
+                  <div
+                    class="icon-box d-flex flex-column justify-content-center align-items-center"
+                  >
+                    <i class="bi bi-gem"></i>
+                    <h4>Ullamco laboris ladore lore pan</h4>
+                    <p>
+                      Excepteur sint occaecat cupidatat non proident, sunt in
+                      culpa qui officia deserunt
+                    </p>
+                  </div>
+                </div>
+                <!-- End Icon Box -->
+
+                <div class="col-xl-4" data-aos="fade-up" data-aos-delay="400">
+                  <div
+                    class="icon-box d-flex flex-column justify-content-center align-items-center"
+                  >
+                    <i class="bi bi-inboxes"></i>
+                    <h4>Labore consequatur incidid dolore</h4>
+                    <p>
+                      Aut suscipit aut cum nemo deleniti aut omnis. Doloribus ut
+                      maiores omnis facere
+                    </p>
+                  </div>
+                </div>
+                <!-- End Icon Box -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- /Why Us Section -->
+
+      <!-- Stats Section -->
+      <section id="stats" class="stats section dark-background">
+        <img
+          src="{% static 'users/assets/img/stats-bg.jpg' %}"
+          alt=""
+          data-aos="fade-in"
+        />
+
+        <div
+          class="container position-relative"
+          data-aos="fade-up"
+          data-aos-delay="100"
+        >
+          <div class="row gy-4">
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-item text-center w-100 h-100">
+                <span
+                  data-purecounter-start="0"
+                  data-purecounter-end="232"
+                  data-purecounter-duration="1"
+                  class="purecounter"
+                ></span>
+                <p>Clients</p>
+              </div>
+            </div>
+            <!-- End Stats Item -->
+
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-item text-center w-100 h-100">
+                <span
+                  data-purecounter-start="0"
+                  data-purecounter-end="521"
+                  data-purecounter-duration="1"
+                  class="purecounter"
+                ></span>
+                <p>Projects</p>
+              </div>
+            </div>
+            <!-- End Stats Item -->
+
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-item text-center w-100 h-100">
+                <span
+                  data-purecounter-start="0"
+                  data-purecounter-end="1453"
+                  data-purecounter-duration="1"
+                  class="purecounter"
+                ></span>
+                <p>Hours Of Support</p>
+              </div>
+            </div>
+            <!-- End Stats Item -->
+
+            <div class="col-lg-3 col-md-6">
+              <div class="stats-item text-center w-100 h-100">
+                <span
+                  data-purecounter-start="0"
+                  data-purecounter-end="32"
+                  data-purecounter-duration="1"
+                  class="purecounter"
+                ></span>
+                <p>Workers</p>
+              </div>
+            </div>
+            <!-- End Stats Item -->
+          </div>
+        </div>
+      </section>
+      <!-- /Stats Section -->
+
+      <!-- Menu Section -->
+      <section id="menu" class="menu section">
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+          <h2>Our Menu</h2>
+          <p>
+            <span>Check Our</span>
+            <span class="description-title">Yummy Menu</span>
+          </p>
+        </div>
+        <!-- End Section Title -->
+
+        <div class="container">
+          <ul
+            class="nav nav-tabs d-flex justify-content-center"
+            data-aos="fade-up"
+            data-aos-delay="100"
+          >
+            <li class="nav-item">
+              <a
+                class="nav-link active show"
+                data-bs-toggle="tab"
+                data-bs-target="#menu-starters"
+              >
+                <h4>Starters</h4>
+              </a>
+            </li>
+            <!-- End tab nav item -->
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                data-bs-toggle="tab"
+                data-bs-target="#menu-breakfast"
+              >
+                <h4>Breakfast</h4> </a
+              ><!-- End tab nav item -->
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                data-bs-toggle="tab"
+                data-bs-target="#menu-lunch"
+              >
+                <h4>Lunch</h4>
+              </a>
+            </li>
+            <!-- End tab nav item -->
+
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                data-bs-toggle="tab"
+                data-bs-target="#menu-dinner"
+              >
+                <h4>Dinner</h4>
+              </a>
+            </li>
+            <!-- End tab nav item -->
+          </ul>
+
+          <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
+            <div class="tab-pane fade active show" id="menu-starters">
+              <div class="tab-header text-center">
+                <p>Menu</p>
+                <h3>Starters</h3>
+              </div>
+
+              <div class="row gy-5">
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Magnam Tiste</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$5.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Aut Luia</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$14.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Est Eligendi</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$8.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Laboriosam Direva</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$9.95</p>
+                </div>
+                <!-- Menu Item -->
+              </div>
+            </div>
+            <!-- End Starter Menu Content -->
+
+            <div class="tab-pane fade" id="menu-breakfast">
+              <div class="tab-header text-center">
+                <p>Menu</p>
+                <h3>Breakfast</h3>
+              </div>
+
+              <div class="row gy-5">
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Magnam Tiste</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$5.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Aut Luia</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$14.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Est Eligendi</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$8.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Laboriosam Direva</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$9.95</p>
+                </div>
+                <!-- Menu Item -->
+              </div>
+            </div>
+            <!-- End Breakfast Menu Content -->
+
+            <div class="tab-pane fade" id="menu-lunch">
+              <div class="tab-header text-center">
+                <p>Menu</p>
+                <h3>Lunch</h3>
+              </div>
+
+              <div class="row gy-5">
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Magnam Tiste</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$5.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Aut Luia</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$14.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Est Eligendi</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$8.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Laboriosam Direva</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$9.95</p>
+                </div>
+                <!-- Menu Item -->
+              </div>
+            </div>
+            <!-- End Lunch Menu Content -->
+
+            <div class="tab-pane fade" id="menu-dinner">
+              <div class="tab-header text-center">
+                <p>Menu</p>
+                <h3>Dinner</h3>
+              </div>
+
+              <div class="row gy-5">
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-1.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Magnam Tiste</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$5.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-2.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Aut Luia</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$14.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-3.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Est Eligendi</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$8.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-4.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-5.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Eos Luibusdam</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$12.95</p>
+                </div>
+                <!-- Menu Item -->
+
+                <div class="col-lg-4 menu-item">
+                  <a
+                    href="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                    class="glightbox"
+                    ><img
+                      src="{% static 'users/assets/img/menu/menu-item-6.png' %}"
+                      class="menu-img img-fluid"
+                      alt=""
+                  /></a>
+                  <h4>Laboriosam Direva</h4>
+                  <p class="ingredients">
+                    Lorem, deren, trataro, filede, nerada
+                  </p>
+                  <p class="price">$9.95</p>
+                </div>
+                <!-- Menu Item -->
+              </div>
+            </div>
+            <!-- End Dinner Menu Content -->
+          </div>
+        </div>
+      </section>
+      <!-- /Menu Section -->
+
+      <!-- Events Section -->
+      <section id="events" class="events section">
+        <div class="container-fluid" data-aos="fade-up" data-aos-delay="100">
+          <div class="swiper init-swiper">
+            <script type="application/json" class="swiper-config">
+              {
+                "loop": true,
+                "speed": 600,
+                "autoplay": {
+                  "delay": 5000
+                },
+                "slidesPerView": "auto",
+                "pagination": {
+                  "el": ".swiper-pagination",
+                  "type": "bullets",
+                  "clickable": true
+                },
+                "breakpoints": {
+                  "320": {
+                    "slidesPerView": 1,
+                    "spaceBetween": 40
+                  },
+                  "1200": {
+                    "slidesPerView": 3,
+                    "spaceBetween": 1
+                  }
+                }
+              }
+            </script>
+            <div class="swiper-wrapper">
+              <div
+                class="swiper-slide event-item d-flex flex-column justify-content-end"
+                style="
+                  background-image: url('{% static 'users/assets/img/events-1.jpg' %}');
+                "
+              >
+                <h3>Custom Parties</h3>
+                <div class="price align-self-start">$99</div>
+                <p class="description">
+                  Quo corporis voluptas ea ad. Consectetur inventore sapiente
+                  ipsum voluptas eos omnis facere. Enim facilis veritatis id est
+                  rem repudiandae nulla expedita quas.
+                </p>
+              </div>
+              <!-- End Event item -->
+
+              <div
+                class="swiper-slide event-item d-flex flex-column justify-content-end"
+                style="
+                  background-image: url('{% static 'users/assets/img/events-2.jpg' %}');
+                "
+              >
+                <h3>Private Parties</h3>
+                <div class="price align-self-start">$289</div>
+                <p class="description">
+                  In delectus sint qui et enim. Et ab repudiandae inventore
+                  quaerat doloribus. Facere nemo vero est ut dolores ea
+                  assumenda et. Delectus saepe accusamus aspernatur.
+                </p>
+              </div>
+              <!-- End Event item -->
+
+              <div
+                class="swiper-slide event-item d-flex flex-column justify-content-end"
+                style="
+                  background-image: url('{% static 'users/assets/img/events-3.jpg' %}');
+                "
+              >
+                <h3>Birthday Parties</h3>
+                <div class="price align-self-start">$499</div>
+                <p class="description">
+                  Laborum aperiam atque omnis minus omnis est qui assumenda
+                  quos. Quis id sit quibusdam. Esse quisquam ducimus officia
+                  ipsum ut quibusdam maxime. Non enim perspiciatis.
+                </p>
+              </div>
+              <!-- End Event item -->
+
+              <div
+                class="swiper-slide event-item d-flex flex-column justify-content-end"
+                style="
+                  background-image: url('{% static 'users/assets/img/events-4.jpg' %}');
+                "
+              >
+                <h3>Wedding Parties</h3>
+                <div class="price align-self-start">$899</div>
+                <p class="description">
+                  Laborum aperiam atque omnis minus omnis est qui assumenda
+                  quos. Quis id sit quibusdam. Esse quisquam ducimus officia
+                  ipsum ut quibusdam maxime. Non enim perspiciatis.
+                </p>
+              </div>
+              <!-- End Event item -->
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </section>
+      <!-- /Events Section -->
+
+      <!-- Chefs Section -->
+      <section id="chefs" class="chefs section">
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+          <h2>Top Chefs of ZaykaZone</h2>
+          <p>
+            <span>Our</span>
+            <span class="description-title">Proffesional Chefs<br /></span>
+          </p>
+        </div>
+        <!-- End Section Title -->
+
+        <div class="container">
+          <div class="row gy-4">
+            <div
+              class="col-lg-4 d-flex align-items-stretch"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div class="team-member">
+                <div class="member-img">
+                  <img
+                    src="{% static 'users/assets/img/chefs/chefs-1.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                  />
+                  <div class="social">
+                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                    <a href=""><i class="bi bi-facebook"></i></a>
+                    <a href=""><i class="bi bi-instagram"></i></a>
+                    <a href=""><i class="bi bi-linkedin"></i></a>
+                  </div>
+                </div>
+                <div class="member-info">
+                  <h4>Chef Harpal Singh Sokhi</h4>
+                  <span>Master Chef</span>
+                  <p>
+                    Chef Harpal Singh Sokhi is a renowned Indian chef, TV
+                    personality, and entrepreneur, best known for his energetic
+                    and humorous style of cooking. He is recognized for his show
+                    "Turban Tadka" and his signature catchphrase "Namak Shamak,"
+                    and has also authored several cookbooks.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- End Chef Team Member -->
+
+            <div
+              class="col-lg-4 d-flex align-items-stretch"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div class="team-member">
+                <div class="member-img">
+                  <img
+                    src="{% static 'users/assets/img/chefs/chefs-2.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                  />
+                  <div class="social">
+                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                    <a href=""><i class="bi bi-facebook"></i></a>
+                    <a href=""><i class="bi bi-instagram"></i></a>
+                    <a href=""><i class="bi bi-linkedin"></i></a>
+                  </div>
+                </div>
+                <div class="member-info">
+                  <h4>Garima Arora</h4>
+                  <span>female chefs</span>
+                  <p>
+                    Garima Arora is an Indian chef known for her modern Indian
+                    fine dining restaurant, Gaa, in Bangkok. She is the first
+                    Indian woman to win a Michelin star and has been recognized
+                    as Asia's Best Female Chef.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- End Chef Team Member -->
+
+            <div
+              class="col-lg-4 d-flex align-items-stretch"
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
+              <div class="team-member">
+                <div class="member-img">
+                  <img
+                    src="{% static 'users/assets/img/chefs/chefs-3.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                  />
+                  <div class="social">
+                    <a href=""><i class="bi bi-twitter-x"></i></a>
+                    <a href=""><i class="bi bi-facebook"></i></a>
+                    <a href=""><i class="bi bi-instagram"></i></a>
+                    <a href=""><i class="bi bi-linkedin"></i></a>
+                  </div>
+                </div>
+                <div class="member-info">
+                  <h4>Chef Sanjeev Kapoor</h4>
+                  <span>Indian cuisine expertise</span>
+                  <p>
+                    Chef Sanjeev Kapoor is a globally recognized culinary icon,
+                    entrepreneur, and humanitarian, celebrated for his
+                    approachable style and ability to simplify complex dishes on
+                    www.sanjeevkapoor.com.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- End Chef Team Member -->
+          </div>
+        </div>
+      </section>
+      <!-- /Chefs Section -->
+
+      <!-- Book A Table Section -->
+      <section id="book-a-table" class="book-a-table section">
+       <!-- Section Title -->
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Book A Table</h2>
+    <p>
+      <span>Book Your</span>
+      <span class="description-title">Stay With Us<br /></span>
+    </p>
+  </div>
+
+  <div class="container">
+    <div class="row g-0" data-aos="fade-up" data-aos-delay="100">
+      <div
+        class="col-lg-4 reservation-img"
+        style="background-image: url('{% static 'users/assets/img/reservation.jpg' %}');"
+      ></div>
+
+      <div class="col-lg-8 d-flex align-items-center reservation-form-bg" data-aos="fade-up" data-aos-delay="200">
+        {% if restaurant %}
+        <form
+          action="{% url 'restaurants:book_table_index' restaurant.id %}"
+          method="post"
+          role="form"
+          class="php-email-form"
+        >
+          {% csrf_token %}
+
+          <div class="row gy-4">
+            <div class="col-lg-4 col-md-6">
+              <input type="text" name="name" class="form-control" id="name" placeholder="Your Name" required
+                     value="{{ form.name.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <input type="email" name="email" class="form-control" id="email" placeholder="Your Email" required
+                     value="{{ form.email.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <input type="text" name="phone" class="form-control" id="phone" placeholder="Your Phone" required
+                     value="{{ form.phone.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <input type="date" name="date" class="form-control" id="date" required
+                     value="{{ form.date.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <input type="time" name="time" class="form-control" id="time" required
+                     value="{{ form.time.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <input type="number" name="no_of_guests" class="form-control" id="guests" placeholder="No. of Guests"
+                     required value="{{ form.no_of_guests.value|default_if_none:'' }}" />
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+              <select name="meal_type" class="form-control" id="meal_type" required>
+                <option value="">Select Meal Type</option>
+                <option value="lunch" {% if form.meal_type.value == 'lunch' %}selected{% endif %}>Lunch</option>
+                <option value="dinner" {% if form.meal_type.value == 'dinner' %}selected{% endif %}>Dinner</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mt-3">
+            <textarea class="form-control" name="message" rows="5" placeholder="Message">{{ form.message.value|default_if_none:'' }}</textarea>
+          </div>
+
+          <div class="text-center mt-3">
+            <button type="submit">Book a Table</button>
+          </div>
+        </form>
+        {% else %}
+        <p>Booking is currently unavailable.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+
+      <script>
+        document
+          .getElementById("bookTableForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            fetch("{% url 'restaurants:book_table_index' restaurant.id %}", {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+              },
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  document.querySelector(".sent-message").style.display =
+                    "block";
+                } else {
+                  document.querySelector(".error-message").innerText =
+                    data.error || "Something went wrong";
+                }
+              })
+              .catch((error) => {
+                document.querySelector(".error-message").innerText =
+                  "Error: " + error;
+              });
+          });
+      </script>
+      <!-- /Book A Table Section -->
+
+      <!-- Gallery Section -->
+      <section id="gallery" class="gallery section light-background">
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+          <h2>Gallery</h2>
+          <p>
+            <span>Check</span>
+            <span class="description-title">Our Gallery</span>
+          </p>
+        </div>
+        <!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+          <div class="swiper init-swiper">
+            <script type="application/json" class="swiper-config">
+              {
+                "loop": true,
+                "speed": 600,
+                "autoplay": {
+                  "delay": 5000
+                },
+                "slidesPerView": "auto",
+                "centeredSlides": true,
+                "pagination": {
+                  "el": ".swiper-pagination",
+                  "type": "bullets",
+                  "clickable": true
+                },
+                "breakpoints": {
+                  "320": {
+                    "slidesPerView": 1,
+                    "spaceBetween": 0
+                  },
+                  "768": {
+                    "slidesPerView": 3,
+                    "spaceBetween": 20
+                  },
+                  "1200": {
+                    "slidesPerView": 5,
+                    "spaceBetween": 20
+                  }
+                }
+              }
+            </script>
+            <div class="swiper-wrapper align-items-center">
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-1.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-1.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-2.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-2.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-3.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-3.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-4.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-4.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-5.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-5.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-6.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-6.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-7.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-7.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+              <div class="swiper-slide">
+                <a
+                  class="glightbox"
+                  data-gallery="images-gallery"
+                  href="{% static 'users/assets/img/gallery/gallery-8.jpg' %}"
+                  ><img
+                    src="{% static 'users/assets/img/gallery/gallery-8.jpg' %}"
+                    class="img-fluid"
+                    alt=""
+                /></a>
+              </div>
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
+        </div>
+      </section>
+      <!-- /Gallery Section -->
+
+      <!-- Contact Section -->
+      <section id="contact" class="contact section">
+        <!-- Section Title -->
+        <div class="container section-title" data-aos="fade-up">
+          <h2>Contact</h2>
+          <p>
+            <span>Need Help?</span>
+            <span class="description-title">Contact Us</span>
+          </p>
+        </div>
+        <!-- End Section Title -->
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+          <div class="mb-5">
+            <iframe
+              style="width: 100%; height: 400px"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12097.433213460943!2d-74.0062269!3d40.7101282!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0xb89d1fe6bc499443!2sDowntown+Conference+Center!5e0!3m2!1smk!2sbg!4v1539943755621"
+              frameborder="0"
+              allowfullscreen=""
+            ></iframe>
+          </div>
+          <!-- End Google Maps -->
+
+          <div class="row gy-4">
+            <div class="col-md-6">
+              <div
+                class="info-item d-flex align-items-center"
+                data-aos="fade-up"
+                data-aos-delay="200"
+              >
+                <i class="icon bi bi-geo-alt flex-shrink-0"></i>
+                <div>
+                  <h3>Address</h3>
+                  <p>A108 Adam Street, New York, NY 535022</p>
+                </div>
+              </div>
+            </div>
+            <!-- End Info Item -->
+
+            <div class="col-md-6">
+              <div
+                class="info-item d-flex align-items-center"
+                data-aos="fade-up"
+                data-aos-delay="300"
+              >
+                <i class="icon bi bi-telephone flex-shrink-0"></i>
+                <div>
+                  <h3>Call Us</h3>
+                  <p>+1 5589 55488 55</p>
+                </div>
+              </div>
+            </div>
+            <!-- End Info Item -->
+
+            <div class="col-md-6">
+              <div
+                class="info-item d-flex align-items-center"
+                data-aos="fade-up"
+                data-aos-delay="400"
+              >
+                <i class="icon bi bi-envelope flex-shrink-0"></i>
+                <div>
+                  <h3>Email Us</h3>
+                  <p>info@example.com</p>
+                </div>
+              </div>
+            </div>
+            <!-- End Info Item -->
+
+            <div class="col-md-6">
+              <div
+                class="info-item d-flex align-items-center"
+                data-aos="fade-up"
+                data-aos-delay="500"
+              >
+                <i class="icon bi bi-clock flex-shrink-0"></i>
+                <div>
+                  <h3>Opening Hours<br /></h3>
+                  <p>
+                    <strong>Mon-Sat:</strong> 11AM - 23PM;
+                    <strong>Sunday:</strong> Closed
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- End Info Item -->
+          </div>
+
+          <form
+            id="contactForm"
+            method="post"
+            class="php-email-form"
+            data-aos="fade-up"
+            data-aos-delay="600"
+          >
+            {% csrf_token %}
+            <div class="row gy-4">
+              <div class="col-md-6">
+                <input
+                  type="text"
+                  name="name"
+                  class="form-control"
+                  placeholder="Your Name"
+                  required=""
+                />
+              </div>
+
+              <div class="col-md-6">
+                <input
+                  type="email"
+                  class="form-control"
+                  name="email"
+                  placeholder="Your Email"
+                  required=""
+                />
+              </div>
+
+              <div class="col-md-12">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="subject"
+                  placeholder="Subject"
+                  required=""
+                />
+              </div>
+
+              <div class="col-md-12">
+                <textarea
+                  class="form-control"
+                  name="message"
+                  rows="6"
+                  placeholder="Message"
+                  required=""
+                ></textarea>
+              </div>
+
+              <div class="col-md-12 text-center">
+                <div class="loading">Loading</div>
+                <div class="error-message" style="color: red"></div>
+                <div class="sent-message" style="display: none">
+                  Your message has been sent. Thank you!
+                </div>
+
+                <button type="submit">Send Message</button>
+              </div>
+            </div>
+          </form>
+          <!-- End Contact Form -->
+        </div>
+      </section>
+      <!-- /Contact Section -->
+    </main>
+
+    <script>
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const form = e.target;
+          const formData = new FormData(form);
+
+          fetch("{% url 'users:contact_submit' %}", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": formData.get("csrfmiddlewaretoken"),
+            },
+            body: formData,
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                document.querySelector(
+                  "#contactForm .sent-message"
+                ).style.display = "block";
+              } else {
+                document.querySelector(
+                  "#contactForm .error-message"
+                ).innerText = data.error || "Something went wrong";
+              }
+            })
+            .catch((error) => {
+              document.querySelector("#contactForm .error-message").innerText =
+                "Error: " + error;
+            });
+        });
+    </script>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials section light-background">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>TESTIMONIALS</h2>
+        <p>
+          What Are They <span class="description-title">Saying About Us</span>
+        </p>
+      </div>
+      <!-- End Section Title -->
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              }
+            }
+          </script>
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="row gy-4 justify-content-center">
+                  <div class="col-lg-6">
+                    <div class="testimonial-content">
+                      <p>
+                        <i class="bi bi-quote quote-icon-left"></i>
+                        <span
+                          >"ZaykaZone has completely changed how I order food.
+                          The app is fast, the delivery is on time, and the
+                          dishes taste just like they do in the
+                          restaurant!"</span
+                        >
+                        <i class="bi bi-quote quote-icon-right"></i>
+                      </p>
+                      <h3>Aarav Mehta</h3>
+                      <h4>Food Blogger</h4>
+                      <div class="stars">
+                        <i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-2 text-center">
+                    <img
+                      src="{% static 'users/assets/img/testimonials/testimonials-1.jpg' %}"
+                      class="img-fluid testimonial-img"
+                      alt=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="row gy-4 justify-content-center">
+                  <div class="col-lg-6">
+                    <div class="testimonial-content">
+                      <p>
+                        <i class="bi bi-quote quote-icon-left"></i>
+                        <span
+                          >"I discovered so many hidden gems in my city thanks
+                          to ZaykaZone. The photos, menus, and quick filters
+                          make it super easy to decide what to eat."</span
+                        >
+                        <i class="bi bi-quote quote-icon-right"></i>
+                      </p>
+                      <h3>Ritika Sharma</h3>
+                      <h4>Marketing Executive</h4>
+                      <div class="stars">
+                        <i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-2 text-center">
+                    <img
+                      src="{% static 'users/assets/img/testimonials/testimonials-2.jpg' %}"
+                      class="img-fluid testimonial-img"
+                      alt=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="row gy-4 justify-content-center">
+                  <div class="col-lg-6">
+                    <div class="testimonial-content">
+                      <p>
+                        <i class="bi bi-quote quote-icon-left"></i>
+                        <span
+                          >"As someone who orders food almost daily, ZaykaZone
+                          is my go-to platform. It's reliable, user-friendly,
+                          and has never disappointed me!"</span
+                        >
+                        <i class="bi bi-quote quote-icon-right"></i>
+                      </p>
+                      <h3>Rahul Bansal</h3>
+                      <h4>Software Developer</h4>
+                      <div class="stars">
+                        <i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-2 text-center">
+                    <img
+                      src="{% static 'users/assets/img/testimonials/testimonials-3.jpg' %}"
+                      class="img-fluid testimonial-img"
+                      alt=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <div class="row gy-4 justify-content-center">
+                  <div class="col-lg-6">
+                    <div class="testimonial-content">
+                      <p>
+                        <i class="bi bi-quote quote-icon-left"></i>
+                        <span
+                          >"From gourmet to street-style food, ZaykaZone covers
+                          it all. I love how personalized the recommendations
+                          are — it feels like it knows my cravings!"</span
+                        >
+                        <i class="bi bi-quote quote-icon-right"></i>
+                      </p>
+                      <h3>Meena Thakur</h3>
+                      <h4>Home Chef</h4>
+                      <div class="stars">
+                        <i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i
+                        ><i class="bi bi-star-fill"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-2 text-center">
+                    <img
+                      src="{% static 'users/assets/img/testimonials/testimonials-4.jpg' %}"
+                      class="img-fluid testimonial-img"
+                      alt=""
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- End testimonial item -->
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+      </div>
+    </section>
+    <!-- /Testimonials Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>About Us<br /></h2>
+        <p>
+          <span>Learn More</span>
+          <span class="description-title">About Us</span>
+        </p>
+      </div>
+      <!-- End Section Title -->
+
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-7" data-aos="fade-up" data-aos-delay="100">
+            <img
+              src="{% static 'users/assets/img/about.jpg' %}"
+              class="img-fluid mb-4"
+              alt=""
+            />
+            <div class="book-a-table">
+              <h3>Book a Table</h3>
+              <p>+1 5589 55488 55</p>
+            </div>
+          </div>
+          <div class="col-lg-5" data-aos="fade-up" data-aos-delay="250">
+            <div class="content ps-0 ps-lg-5">
+              <p class="fst-italic">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              </p>
+              <ul>
+                <li>
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span
+                    >Ullamco laboris nisi ut aliquip ex ea commodo
+                    consequat.</span
+                  >
+                </li>
+                <li>
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span
+                    >Duis aute irure dolor in reprehenderit in voluptate
+                    velit.</span
+                  >
+                </li>
+                <li>
+                  <i class="bi bi-check-circle-fill"></i>
+                  <span
+                    >Ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    Duis aute irure dolor in reprehenderit in voluptate trideta
+                    storacalaperda mastiro dolore eu fugiat nulla
+                    pariatur.</span
+                  >
+                </li>
+              </ul>
+              <p>
+                Ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis
+                aute irure dolor in reprehenderit in voluptate velit esse cillum
+                dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                cupidatat non proident
+              </p>
+
+              <div class="position-relative mt-4">
+                <img
+                  src="{% static 'users/assets/img/about-2.jpg' %}"
+                  class="img-fluid"
+                  alt=""
+                />
+                <a
+                  href="https://www.youtube.com/watch?v=Y7f98aduVJ8"
+                  class="glightbox pulsating-play-btn"
+                ></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- /About Section -->
+
+    <footer id="footer" class="footer dark-background">
+      <div class="container">
+        <div class="row gy-3">
+          <div class="col-lg-3 col-md-6 d-flex">
+            <i class="bi bi-geo-alt icon"></i>
+            <div class="address">
+              <h4>Address</h4>
+              <p>A-204 Safal Building,Sg.highway</p>
+              <p>Ahmedabad, GJ 380001</p>
+              <p></p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 d-flex">
+            <i class="bi bi-telephone icon"></i>
+            <div>
+              <h4>Contact</h4>
+              <p>
+                <strong>Phone:</strong> <span>+1 5589 55488 55</span><br />
+                <strong>Email:</strong> <span>info@example.com</span><br />
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6 d-flex">
+            <i class="bi bi-clock icon"></i>
+            <div>
+              <h4>Opening Hours</h4>
+              <p>
+                <strong>Mon-Sat:</strong> <span>11AM - 23PM</span><br />
+                <strong>Sunday</strong>: <span>Closed</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="col-lg-3 col-md-6">
+            <h4>Follow Us</h4>
+            <div class="social-links d-flex">
+              <a href="#" class="twitter"><i class="bi bi-twitter-x"></i></a>
+              <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+              <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container copyright text-center mt-4">
+        <p>
+          © <span>Copyright</span>
+          <strong class="px-1 sitename">ZaykaZone.</strong>
+          <span>All Rights Reserved</span>
+        </p>
+        <div class="credits">
+          <!-- All the links in the footer should remain intact. -->
+          <!-- You can delete the links only if you've purchased the pro version. -->
+          <!-- Licensing information: https://bootstrapmade.com/license/ -->
+          <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
+          Designed by
+          <a href="https://bootstrapmade.com/">BootstrapMade</a> Distributed by
+          <a href="https://themewagon.com">ThemeWagon</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scroll Top -->
+    <a
+      href="#"
+      id="scroll-top"
+      class="scroll-top d-flex align-items-center justify-content-center"
+      ><i class="bi bi-arrow-up-short"></i
+    ></a>
+
+    <!-- Preloader -->
+    <div id="preloader"></div>
+
+    <!-- Vendor JS Files -->
+    <script src="{% static 'users/assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'users/assets/vendor/php-email-form/validate.js' %}"></script>
+    <script src="{% static 'users/assets/vendor/aos/aos.js' %}"></script>
+    <script src="{% static 'users/assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+    <script src="{% static 'users/assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+    <script src="{% static 'users/assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  
+
+
+    <!-- Main JS File -->
+    <script src="{% static 'users/assets/js/main.js' %}"></script>
+  </body>
+</html>

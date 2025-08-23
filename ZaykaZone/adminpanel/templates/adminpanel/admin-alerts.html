@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alerts - Restaurant Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", "Inter", system-ui, sans-serif;
+    }
+
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      z-index: 100;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background-color: #4169e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+      margin-right: 12px;
+    }
+
+    .brand-name {
+      font-weight: 600;
+      font-size: 18px;
+      background: linear-gradient(90deg, #4169e1, #9370db);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .search-bar {
+      background-color: #f6f8ff;
+      border-radius: 20px;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      width: 250px;
+    }
+
+    .search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      width: 100%;
+      color: #1a2542;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4169e1, #1e88e5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Alert Icon in Header */
+    .alert-icon {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #f6f8ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8a94a6;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .alert-icon:hover {
+      background-color: #eef2ff;
+      color: #4169e1;
+    }
+
+    .alert-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: #ff6b6b;
+      color: white;
+      font-size: 10px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Dark Sidebar Styles */
+    .sidebar {
+      width: 80px;
+      background-color: #1a2542;
+      background: linear-gradient(180deg, #0f172a, #1a2542);
+      padding: 90px 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2);
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      z-index: 50;
+      overflow-x: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar:hover {
+      width: 250px;
+      align-items: flex-start;
+      padding-left: 15px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      width: 85%;
+      height: 60px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      color: #8a94a6;
+      text-decoration: none;
+      transition: all 0.3s;
+      white-space: nowrap;
+      padding: 0 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-icon {
+      font-size: 20px;
+      min-width: 24px;
+      text-align: center;
+      transition: color 0.3s;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .sidebar:hover .nav-icon {
+      justify-content: flex-start;
+      width: auto;
+      margin-right: 14px;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .nav-label {
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar:hover .nav-label {
+      opacity: 1;
+    }
+
+    /* Active state styling */
+    .nav-item.active {
+      background-color: rgba(65, 105, 225, 0.2);
+      color: white;
+      font-weight: 500;
+    }
+
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background-color: #4169e1;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .badge {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      background-color: #ff6b6b;
+      color: white;
+      font-size: 10px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar:hover .badge {
+      opacity: 1;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 90px 30px 30px 130px;
+      transition: padding-left 0.3s ease;
+    }
+
+    .sidebar:hover ~ .main-content {
+      padding-left: 270px;
+    }
+
+    /* Alerts Page Specific Styles */
+    .alerts-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .alerts-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a2542;
+    }
+
+    .alerts-subtitle {
+      font-size: 15px;
+      color: #8a94a6;
+      margin-top: 5px;
+    }
+
+    .alert-filters {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      border-radius: 20px;
+      background-color: #f0f5ff;
+      color: #4169e1;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-btn.active {
+      background-color: #4169e1;
+      color: white;
+    }
+
+    .filter-btn:hover:not(.active) {
+      background-color: #e0e8ff;
+    }
+
+    .filter-btn i {
+      font-size: 14px;
+    }
+
+    .alert-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mark-read-btn {
+      background-color: #e0e8ff;
+      color: #4169e1;
+      border: none;
+    }
+
+    .mark-read-btn:hover {
+      background-color: #d0dcff;
+    }
+
+    .delete-all-btn {
+      background-color: #fff0f0;
+      color: #ff6b6b;
+      border: none;
+    }
+
+    .delete-all-btn:hover {
+      background-color: #ffe0e0;
+    }
+
+    /* Alert Cards */
+    .alerts-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .alert-card {
+      background-color: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 20px;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .alert-card.unread {
+      border-left: 4px solid #4169e1;
+    }
+
+    .alert-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-icon-container {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .alert-info {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a2542;
+      margin-bottom: 8px;
+    }
+
+    .alert-description {
+      font-size: 15px;
+      color: #5a6a85;
+      margin-bottom: 15px;
+      line-height: 1.5;
+    }
+
+    .alert-meta {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: #8a94a6;
+      font-size: 14px;
+    }
+
+    .alert-time {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .alert-category {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background-color: #f0f5ff;
+      color: #4169e1;
+    }
+
+    .alert-actions-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .alert-action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      background-color: #f8f9fa;
+      color: #5a6a85;
+    }
+
+    .alert-action-btn:hover {
+      background-color: #f0f5ff;
+      color: #4169e1;
+    }
+
+    .delete-btn:hover {
+      background-color: #fff0f0;
+      color: #ff6b6b;
+    }
+
+    .priority-high .alert-icon-container {
+      background-color: rgba(255, 107, 107, 0.15);
+      color: #ff6b6b;
+    }
+
+    .priority-medium .alert-icon-container {
+      background-color: rgba(255, 152, 0, 0.15);
+      color: #ff9800;
+    }
+
+    .priority-low .alert-icon-container {
+      background-color: rgba(67, 160, 71, 0.15);
+      color: #43a047;
+    }
+
+    .priority-system .alert-icon-container {
+      background-color: rgba(65, 105, 225, 0.15);
+      color: #4169e1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .header-actions {
+        gap: 10px;
+      }
+      
+      .search-bar {
+        width: 180px;
+      }
+      
+      .alert-filters {
+        flex-wrap: wrap;
+      }
+      
+      .alert-actions {
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      
+      .alert-card {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <div class="header-bar">
+    <div class="brand-container">
+      <div class="brand-logo">Z</div>
+      <div class="brand-name">ZaykaZone</div>
+    </div>
+    <div class="header-actions">
+      <div class="search-bar">
+        <input type="text" placeholder="Search alerts...">
+      </div>
+      <a style="text-decoration:none"href="{% url 'adminpanel:admin_alerts' %}" class="alert-icon">
+        <i class="fas fa-bell"></i>
+        <div class="alert-badge">8</div>
+      </a>
+      <div class="user-profile">
+        <div class="user-avatar">KD</div>
+        <div>Kartik Draianati</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dark Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <a href="{% url 'adminpanel:admin_dashboard' %}" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-home"></i></div>
+      <div class="nav-label">Dashboard</div>
+    </a>
+    <a href="{% url 'adminpanel:admin_table_booking' %}" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-calendar-alt"></i></div>
+      <div class="nav-label">Table Booking</div>
+    </a>
+    <a href="{% url 'adminpanel:admin_restaurants' %}" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-utensils"></i></div>
+      <div class="nav-label">Restaurants</div>
+    </a>
+    <a href="{% url 'adminpanel:admin_orders' %}" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-shopping-cart"></i></div>
+      <div class="nav-label">Orders</div>
+    </a>
+    <a href="{% url 'adminpanel:admin_users' %}" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-users"></i></div>
+      <div class="nav-label">Users</div>
+    </a>
+    <a href="{% url 'adminpanel:admin_alerts' %}" class="nav-item active">
+      <div class="badge">3</div>
+      <div class="nav-icon"><i class="fas fa-bell"></i></div>
+      <div class="nav-label">Alerts</div>
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-cog"></i></div>
+      <div class="nav-label">Settings</div>
+    </a>
+    <a href="#" class="nav-item">
+      <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
+      <div class="nav-label">Logout</div>
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+  <!-- Alerts Header -->
+  <div class="alerts-header">
+    <div>
+      <h1 class="alerts-title">Alerts & Notifications</h1>
+      <p class="alerts-subtitle">
+        Manage your restaurant alerts and notifications
+      </p>
+    </div>
+  </div>
+
+  <!-- Filters and Actions -->
+  <div class="alert-filters">
+    <button class="filter-btn active">
+      <i class="fas fa-bell"></i> All Alerts
+    </button>
+    <button class="filter-btn">
+      <i class="fas fa-exclamation-circle"></i> High Priority
+    </button>
+    <button class="filter-btn">
+      <i class="fas fa-info-circle"></i> Medium Priority
+    </button>
+    <button class="filter-btn">
+      <i class="fas fa-check-circle"></i> Low Priority
+    </button>
+    <button class="filter-btn">
+      <i class="fas fa-database"></i> System Alerts
+    </button>
+  </div>
+
+  <div class="alert-actions">
+    <button class="action-btn mark-read-btn">
+      <i class="fas fa-check"></i> Mark All as Read
+    </button>
+    <button class="action-btn delete-all-btn">
+      <i class="fas fa-trash"></i> Delete All
+    </button>
+  </div>
+
+  {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-success">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+  <!-- Alerts Container -->
+  <div class="alerts-container">
+    
+    <!-- ✅ Dynamic Alerts: Restaurant Approval Requests -->
+    {% for request in approval_requests %}
+    <div class="alert-card unread priority-high">
+      <div class="alert-icon-container">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="alert-info">
+        <h3 class="alert-title">New Restaurant Approval Request</h3>
+        <p class="alert-description">
+          {{ request.restaurant.name }} has requested approval.<br>
+          Owner: {{ request.restaurant.owner.get_full_name }} ({{ request.restaurant.owner.email }})
+        </p>
+        <div class="alert-meta">
+          <div class="alert-time">
+            <i class="far fa-clock"></i> {{ request.created_at|timesince }} ago
+          </div>
+          <div class="alert-category">
+            <i class="fas fa-store"></i> Restaurant
+          </div>
+        </div>
+      </div>
+      <div class="alert-actions-container">
+        <form action="{% url 'adminpanel:approve_restaurant' request.pk %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="alert-action-btn mark-btn" title="Approve">
+            <i class="fas fa-check-circle"></i>
+          </button>
+        </form>
+        <form action="{% url 'adminpanel:reject_restaurant' request.pk %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button class="alert-action-btn delete-btn" title="Reject">
+            <i class="fas fa-times-circle"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    <!-- ✅ End Dynamic Alerts -->
+
+    <!-- Existing Static Alerts (unchanged below this line) -->
+
+      <!-- Alert 2 -->
+      {% comment %} <div class="alert-card unread priority-medium">
+        <div class="alert-icon-container">
+          <i class="fas fa-truck"></i>
+        </div>
+        <div class="alert-info">
+          <h3 class="alert-title">Delivery Delay</h3>
+          <p class="alert-description">
+            Order #1245 is delayed by 25 minutes due to traffic. Customer has been notified.
+          </p>
+          <div class="alert-meta">
+            <div class="alert-time">
+              <i class="far fa-clock"></i> 5 hours ago
+            </div>
+            <div class="alert-category">
+              <i class="fas fa-shipping-fast"></i> Delivery
+            </div>
+          </div>
+        </div>
+        <div class="alert-actions-container">
+          <button class="alert-action-btn mark-btn" title="Mark as read">
+            <i class="far fa-check-circle"></i>
+          </button>
+          <button class="alert-action-btn delete-btn" title="Delete alert">
+            <i class="far fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert 3 -->
+      <div class="alert-card priority-system">
+        <div class="alert-icon-container">
+          <i class="fas fa-sync-alt"></i>
+        </div>
+        <div class="alert-info">
+          <h3 class="alert-title">System Update Available</h3>
+          <p class="alert-description">
+            New version 2.5.1 of ZaykaZone POS is available. Update for improved performance and new features.
+          </p>
+          <div class="alert-meta">
+            <div class="alert-time">
+              <i class="far fa-clock"></i> Yesterday
+            </div>
+            <div class="alert-category">
+              <i class="fas fa-cog"></i> System
+            </div>
+          </div>
+        </div>
+        <div class="alert-actions-container">
+          <button class="alert-action-btn mark-btn" title="Mark as read">
+            <i class="far fa-check-circle"></i>
+          </button>
+          <button class="alert-action-btn delete-btn" title="Delete alert">
+            <i class="far fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert 4 -->
+      <div class="alert-card priority-low">
+        <div class="alert-icon-container">
+          <i class="fas fa-star"></i>
+        </div>
+        <div class="alert-info">
+          <h3 class="alert-title">New Review Received</h3>
+          <p class="alert-description">
+            John Smith left a 5-star review: "The service was exceptional! Food was delicious and arrived quickly."
+          </p>
+          <div class="alert-meta">
+            <div class="alert-time">
+              <i class="far fa-clock"></i> 2 days ago
+            </div>
+            <div class="alert-category">
+              <i class="fas fa-comment-alt"></i> Review
+            </div>
+          </div>
+        </div>
+        <div class="alert-actions-container">
+          <button class="alert-action-btn mark-btn" title="Mark as read">
+            <i class="far fa-check-circle"></i>
+          </button>
+          <button class="alert-action-btn delete-btn" title="Delete alert">
+            <i class="far fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alert 5 -->
+      <div class="alert-card priority-medium">
+        <div class="alert-icon-container">
+          <i class="fas fa-user-clock"></i>
+        </div>
+        <div class="alert-info">
+          <h3 class="alert-title">Staff Shift Reminder</h3>
+          <p class="alert-description">
+            Raj Sharma is scheduled for evening shift tomorrow. Confirm availability.
+          </p>
+          <div class="alert-meta">
+            <div class="alert-time">
+              <i class="far fa-clock"></i> 3 days ago
+            </div>
+            <div class="alert-category">
+              <i class="fas fa-users"></i> Staffing
+            </div>
+          </div>
+        </div>
+        <div class="alert-actions-container">
+          <button class="alert-action-btn mark-btn" title="Mark as read">
+            <i class="far fa-check-circle"></i>
+          </button>
+          <button class="alert-action-btn delete-btn" title="Delete alert">
+            <i class="far fa-trash-alt"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div> {% endcomment %}
+
+  <script>
+    // Set active state for Alerts in sidebar
+    {% comment %} document.querySelectorAll('.nav-item').forEach(item => {
+      if (item.href.includes('alerts.html')) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    }); {% endcomment %}
+    // Simple script to toggle active state for menu items
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') {
+          e.preventDefault(); // Only prevent if it's a placeholder
+        }
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+        });
+    });
+    
+    // Alert interaction functionality
+    document.querySelectorAll('.mark-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const card = this.closest('.alert-card');
+        card.classList.remove('unread');
+        
+        // Update badge count
+        const unreadCount = document.querySelectorAll('.alert-card.unread').length;
+        document.querySelector('.alert-badge').textContent = unreadCount;
+        document.querySelector('.sidebar .badge').textContent = unreadCount;
+        
+        // Change icon to checked
+        this.innerHTML = '<i class="fas fa-check-circle"></i>';
+        this.title = "Marked as read";
+      });
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const card = this.closest('.alert-card');
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(20px)';
+        
+        setTimeout(() => {
+          card.remove();
+          
+          // Update badge count
+          const unreadCount = document.querySelectorAll('.alert-card.unread').length;
+          document.querySelector('.alert-badge').textContent = unreadCount;
+          document.querySelector('.sidebar .badge').textContent = unreadCount;
+        }, 300);
+      });
+    });
+    
+    // Mark all as read
+    document.querySelector('.mark-read-btn').addEventListener('click', function() {
+      document.querySelectorAll('.alert-card.unread').forEach(card => {
+        card.classList.remove('unread');
+      });
+      
+      // Update all mark buttons
+      document.querySelectorAll('.mark-btn').forEach(btn => {
+        btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+        btn.title = "Marked as read";
+      });
+      
+      // Reset badge count
+      document.querySelector('.alert-badge').textContent = '0';
+      document.querySelector('.sidebar .badge').textContent = '0';
+    });
+    
+    // Delete all functionality
+    document.querySelector('.delete-all-btn').addEventListener('click', function() {
+      if (confirm('Are you sure you want to delete all alerts?')) {
+        document.querySelectorAll('.alert-card').forEach(card => {
+          card.style.opacity = '0';
+          card.style.transform = 'translateX(20px)';
+          
+          setTimeout(() => {
+            card.remove();
+          }, 300);
+        });
+        
+        // Reset badge count
+        document.querySelector('.alert-badge').textContent = '0';
+        document.querySelector('.sidebar .badge').textContent = '0';
+      }
+    });
+    
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('active');
+        });
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

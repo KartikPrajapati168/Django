@@ -1,0 +1,605 @@
+body {
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  background-color: #f0f0f0;
+}
+
+.navbar {
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sitename {
+  font-weight: bold;
+  color: red;
+  font-size: 24px;
+}
+
+.form-control:focus {
+  box-shadow: none;
+  border-color: #dcdcdc;
+}
+
+.search-group {
+  display: flex;
+  align-items: center;
+}
+
+.input-group .form-control {
+  border-radius: 0;
+}
+
+.input-group .form-control:first-child {
+  border-radius: 10px 0 0 10px;
+  width: 250px;
+}
+
+.location-input {
+  width: 143px !important;
+}
+
+.input-group .form-control:last-child {
+  border-radius: 0 10px 10px 0;
+  width: 500px;
+}
+
+.navbar-icon {
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+@media (max-width: 768px) {
+  .input-group .form-control:first-child {
+    width: 100px;
+  }
+
+  .input-group .form-control:last-child {
+    width: 200px;
+  }
+}
+
+.tab-btn {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  border-color: #ff645a;
+  color: #ff645a;
+}
+
+.tab-btn.active {
+  background-color: #ff645a;
+  color: white;
+  border-color: #ff645a;
+}
+
+.tab-section {
+  display: block;
+}
+
+.tab-section.d-none {
+  display: none;
+}
+
+.slot:hover {
+  background-color: #ffe3e3;
+  cursor: pointer;
+}
+
+.active-slot {
+  background-color: rgba(159, 111, 111, 0.466) !important;
+  color: red;
+  border-color: #dc3545;
+}
+
+/* User dropdown styles */
+.user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.user-dropdown .avatar {
+  background-color: #dc3545;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.user-dropdown .full-name {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.user-dropdown .dropdown-icon {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown .arrow.down {
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 150px;
+  display: none;
+  z-index: 1000;
+}
+
+.user-dropdown .dropdown-menu li {
+  padding: 8px 12px;
+}
+
+.user-dropdown .dropdown-menu li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+}
+
+.user-dropdown .dropdown-menu li:hover {
+  background-color: #f5f5f5;
+}
+
+.user-dropdown .dropdown-menu.show {
+  display: block;
+}
+
+/* Fancy booking form styles */
+.fancy-booking-form {
+  font-family: "Poppins", sans-serif;
+}
+
+.fancy-booking-form .form-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.fancy-booking-form .form-header h3 {
+  font-size: 2rem;
+  color: #1d3557;
+  margin-bottom: 10px;
+}
+
+.fancy-booking-form .divider {
+  height: 4px;
+  width: 80px;
+  background: #e63946;
+  margin: 0 auto;
+  border-radius: 10px;
+}
+
+.fancy-booking-form .form-group {
+  margin-bottom: 25px;
+  position: relative;
+}
+
+.fancy-booking-form .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #457b9d;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.fancy-booking-form .input-icon {
+  position: absolute;
+  left: 15px;
+  top: 43px;
+  font-size: 1.1rem;
+  z-index: 4;
+}
+
+.fancy-booking-form .form-control {
+  width: 100%;
+  padding: 15px 15px 15px 45px;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+  color: #1d3557;
+}
+
+.fancy-booking-form .form-control:focus {
+  border-color: #e63946;
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+}
+
+.fancy-booking-form .form-control::placeholder {
+  color: #a8dadc;
+}
+
+.fancy-booking-form .select-wrapper {
+  position: relative;
+}
+
+.fancy-booking-form .select-wrapper::after {
+  content: "\f078";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #e63946;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.fancy-booking-form select.form-control {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+}
+
+.fancy-booking-form .time-slots {
+  margin-top: 15px;
+}
+
+.fancy-booking-form .time-slots h4 {
+  color: #1d3557;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.fancy-booking-form .slots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fancy-booking-form .slot {
+  padding: 12px 20px;
+  border: 2px solid #a8dadc;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #1d3557;
+  background: white;
+}
+
+.fancy-booking-form .slot:hover {
+  background: #f1faee;
+  border-color: #457b9d;
+}
+
+.fancy-booking-form .slot.active {
+  background: #e63946;
+  color: white;
+  border-color: #e63946;
+}
+
+.fancy-booking-form textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.fancy-booking-form .btn-container {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.fancy-booking-form .btn-book {
+  background: #e63946;
+  color: white;
+  border: none;
+  padding: 16px 45px;
+  font-size: 1.2rem;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(230, 57, 70, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.fancy-booking-form .btn-book:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.fancy-booking-form .btn-book:hover:before {
+  left: 100%;
+}
+
+.fancy-booking-form .btn-book:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(230, 57, 70, 0.4);
+}
+
+/* Animation for form elements */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fancy-booking-form .form-group {
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+}
+
+.fancy-booking-form .form-group:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.fancy-booking-form .form-group:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.fancy-booking-form .form-group:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.fancy-booking-form .form-group:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.fancy-booking-form .form-group:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.fancy-booking-form .form-group:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.fancy-booking-form .form-group:nth-child(7) {
+  animation-delay: 0.7s;
+}
+.fancy-booking-form .time-slots {
+  animation: fadeInUp 0.5s ease 0.8s forwards;
+  opacity: 0;
+}
+.fancy-booking-form .btn-container {
+  animation: fadeInUp 0.5s ease 0.9s forwards;
+  opacity: 0;
+}
+
+/* Ambience showcase styles */
+.ambience-showcase {
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.5s ease;
+  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.ambience-showcase:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.feature-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  font-size: 13px;
+}
+
+.feature-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(3px);
+}
+
+.feature-item i {
+  font-size: 1.2rem;
+}
+
+/* Carousel customizations */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 35px;
+  height: 35px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.carousel-control-prev {
+  left: 10px;
+}
+
+.carousel-control-next {
+  right: 10px;
+}
+
+.carousel-image {
+  height: 250px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Updated form styles with colorful icons */
+.fancy-booking-form .form-header h3 {
+  font-size: 1.8rem;
+}
+
+.fancy-booking-form .form-group label {
+  font-size: 0.95rem;
+}
+
+.fancy-booking-form .form-control {
+  padding: 12px 12px 12px 54px;
+  font-size: 0.9rem;
+}
+
+.fancy-booking-form .input-icon {
+  top: 38px;
+  font-size: 1rem;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.time-icon {
+  margin-top: -42px;
+  margin-left: 120px;
+}
+
+.name-icon {
+  background-color: #ff6b6b;
+  color: white;
+}
+.email-icon {
+  background-color: #4ecdc4;
+  color: white;
+}
+.phone-icon {
+  background-color: #ffd166;
+  color: white;
+}
+.date-icon {
+  background-color: #6a0572;
+  color: white;
+}
+.guests-icon {
+  background-color: #1a936f;
+  color: white;
+}
+.meal-icon {
+  background-color: #ff9a76;
+  color: white;
+}
+.time-icon {
+  background-color: #118ab2;
+  color: white;
+}
+.message-icon {
+  background-color: #073b4c;
+  color: white;
+}
+
+.fancy-booking-form .slot {
+  padding: 10px 16px;
+  font-size: 0.9rem;
+}
+
+.fancy-booking-form .btn-book {
+  padding: 14px 40px;
+  font-size: 1.1rem;
+}
+
+/* New styles for owner details */
+.owner-details-card {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  width: 500px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 5px;
+  margin-bottom: 30px;
+}
+
+.owner-details-header {
+  border-bottom: 2px solid #e63946;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.owner-details-icon {
+  background-color: #e63946;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-size: 1.2rem;
+}
+
+.detail-item {
+  margin-bottom: 12px;
+  display: flex;
+}
+
+.detail-label {
+  font-weight: 600;
+  min-width: 120px;
+  color: #1d3557;
+}
+
+.detail-value {
+  color: #457b9d;
+}
+
+
+/* pepito.html me reviews tab ke liye css */
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>

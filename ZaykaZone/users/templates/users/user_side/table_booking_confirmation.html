@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Table Booking Confirmation - ZaykaZone</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-light">
+    <div class="container my-5">
+      <div class="card shadow-lg">
+        <div class="card-header bg-success text-white text-center">
+          <h2 class="mb-0">
+            <i class="fas fa-check-circle me-2"></i>Table Booking Confirmed!
+          </h2>
+        </div>
+        <div class="card-body text-center">
+          <p class="lead">
+            Thank you <b>{{ booking.name }}</b> for booking a table at
+            <span class="text-primary">{{ booking.restaurant.name }}</span>.
+          </p>
+
+          <div class="mt-4 text-start">
+            <h4>Reservation Details</h4>
+            <ul class="list-group">
+              <li class="list-group-item">
+                <strong>Date:</strong> {{ booking.date }}
+              </li>
+              <li class="list-group-item">
+                <strong>Time:</strong> {{ booking.time }}
+              </li>
+              <li class="list-group-item">
+                <strong>Guests:</strong> {{ booking.no_of_guests }}
+              </li>
+              <li class="list-group-item">
+                <strong>Meal Type:</strong> {{ booking.get_meal_type_display }}
+              </li>
+              <li class="list-group-item">
+                <strong>Status:</strong>
+                <span class="badge bg-warning text-dark"
+                  >{{ booking.status }}</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="mt-4">
+            <a
+              href="{% url 'restaurants:restaurant_detail' booking.restaurant.slug %}"
+              class="btn btn-primary"
+            >
+              <i class="fas fa-arrow-left me-1"></i> Back to Restaurant
+            </a>
+            <a
+              href="{% url 'restaurants:restaurant_detail' booking.restaurant.slug %}"
+              class="btn btn-outline-success ms-2"
+            >
+              <i class="fas fa-calendar-plus me-1"></i> Book Another Table
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

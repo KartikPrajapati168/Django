@@ -1,0 +1,331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>ZaykaZone Navbar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="{% static 'users/assets/img/ChatGPT Image Jun 15, 2025, 07_05_20 PM.png' %}"
+    />
+
+    <!-- Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        background-color: #f0f0f0;
+      }
+
+      .navbar {
+        background-color: #ffffff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .sitename {
+        font-weight: bold;
+        color: red;
+        font-size: 24px;
+      }
+
+      .form-control:focus {
+        box-shadow: none;
+        border-color: #dcdcdc;
+      }
+
+      .search-group {
+        display: flex;
+        align-items: center;
+      }
+
+      .input-group .form-control {
+        border-radius: 0;
+      }
+
+      .input-group .form-control:first-child {
+        border-radius: 10px 0 0 10px;
+        width: 250px;
+        /* Increased width */
+      }
+
+      .location-input {
+        width: 130px !important;
+      }
+
+      .input-group .form-control:last-child {
+        border-radius: 0 10px 10px 0;
+        width: 500px;
+      }
+
+      .navbar-icon {
+        font-size: 20px;
+        margin-right: 5px;
+      }
+
+      @media (max-width: 768px) {
+        .input-group .form-control:first-child {
+          width: 100px;
+        }
+
+        .input-group .form-control:last-child {
+          width: 200px;
+        }
+      }
+
+      .card-title {
+        font-size: 1.1rem;
+      }
+
+      .card-img-top {
+        height: 180px;
+        object-fit: cover;
+      }
+
+      .object-fit-cover {
+        object-fit: cover;
+      }
+    </style>
+
+    <style>
+      /* is_authenticated code */
+      .user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.user-dropdown .avatar {
+  background-color: #dc3545; /* Red color matching theme */
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.user-dropdown .full-name {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.user-dropdown .dropdown-icon {
+  display: flex;
+  align-items: center;
+}
+
+.user-dropdown .arrow.down {
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+
+.user-dropdown .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 150px;
+  display: none;
+  z-index: 1000;
+}
+
+.user-dropdown .dropdown-menu li {
+  padding: 8px 12px;
+}
+
+.user-dropdown .dropdown-menu li a {
+  text-decoration: none;
+  color: #333;
+  display: block;
+}
+
+.user-dropdown .dropdown-menu li:hover {
+  background-color: #f5f5f5;
+}
+
+.user-dropdown .dropdown-menu.show {
+  display: block;
+}
+    </style>
+  </head>
+
+  <body>
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container-fluid px-4 py-2">
+        <!-- Left: Site Name -->
+        <a class="navbar-brand sitename" href="index.html">ZaykaZone</a>
+
+        <!-- Center: Location + Search -->
+        <form class="d-flex mx-auto search-group" role="search">
+          <div class="input-group">
+            <!-- Location Input with Icon -->
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-geo-alt-fill text-danger"></i>
+            </span>
+            <input
+              type="search"
+              class="form-control border-start-0 location-input"
+              placeholder="Ahmedabad"
+              aria-label="Location"
+            />
+            <!-- Search Input -->
+            <input
+              type="search"
+              class="form-control"
+              placeholder="Search for restaurants, cuisine or dish"
+              aria-label="Search"
+            />
+          </div>
+        </form>
+
+        <!-- Right: Sign In then Cart -->
+        <div class="d-flex align-items-center">
+  {% if user.is_authenticated and user.role == 'customer' %}
+    <div class="user-dropdown me-3" onclick="toggleDropdown(this)">
+      <div class="avatar">{{ user.full_name|slice:":1" }}</div>
+      <span class="full-name">{{ user.full_name }}</span>
+      <div class="dropdown-icon">
+        <i class="arrow down"></i>
+      </div>
+      <ul class="dropdown-menu">
+        <li><a href="{% url 'users:logout' %}">Logout</a></li>
+        <li><a href="{% url 'users:switch_account' %}">Switch Account</a></li>
+      </ul>
+    </div>
+  {% else %}
+    <a href="{% url 'users:login_signup' %}" class="btn btn-danger me-3">
+      <i class="bi bi-person-fill navbar-icon"></i> Sign In
+    </a>
+  {% endif %}
+  
+  <a href="#" class="btn btn-outline-dark">
+    <i class="bi bi-cart navbar-icon"></i> Cart
+  </a>
+</div>
+      </div>
+      
+      
+
+    </nav>
+    <!-- Navbar End -->
+
+    {% comment %} <script>
+  function toggleDropdown(el) {
+    el.classList.toggle('open');
+  }
+</script> {% endcomment %}
+
+<script>
+  function toggleDropdown(element) {
+    const menu = element.querySelector('.dropdown-menu');
+    menu.classList.toggle('show');
+  }
+
+  // Close dropdown when clicking elsewhere
+  document.addEventListener('click', function(event) {
+    const dropdowns = document.querySelectorAll('.user-dropdown');
+    dropdowns.forEach(function(dropdown) {
+      if (!dropdown.contains(event.target)) {
+        const menu = dropdown.querySelector('.dropdown-menu');
+        menu.classList.remove('show');
+      }
+    });
+  });
+</script>
+
+    <!-- Hero Section with Image + Black Box on Left -->
+    <div class="position-relative" style="height: 400px">
+      <!-- Background Image -->
+      <img
+        src="{{ page_content.background_image.url }}"
+        alt="Dining"
+        class="w-100 h-100 object-fit-cover"
+      />
+
+      <!-- Overlay Black Box with Text (bottom-left) -->
+      <div
+        class="position-absolute bottom-0 start-0 d-flex align-items-center ps-5"
+        style="background: rgba(0, 0, 0, 0.5); width: 50%; height: 60%"
+      >
+        <div class="text-white">
+          <h6 style="color: lightgrey">ZAYKAZONE COLLECTIONS</h6>
+          <h2 class="display-6 fw-bold">{{ page_content.title }}</h2>
+          <p style="color: lightgrey; font-weight: bold" class="lead mb-1">
+            {{ page_content.description }}
+          </p>
+          <p>{{ restaurant_data|length }} places</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant section -->
+<div class="container py-5">
+  <div class="row g-4">
+    {% comment %} {% if restaurant_data|length > 0 %}
+  <p>{{ restaurant_data|length }} results found</p>
+{% else %}
+  <p>No restaurants matched your query.</p>
+{% endif %} {% endcomment %}
+
+    {% for entry in restaurant_data %}
+      <div class="col-md-3 col-sm-6" style="cursor: pointer">
+        <a href="{% url 'restaurants:restaurant_detail' entry.restaurant.slug %}" style="text-decoration: none; color: inherit">
+          <div class="card h-100 shadow border-0 rounded-4 overflow-hidden">
+            <img src="{{ entry.preview_image }}" class="card-img-top" alt="Food" />
+            <div class="card-body">
+              <h5 class="card-title fw-semibold">{{ entry.restaurant.name }}</h5>
+              <div class="d-flex align-items-center mb-2">
+                <span
+                  class="bg-success text-white px-2 py-1 rounded me-2 d-flex align-items-center"
+                  style="font-size: 14px"
+                >
+                  {{ entry.restaurant.rating }}
+                  <i class="bi bi-star-fill text-warning ms-1" style="font-size: 12px"></i>
+                </span>
+                <span class="text-muted" style="font-size: 14px">DINING</span>
+              </div>
+              <p style="font-size: 14px; color: grey" class="mb-1">
+                {{ entry.restaurant.description }}
+              </p>
+              <p class="text-muted">{{ entry.restaurant.address }}</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

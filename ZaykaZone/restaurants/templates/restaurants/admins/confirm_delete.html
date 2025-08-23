@@ -1,0 +1,51 @@
+{% extends "restaurants/admins/dashboard.html" %}
+{% block title %}Delete Menu Item - {{ menu_item.name }}{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h4 class="mb-0">Confirm Deletion</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="alert alert-warning" role="alert">
+                <h5 class="alert-heading">Warning!</h5>
+                <p>You are about to permanently delete this menu item. This action cannot be undone.</p>
+                <hr>
+                <p class="mb-0">Please confirm that you want to delete <strong>"{{ menu_item.name }}"</strong>.</p>
+            </div>
+            
+            <div class="mb-4">
+                {% if menu_item.image %}
+                <div class="text-center mb-3">
+                    <img src="{{ menu_item.image.url }}" 
+                         alt="{{ menu_item.name }}" 
+                         class="img-thumbnail" 
+                         style="max-width: 200px;">
+                </div>
+                {% endif %}
+                
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>Name:</strong> {{ menu_item.name }}</li>
+                    <li class="list-group-item"><strong>Description:</strong> {{ menu_item.description|truncatechars:80 }}</li>
+                    <li class="list-group-item"><strong>Price:</strong> ₹{{ menu_item.price }}</li>
+                    <li class="list-group-item"><strong>Category:</strong> {{ menu_item.category.name }}</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-danger px-4">
+                    <i class="bi bi-trash me-2"></i>Confirm Delete
+                </button>
+                <a href="{% url 'restaurants:menu' slug=restaurant.slug %}" 
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ restaurant.name }} - Orders Management</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'restaurants/css/dashboard.css' %}" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #4a6cf7;
+            --primary-dark: #3a5af5;
+            --primary-hover: #3a5af5;
+            --secondary: #7e57c2;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ff9800;
+            --info: #17a2b8;
+            --light-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e0e0e0;
+            --text: #333333;
+            --text-light: #777777;
+            --text-secondary: #6b7280;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar styles */
+        .sidebar {
+            width: 260px;
+            background: white;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .sidebar-logo-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), #6a11cb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-labels h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .logo-labels small {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .nav {
+            padding: 15px;
+            flex-grow: 1;
+        }
+        
+        .nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
+        }
+        
+        .nav a i {
+            margin-right: 12px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .nav a span {
+            font-size: 15px;
+        }
+        
+        .nav a:hover, .nav a.active {
+            background: rgba(74, 108, 247, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav a.active {
+            font-weight: 500;
+        }
+        
+        .admin-footer {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .admin-footer img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .admin-footer div {
+            flex-grow: 1;
+        }
+        
+        .admin-footer div p {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+        
+        .admin-footer div small {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+        
+        .admin-footer a {
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+        
+        .admin-footer a:hover {
+            color: var(--danger);
+        }
+        
+        /* Main content styles */
+        .main-content {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* Card styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 18px 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            gap: 8px;
+        }
+        
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.25);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        .btn-outline:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* Search container */
+        .search-container {
+            position: relative;
+            max-width: 300px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--card-bg);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .search-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.15);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+        
+        /* Table styles */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0 0 12px 12px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        
+        thead {
+            background-color: #f5f7ff;
+        }
+        
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        tbody tr {
+            transition: var(--transition);
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #fafbff;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(74, 108, 247, 0.03);
+        }
+        
+        /* Orders Management Specific Styles */
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .orders-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .orders-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        /* Filters Section */
+        .filters-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+        
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .filters-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .filter-select, .filter-input {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            font-size: 14px;
+        }
+        
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Orders Table */
+        .order-id {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .customer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .customer-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .customer-name {
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status-pending {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .status-preparing {
+            background: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+        
+        .status-ready {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .status-completed {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--text-secondary);
+        }
+        
+        .status-cancelled {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #f3f4f6;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .action-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+        
+        .pagination-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .pagination-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .pagination-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 220px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+            }
+            
+            .sidebar.active {
+                left: 0;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+                width: 100%;
+            }
+            
+            .card-header {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+            }
+            
+            .filters-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .page-header h1 {
+                font-size: 22px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .search-container {
+                max-width: 100%;
+            }
+            
+            .orders-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .orders-actions {
+                width: 100%;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .action-btn {
+                width: 32px;
+                height: 32px;
+                padding: 0;
+                justify-content: center;
+            }
+            
+            .action-btn span {
+                display: none;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: 15px;
+                align-items: center;
+            }
+        }
+        
+        /* Sidebar toggle */
+        .sidebar-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <div class="sidebar-logo-box">
+                    <i data-lucide="chef-hat" style="width: 28px; height: 28px; color: white;"></i>
+                </div>
+                <div class="logo-labels">
+                    <h3>{{ restaurant.name }}</h3>
+                    <small>Restaurant Panel</small>
+                </div>
+            </div>
+
+            <div class="nav">
+                <a href="{% url 'restaurants:dashboard' slug=restaurant.slug %}">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'restaurants:menu' slug=restaurant.slug %}">
+                    <i data-lucide="utensils"></i>
+                    <span>Manage Menu</span>
+                </a>
+                <a href="{% url 'restaurants:order' slug=restaurant.slug %}" class="active">
+                    <i data-lucide="shopping-bag" style="color: var(--primary)"></i>
+                    <span>Orders</span>
+                </a>
+                <a href="{% url 'restaurants:user' slug=restaurant.slug %}">
+                    <i data-lucide="users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="{% url 'restaurants:table' slug=restaurant.slug %}">
+                    <i data-lucide="calendar-clock"></i>
+                    <span>Table Bookings</span>
+                </a>
+                <a href="{% url 'restaurants:feedback' slug=restaurant.slug %}">
+                    <i data-lucide="message-square"></i>
+                    <span>Feedback</span>
+                </a>
+                <a href="{% url 'restaurants:profile' slug=restaurant.slug %}">
+                    <i data-lucide="user-cog"></i>
+                    <span>Profile Settings</span>
+                </a>
+                <a href="#">
+                    <i data-lucide="settings"></i>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+        <div class="admin-footer">
+            <img src="https://ui-avatars.com/api/?name={{ request.user.get_full_name|urlencode }}&background=random" alt="Admin" />
+            <div>
+                <p>{{ request.user.get_full_name }}</p>
+                <small>Owner</small>
+            </div>
+            <a href="{% url 'users:logout' %}">
+                <span class="material-icons">logout</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Orders Management</h1>
+            <div class="header-actions">
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" placeholder="Search orders..." id="searchInput">
+                </div>
+                <button class="btn btn-icon">
+                    <i data-lucide="bell"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="orders-header">
+            <h1 class="orders-title">All Orders</h1>
+            <div class="orders-actions">
+                <button class="btn btn-outline">
+                    <i data-lucide="filter"></i>
+                    Filters
+                </button>
+                <button class="btn btn-outline">
+                    <i data-lucide="download"></i>
+                    Export
+                </button>
+                <button class="btn btn-primary">
+                    <i data-lucide="plus"></i>
+                    New Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-container">
+            <div class="filters-header">
+                <div class="filters-title">Filter Orders</div>
+                <button class="btn btn-outline btn-sm">
+                    Clear Filters
+                </button>
+            </div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Date Range</label>
+                    <select class="filter-select">
+                        <option>Today</option>
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Custom</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Order Status</label>
+                    <select class="filter-select">
+                        <option>All Statuses</option>
+                        <option>Pending</option>
+                        <option>Preparing</option>
+                        <option>Ready for Pickup</option>
+                        <option>Completed</option>
+                        <option>Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Payment Status</label>
+                    <select class="filter-select">
+                        <option>All Payments</option>
+                        <option>Paid</option>
+                        <option>Pending</option>
+                        <option>Failed</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Order Type</label>
+                    <select class="filter-select">
+                        <option>All Types</option>
+                        <option>Dine-in</option>
+                        <option>Takeaway</option>
+                        <option>Delivery</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Orders</h2>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm">
+                        <i data-lucide="refresh-cw"></i>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="order-id">#ORD-78901</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">MP</div>
+                                    <div>
+                                        <div class="customer-name">Michael Parker</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">michael@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 25, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">10:30 AM</span></td>
+                            <td>3 items</td>
+                            <td>₹2,850</td>
+                            <td><span class="status-badge status-ready">Ready for Pickup</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">#ORD-78900</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">SJ</div>
+                                    <div>
+                                        <div class="customer-name">Sarah Johnson</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">sarahj@mail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 25, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">9:15 AM</span></td>
+                            <td>5 items</td>
+                            <td>₹4,580</td>
+                            <td><span class="status-badge status-preparing">Preparing</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">#ORD-78899</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">RK</div>
+                                    <div>
+                                        <div class="customer-name">Robert Kim</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">robertk@company.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 24, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">7:45 PM</span></td>
+                            <td>2 items</td>
+                            <td>₹2,210</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">#ORD-78898</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">AD</div>
+                                    <div>
+                                        <div class="customer-name">Amanda Davis</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">amandad@example.org</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 24, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">6:20 PM</span></td>
+                            <td>4 items</td>
+                            <td>₹3,880</td>
+                            <td><span class="status-badge status-cancelled">Cancelled</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">#ORD-78897</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">TW</div>
+                                    <div>
+                                        <div class="customer-name">Thomas Wilson</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">thomasw@mail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 24, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">5:05 PM</span></td>
+                            <td>1 item</td>
+                            <td>₹1,110</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="order-id">#ORD-78896</td>
+                            <td>
+                                <div class="customer-info">
+                                    <div class="customer-avatar">JM</div>
+                                    <div>
+                                        <div class="customer-name">Jessica Miller</div>
+                                        <div style="font-size: 13px; color: var(--text-secondary);">jessm@example.net</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Jul 24, 2023<br><span style="color: var(--text-secondary); font-size: 13px;">3:40 PM</span></td>
+                            <td>3 items</td>
+                            <td>₹3,040</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>
+                                <button class="action-btn">
+                                    <i data-lucide="eye"></i>
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="pagination-info">Showing 1 to 6 of 42 orders</div>
+                <div class="pagination-controls">
+                    <button class="pagination-btn" disabled>
+                        <i data-lucide="chevron-left"></i>
+                    </button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
+                    <button class="pagination-btn">
+                        <i data-lucide="chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize icons
+        lucide.createIcons();
+        
+        // DOM Elements
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        // Toggle sidebar
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            if (window.innerWidth < 992 && 
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) && 
+                e.target !== sidebarToggle) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

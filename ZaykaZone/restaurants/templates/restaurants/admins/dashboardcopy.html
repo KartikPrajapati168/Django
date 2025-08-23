@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pepito Restaurant Panel</title>
+    {% load static %}
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{% static 'restaurants/css/dashboard.css' %}"
+    />
+    {% comment %}
+    <img src="{% static 'users/images/user-icon.png' %}" alt="icon" />
+    {% endcomment %}
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="sidebar-logo-box">
+            <i data-lucide="chef-hat" style="width: 28px; height: 28px"></i>
+          </div>
+          <div class="logo-labels">
+            <h3 class="pepito-logo-text">Pepito</h3>
+            <small class="text-muted">Restaurant Panel</small>
+          </div>
+        </div>
+
+        <div class="nav">
+          <a href="{% url 'restaurants:dashboard' %}" class="active"
+            ><i data-lucide="layout-dashboard" style="color: #ff4b2b"></i
+            ><span>Dashboard</span></a
+          >
+          <a href="{% url 'restaurants:menu' %}"
+            ><i data-lucide="utensils" style="color: #4caf50"></i
+            ><span>Manage Menu</span></a
+          >
+          <a href="{% url 'restaurants:order' %}"
+            ><i data-lucide="shopping-bag" style="color: #2196f3"></i
+            ><span>Orders</span></a
+          >
+          <a href="{% url 'restaurants:user' %}"
+            ><i data-lucide="users" style="color: #9c27b0"></i
+            ><span>Users</span></a
+          >
+          <a href="{% url 'restaurants:table' %}"
+            ><i data-lucide="calendar-clock" style="color: #ff9800"></i
+            ><span>Table Bookings</span></a
+          >
+          <a href="{% url 'restaurants:feedback' %}"
+            ><i data-lucide="message-square" style="color: #009688"></i
+            ><span>Feedback</span></a
+          >
+          <a href="{% url 'restaurants:profile' %}"
+            ><i data-lucide="user-cog" style="color: #795548"></i
+            ><span>Profile Settings</span></a
+          >
+          <a href="#"
+            ><i data-lucide="settings" style="color: #607d8b"></i
+            ><span>Settings</span></a
+          >
+        </div>
+      </div>
+
+      <div class="admin-footer">
+        <img
+          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
+          alt="Admin"
+        />
+        <div>
+          <p style="margin: 0; font-weight: bold; font-size: 15px">
+            Kartik Prajapati
+          </p>
+          <small class="text-muted">Owner</small>
+        </div>
+        <span class="material-icons">logout</span>
+      </div>
+    </div>
+
+    <!-- External Toggle Button -->
+    <button class="external-toggle-btn" onclick="toggleSidebar()">
+      <span class="material-icons">menu</span>
+    </button>
+
+    <!-- Main Content -->
+    <div class="main">
+      <div class="dashboard-header">
+        <h2>Dashboard Overview</h2>
+        <div class="search-bar">
+          <span class="material-icons search-icon">search</span>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search..."
+            oninput="toggleClearButton(this)"
+          />
+          <span class="material-icons clear-icon" onclick="clearSearch(this)"
+            >close</span
+          >
+          <span class="material-icons bell-icon">notifications</span>
+        </div>
+      </div>
+
+      <p class="overview-subtext">
+        Welcome back, here's what's happening with your business today.
+      </p>
+
+      <div class="stats-container">
+        <div class="stat-card">
+          <h4><span class="material-icons">group</span>Total Users</h4>
+          <h2>24,532</h2>
+          <p class="positive">+12.5% vs last day</p>
+        </div>
+        <div class="stat-card">
+          <h4><span class="material-icons">attach_money</span>Revenue</h4>
+          <h2>$89,432</h2>
+          <p class="positive">+8.2% vs last day</p>
+        </div>
+        <div class="stat-card">
+          <h4><span class="material-icons">shopping_cart</span>Orders</h4>
+          <h2>1,423</h2>
+          <p class="negative">-3.1% vs last day</p>
+        </div>
+        <div class="stat-card">
+          <h4><span class="material-icons">rate_review</span>Reviews</h4>
+          <h2>854</h2>
+          <p class="positive">+5.6% this week</p>
+        </div>
+        <div class="stat-card">
+          <h4><span class="material-icons">event</span>Bookings</h4>
+          <h2>645</h2>
+          <p class="positive">+2.3% vs last week</p>
+        </div>
+        <div class="stat-card">
+          <h4>
+            <span class="material-icons">support_agent</span>Support Tickets
+          </h4>
+          <h2>38</h2>
+          <p class="negative">+10% this month</p>
+        </div>
+      </div>
+
+      <div
+        style="
+          display: flex;
+          gap: 40px;
+          margin: 30px 0px 0 20px;
+          font-family: 'Segoe UI', sans-serif;
+        "
+      >
+        <!-- Revenue Analytics Box -->
+        <div
+          style="
+            flex: 1;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            height: 430px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <h3 style="margin: 0; font-size: 18px">Recent Analytics</h3>
+            <select
+              style="
+                padding: 6px 12px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                outline: none;
+                font-size: 13px;
+              "
+            >
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+              <option>Last 90 days</option>
+            </select>
+          </div>
+          <div
+            style="
+              margin-top: 30px;
+              height: 330px;
+              background: #eaeaea;
+              border-radius: 8px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              color: #888;
+              font-style: italic;
+              font-size: 14px;
+            "
+          >
+            Graph Placeholder
+          </div>
+        </div>
+
+        <!-- Recent Activity Box -->
+        <div
+          style="
+            flex: 1;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            height: 430px;
+            overflow-y: auto;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-left: 5px;
+              margin-right: 5px;
+            "
+          >
+            <h3 style="margin: 0; font-size: 18px">Recent Activity</h3>
+            <a
+              href="#"
+              style="text-decoration: none; font-size: 13px; color: #7b1fa2"
+              >View all</a
+            >
+          </div>
+
+          <!-- Activity Items -->
+          <div
+            style="
+              margin-top: 20px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            "
+          >
+            <!-- Repeat activity box -->
+            <div
+              style="
+                padding: 10px;
+                border-radius: 10px;
+                background: #fff;
+                transition: background 0.3s ease;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                cursor: pointer;
+                border: 1px solid #eee;
+              "
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+            >
+              <img
+                src="https://randomuser.me/api/portraits/women/44.jpg"
+                alt="User"
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              <div style="width: 100%">
+                <div style="display: flex; justify-content: space-between">
+                  <span style="font-weight: 600; font-size: 13px"
+                    >New user registered</span
+                  >
+                  <span style="font-size: 11px; color: #666">5 min ago</span>
+                </div>
+                <div style="font-size: 12px; color: #555">
+                  sarah.wilson@email.com
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="
+                padding: 10px;
+                border-radius: 10px;
+                background: #fff;
+                transition: background 0.3s ease;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                cursor: pointer;
+                border: 1px solid #eee;
+              "
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+            >
+              <img
+                src="https://randomuser.me/api/portraits/men/33.jpg"
+                alt="User"
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              <div style="width: 100%">
+                <div style="display: flex; justify-content: space-between">
+                  <span style="font-weight: 600; font-size: 13px"
+                    >Order placed</span
+                  >
+                  <span style="font-size: 11px; color: #666">10 min ago</span>
+                </div>
+                <div style="font-size: 12px; color: #555">
+                  order1234@pepito.com
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="
+                padding: 10px;
+                border-radius: 10px;
+                background: #fff;
+                transition: background 0.3s ease;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                cursor: pointer;
+                border: 1px solid #eee;
+              "
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+            >
+              <img
+                src="https://randomuser.me/api/portraits/women/66.jpg"
+                alt="User"
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              <div style="width: 100%">
+                <div style="display: flex; justify-content: space-between">
+                  <span style="font-weight: 600; font-size: 13px"
+                    >Table booked</span
+                  >
+                  <span style="font-size: 11px; color: #666">20 min ago</span>
+                </div>
+                <div style="font-size: 12px; color: #555">
+                  jenny.rose@email.com
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="
+                padding: 10px;
+                border-radius: 10px;
+                background: #fff;
+                transition: background 0.3s ease;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                cursor: pointer;
+                border: 1px solid #eee;
+              "
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+            >
+              <img
+                src="https://randomuser.me/api/portraits/men/23.jpg"
+                alt="User"
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              <div style="width: 100%">
+                <div style="display: flex; justify-content: space-between">
+                  <span style="font-weight: 600; font-size: 13px"
+                    >Feedback received</span
+                  >
+                  <span style="font-size: 11px; color: #666">45 min ago</span>
+                </div>
+                <div style="font-size: 12px; color: #555">
+                  adam.smith@email.com
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="
+                padding: 10px;
+                border-radius: 10px;
+                background: #fff;
+                transition: background 0.3s ease;
+                display: flex;
+                gap: 10px;
+                align-items: flex-start;
+                cursor: pointer;
+                border: 1px solid #eee;
+              "
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+            >
+              <img
+                src="https://randomuser.me/api/portraits/men/50.jpg"
+                alt="User"
+                style="
+                  width: 38px;
+                  height: 38px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                "
+              />
+              <div style="width: 100%">
+                <div style="display: flex; justify-content: space-between">
+                  <span style="font-weight: 600; font-size: 13px"
+                    >Account updated</span
+                  >
+                  <span style="font-size: 11px; color: #666">1 hour ago</span>
+                </div>
+                <div style="font-size: 12px; color: #555">
+                  michael.lee@email.com
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- New Section: Recent Orders and Top Products -->
+      <div
+        style="
+          display: flex;
+          gap: 40px;
+          margin: 40px 0px 0 20px;
+          font-family: 'Segoe UI', sans-serif;
+        "
+      >
+        <!-- Recent Orders Box -->
+        <div
+          style="
+            flex: 2;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 20px;
+            "
+          >
+            <h3 style="margin: 0; font-size: 18px">Recent Orders</h3>
+            <a
+              href="#"
+              style="text-decoration: none; font-size: 13px; color: #7b1fa2"
+              >View all orders</a
+            >
+          </div>
+
+          <!-- Table Headers -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+              font-weight: 600;
+              font-size: 14px;
+              padding: 10px 0;
+              border-bottom: 1px solid #ddd;
+            "
+          >
+            <span>Order ID</span>
+            <span>Customer</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Date</span>
+          </div>
+
+          <!-- Table Rows -->
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              margin-top: 10px;
+            "
+          >
+            <!-- Row -->
+            <div
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+              style="
+                display: grid;
+                grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+                font-size: 14px;
+                padding: 10px 0;
+                border-radius: 8px;
+                transition: background 0.3s ease;
+              "
+            >
+              <span>#12345</span>
+              <span>John Doe</span>
+              <span>$299.99</span>
+              <span
+                style="
+                  color: green;
+                  background: #d4fcd4;
+                  padding: 2px 10px;
+                  border-radius: 12px;
+                  font-size: 12px;
+                "
+                >Completed</span
+              >
+              <span>Dec 12, 2023</span>
+            </div>
+
+            <div
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+              style="
+                display: grid;
+                grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+                font-size: 14px;
+                padding: 10px 0;
+                border-radius: 8px;
+                transition: background 0.3s ease;
+              "
+            >
+              <span>#12344</span>
+              <span>Jane Smith</span>
+              <span>$149.50</span>
+              <span
+                style="
+                  color: #b38f00;
+                  background: #fff5cc;
+                  padding: 2px 10px;
+                  border-radius: 12px;
+                  font-size: 12px;
+                "
+                >Pending</span
+              >
+              <span>Dec 11, 2023</span>
+            </div>
+
+            <div
+              onmouseover="this.style.background='#f3f3f3'"
+              onmouseout="this.style.background='#fff'"
+              style="
+                display: grid;
+                grid-template-columns: 1fr 2fr 1fr 1fr 1fr;
+                font-size: 14px;
+                padding: 10px 0;
+                border-radius: 8px;
+                transition: background 0.3s ease;
+              "
+            >
+              <span>#12343</span>
+              <span>Mike Johnson</span>
+              <span>$89.99</span>
+              <span
+                style="
+                  color: #2e60d3;
+                  background: #e4eaff;
+                  padding: 2px 10px;
+                  border-radius: 12px;
+                  font-size: 12px;
+                "
+                >Processing</span
+              >
+              <span>Dec 10, 2023</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Products Box -->
+        <div
+          style="
+            flex: 1;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 20px;
+            "
+          >
+            <h3 style="margin: 0; font-size: 18px">Top Products</h3>
+            <a
+              href="#"
+              style="text-decoration: none; font-size: 13px; color: #7b1fa2"
+              >View all</a
+            >
+          </div>
+
+          <!-- Product Items -->
+          <div style="display: flex; flex-direction: column; gap: 20px">
+            <!-- Product -->
+            <div style="display: flex; align-items: center; gap: 15px">
+              <img
+                src="https://cdn-icons-png.flaticon.com/128/599/599386.png"
+                style="width: 45px"
+              />
+              <div>
+                <div style="font-weight: 600">iPhone 15 Pro</div>
+                <div style="font-size: 13px; color: #666">245 sold</div>
+              </div>
+              <div style="margin-left: auto; font-weight: 600">$999</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px">
+              <img
+                src="https://cdn-icons-png.flaticon.com/128/10572/10572715.png"
+                style="width: 45px"
+              />
+              <div>
+                <div style="font-weight: 600">MacBook Air</div>
+                <div style="font-size: 13px; color: #666">189 sold</div>
+              </div>
+              <div style="margin-left: auto; font-weight: 600">$1299</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px">
+              <img
+                src="https://cdn-icons-png.flaticon.com/128/11434/11434208.png"
+                style="width: 45px"
+              />
+              <div>
+                <div style="font-weight: 600">AirPods Pro</div>
+                <div style="font-size: 13px; color: #666">156 sold</div>
+              </div>
+              <div style="margin-left: auto; font-weight: 600">$249</div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 15px">
+              <img
+                src="https://cdn-icons-png.flaticon.com/128/9362/9362770.png"
+                style="width: 45px"
+              />
+              <div>
+                <div style="font-weight: 600">Apple Watch</div>
+                <div style="font-size: 13px; color: #666">134 sold</div>
+              </div>
+              <div style="margin-left: auto; font-weight: 600">$399</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{% static 'restaurants/js/dashboard.js' %}"></script>
+  </body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ZaykaZone Auth</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'users/css/loginsignup.css' %}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="auth-box">
+      <!-- Signup Form -->
+      {% if messages %}
+      <script>
+        {% for message in messages %}
+          alert("{{ message }}");
+        {% endfor %}
+      </script>
+      {% endif %}
+
+      <form id="signupForm" method="POST" action="/register">
+        {% csrf_token %}
+        <h2>Create Account</h2>
+
+        <div class="form-group">
+          <input
+            type="text"
+            name="name"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Full Name</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="email"
+            name="email"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Email</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            name="password"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Password</label>
+        </div>
+
+        <div class="form-group">
+          <select name="role" class="form-input" required>
+            <option value="" disabled selected hidden></option>
+            <option value="customer">Customer</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="admin">Admin</option>
+          </select>
+          <label class="form-label">I am a:</label>
+        </div>
+
+        <div class="divider">or</div>
+
+        <div class="form-group" style="position: relative">
+          <div class="phone-wrapper">
+            <div
+              class="phone-prefix"
+              id="signupPrefix"
+              onclick="toggleCountryDropdown('signup')"
+            >
+              <img
+                id="signupFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 20px"
+              />
+              <span id="signupDialCode">+91</span>
+              <span style="font-size: 12px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 24px; margin: 0 8px"
+            ></div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone number"
+              required
+            />
+            <input
+              type="hidden"
+              name="country_code"
+              id="signupCountryCode"
+              value="+91"
+            />
+          </div>
+
+          <div id="signupCountryDropdown" class="countryDropdown">
+            <div
+              onclick="selectCountry('signup', '+91', 'https://flagcdn.com/in.svg')"
+            >
+              <img src="https://flagcdn.com/in.svg" style="width: 18px" /> India
+              (+91)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+1', 'https://flagcdn.com/us.svg')"
+            >
+              <img src="https://flagcdn.com/us.svg" style="width: 18px" /> USA
+              (+1)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+44', 'https://flagcdn.com/gb.svg')"
+            >
+              <img src="https://flagcdn.com/gb.svg" style="width: 18px" /> UK
+              (+44)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+61', 'https://flagcdn.com/au.svg')"
+            >
+              <img src="https://flagcdn.com/au.svg" style="width: 18px" />
+              Australia (+61)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+7', 'https://flagcdn.com/ru.svg')"
+            >
+              <img src="https://flagcdn.com/ru.svg" style="width: 18px" />
+              Russia (+7)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+86', 'https://flagcdn.com/cn.svg')"
+            >
+              <img src="https://flagcdn.com/cn.svg" style="width: 18px" /> China
+              (+86)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+81', 'https://flagcdn.com/jp.svg')"
+            >
+              <img src="https://flagcdn.com/jp.svg" style="width: 18px" /> Japan
+              (+81)
+            </div>
+            <div
+              onclick="selectCountry('signup', '+27', 'https://flagcdn.com/za.svg')"
+            >
+              <img src="https://flagcdn.com/za.svg" style="width: 18px" /> South
+              Africa (+27)
+            </div>
+          </div>
+        </div>
+
+        <div class="divider">or</div>
+
+        {% load socialaccount %}
+        <a
+          href="{% url 'google_redirect' %}"
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: white;
+            border: 1px solid #ccc;
+            color: #333;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 10px;
+          "
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            style="width: 18px; height: 18px"
+          />
+          Sign up with Google
+        </a>
+
+        <button type="submit">Create account</button>
+
+        <div class="note">
+          Already have an account?
+          <span class="link" onclick="toggleForm()">Log in</span>
+        </div>
+      </form>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="hidden" method="POST" action="/login">
+        {% csrf_token %}
+        <h2>Log in</h2>
+
+        <div class="form-group">
+          <input
+            type="email"
+            name="email"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Email</label>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="password"
+            name="password"
+            class="form-input"
+            placeholder=" "
+            required
+          />
+          <label class="form-label">Password</label>
+        </div>
+
+        <div class="form-group">
+          <select name="role" class="form-input" required>
+            <option value="" disabled selected hidden></option>
+            <option value="customer">Customer</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="admin">Admin</option>
+          </select>
+          <label class="form-label">I am a:</label>
+        </div>
+
+        <div class="divider">or</div>
+
+        <div class="form-group" style="position: relative">
+          <div class="phone-wrapper">
+            <div
+              class="phone-prefix"
+              id="loginPrefix"
+              onclick="toggleCountryDropdown('login')"
+            >
+              <img
+                id="loginFlagImg"
+                src="https://flagcdn.com/in.svg"
+                style="width: 20px"
+              />
+              <span id="loginDialCode">+91</span>
+              <span style="font-size: 12px">▼</span>
+            </div>
+            <div
+              style="width: 1px; background: #ccc; height: 24px; margin: 0 8px"
+            ></div>
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone number"
+              required
+            />
+            <input
+              type="hidden"
+              name="country_code"
+              id="loginCountryCode"
+              value="+91"
+            />
+          </div>
+
+          <div id="loginCountryDropdown" class="countryDropdown">
+            <div
+              onclick="selectCountry('login', '+91', 'https://flagcdn.com/in.svg')"
+            >
+              <img src="https://flagcdn.com/in.svg" style="width: 18px" /> India
+              (+91)
+            </div>
+            <div
+              onclick="selectCountry('login', '+1', 'https://flagcdn.com/us.svg')"
+            >
+              <img src="https://flagcdn.com/us.svg" style="width: 18px" /> USA
+              (+1)
+            </div>
+            <div
+              onclick="selectCountry('login', '+44', 'https://flagcdn.com/gb.svg')"
+            >
+              <img src="https://flagcdn.com/gb.svg" style="width: 18px" /> UK
+              (+44)
+            </div>
+            <div
+              onclick="selectCountry('login', '+61', 'https://flagcdn.com/au.svg')"
+            >
+              <img src="https://flagcdn.com/au.svg" style="width: 18px" />
+              Australia (+61)
+            </div>
+            <div
+              onclick="selectCountry('login', '+7', 'https://flagcdn.com/ru.svg')"
+            >
+              <img src="https://flagcdn.com/ru.svg" style="width: 18px" />
+              Russia (+7)
+            </div>
+            <div
+              onclick="selectCountry('login', '+81', 'https://flagcdn.com/jp.svg')"
+            >
+              <img src="https://flagcdn.com/jp.svg" style="width: 18px" /> Japan
+              (+81)
+            </div>
+            <div
+              onclick="selectCountry('login', '+86', 'https://flagcdn.com/cn.svg')"
+            >
+              <img src="https://flagcdn.com/cn.svg" style="width: 18px" /> China
+              (+86)
+            </div>
+            <div
+              onclick="selectCountry('login', '+27', 'https://flagcdn.com/za.svg')"
+            >
+              <img src="https://flagcdn.com/za.svg" style="width: 18px" /> South
+              Africa (+27)
+            </div>
+          </div>
+        </div>
+
+        <button type="submit">Login</button>
+
+        <div class="note">
+          Don't have an account?
+          <span class="link" onclick="toggleForm()">Create Account</span>
+        </div>
+      </form>
+    </div>
+
+    <script src="{% static 'users/js/loginsignup.js' %}"></script>
+  </body>
+</html>
