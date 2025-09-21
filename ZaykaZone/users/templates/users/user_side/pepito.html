@@ -1141,34 +1141,55 @@
                             <h4 class="mb-0">Owner Details</h4>
                         </div>
                         
-                        {% if restaurant.owner.owner_profile %}
-                            {% with profile=restaurant.owner.owner_profile %}
-                                <div class="detail-item">
-                                    <span class="detail-label">Full Name:</span>
-                                    <span class="detail-value">{{ profile.full_name }}</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Email:</span>
-                                    <span class="detail-value">{{ profile.email }}</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">Phone:</span>
-                                    <span class="detail-value">{{ profile.phone }}</span>
-                                </div>
-                                
-                                <div class="detail-item">
-                                    <span class="detail-label">GST Number:</span>
-                                    <span class="detail-value">{{ profile.gst_number }}</span>
-                                </div>
-                            {% endwith %}
-                        {% else %}
-                            <div class="detail-item">
-                                <span class="detail-label">Restaurant Owner:</span>
-                                <span class="detail-value">{{ restaurant.owner_name }}</span>
-                            </div>
-                        {% endif %}
+                        {% comment %} {% for profile in restaurant.owner_profile %}
+    <div class="detail-item">
+        <span class="detail-label">Full Name:</span>
+        <span class="detail-value">Run by Mr.{{ restaurant.owner_profile.full_name }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Email:</span>
+        <span class="detail-value">{{ profile.email }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Phone:</span>
+        <span class="detail-value">{{ profile.phone }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">GST Number:</span>
+        <span class="detail-value">{{ profile.gst_number }}</span>
+    </div>
+{% endfor %} {% endcomment %}
+{% if restaurant.owner_profile %}
+    <div class="detail-item">
+        <span class="detail-label">Full Name:</span>
+        <span class="detail-value">Run by Mr. {{ restaurant.owner_profile.full_name }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Email:</span>
+        <span class="detail-value">{{ restaurant.owner_profile.email }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Phone:</span>
+        <span class="detail-value">{{ restaurant.owner_profile.phone }}</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">GST Number:</span>
+        <span class="detail-value">{{ restaurant.owner_profile.gst_number }}</span>
+    </div>
+{% else %}
+    <p>No owner profile added for this restaurant yet.</p>
+{% endif %}
+
+                        <div class="detail-item">
+                            <span class="detail-label">Real Restaurant Owner:</span>
+                            <span class="detail-value">{{ restaurant.owner_name }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1565,7 +1586,7 @@
                     <!-- Left Column: Booking Form with colorful icons -->
                     <div class="col-lg-7">
                         <!-- FIXED: Changed restaurant.id to restaurant.slug -->
-                        <form method="POST" action="{% url 'restaurants:book_table_cuisine' restaurant.slug %}">
+                        <form id="bookingForm"method="POST" action="{% url 'restaurants:book_table_cuisine' restaurant.slug %}">
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="name">Your Name</label>
@@ -1743,6 +1764,8 @@
         </div>
      </div>
     </div>
+
+    <div id="bookingMessage"></div>
     
 
     <div class="overlay" id="overlay"></div>
@@ -2657,8 +2680,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
-<!-- sending request for table booking -->
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bookingForm = document.getElementById("bookingForm");
+    const bookingMessage = document.getElementById("bookingMessage");
+
+    if (bookingForm) {
+        bookingForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(bookingForm);
+
+            fetch(bookingForm.action, {
+                method: "POST",
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+                body: formData
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect_url;  
+                } else if (bookingMessage) {
+                    bookingMessage.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-times-circle"></i> ${data.error}
+                        </div>`;
+                }
+            })
+            .catch(error => {
+                if (bookingMessage) {
+                    bookingMessage.innerHTML = `
+                        <div class="alert alert-warning">
+                            Something went wrong! Please try again.
+                        </div>`;
+                }
+                console.error("Error:", error);
+            });
+        });
+    }
+});
+</script>
+
+<!-- sending request for table booking -->
+{% comment %} <script>
 document.addEventListener("DOMContentLoaded", function() {
     const bookingForm = document.getElementById("bookingForm");
     const bookingMessage = document.getElementById("bookingMessage");
@@ -2718,7 +2787,49 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
 });
-</script>
+</script> {% endcomment %}
+{% comment %} <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bookingForm = document.getElementById("bookingForm");
+    const bookingMessage = document.getElementById("bookingMessage");
+
+    bookingForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(bookingForm);
+
+        fetch(bookingForm.action, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: formData
+        })
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = "{% url 'login' %}?next=" + window.location.pathname;
+            }
+            return response.json();
+        })
+        .then(data => {
+           if (data.success) {
+             window.location.href = data.redirect_url;  
+           } else {
+            bookingMessage.innerHTML = `
+               <div class="alert alert-danger">
+                 <i class="fas fa-times-circle"></i> ${data.error}
+               </div>`;
+           }
+        })
+        .catch(error => {
+            bookingMessage.innerHTML = `
+                <div class="alert alert-warning">
+                    Something went wrong! Please try again.
+                </div>`;
+            console.error("Error:", error);
+        });
+    });
+});
+</script> {% endcomment %}
+
 
 
 </body>

@@ -40,7 +40,7 @@ urlpatterns = [
     path('book-table/<slug:slug>/', views.book_table_view, name='book_table_index'), 
     
     # path('select-restaurant/', views.select_restaurant, name='select_restaurant'),
-    # path('restaurant-approval-pending/', views.approval_pending, name='restaurant_approval_pending'),
+    path('restaurant-approval-pending/', views.approval_pending, name='restaurant_approval_pending'),
     #Redirect old dashboard URL to selection
     # path('admins/dashboard/', lambda request: redirect('select_restaurant'), name='dashboard'),
     

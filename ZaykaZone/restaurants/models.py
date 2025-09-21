@@ -8,7 +8,7 @@ from django.dispatch import receiver
 
 # Create your models here.
 class Restaurant(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='restaurants',null=False, blank=False)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='restaurants',null=True, blank=True)
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)  # ✅ Add this line
     logo = models.ImageField(upload_to='restaurants/restaurant_logos/', blank=True, null=True)
@@ -26,61 +26,121 @@ class Restaurant(models.Model):
     is_approved = models.BooleanField(default=False)  # Default: Not approved
     
     
-    
+     # -------- Display in Admin --------
     @property
     def display_owner_name(self):
-        """Alias to get updated owner name."""
-        return (
-            getattr(self.owner.owner_profile, "full_name", None)
-            or self.owner.full_name
-        )
-        
+        """Show the owner full name from RestaurantOwnerProfile in Admin."""
+        if not self.owner:
+            return "No Owner Assigned"
+
+        if hasattr(self.owner, "RestaurantOwnerProfile"):
+            return self.owner.restaurantownerprofile.full_name
+
+        return str(self.owner)  # fallback → username/email
+
     def __str__(self):
-        #यह Python का special (dunder) method है। Admin या Django shell में जब किसी Restaurant ऑब्जेक्ट को print करते हैं, तो यह method कॉल होता है।
         return self.name
-    
-    
-     
+
+    # -------- Save logic --------
     def save(self, *args, **kwargs):
-        # ── ① create slug automatically ────────────────────────────────
-     if not self.slug:                             # slug empty?
-        base_slug = slugify(self.name)            # e.g. "Pepito"
-        slug = base_slug
-        counter = 1
-        # guarantee uniqueness if another restaurant already has that slug
-        #डेटाबेस में चेक: क्या यही slug पहले से किसी दूसरे रेस्टोरेंट की row में है? (exclude(pk=self.pk) का मतलब—अपनी ही row को इग्नोर करो, ताकि edit पर clash न हो)।
-        while Restaurant.objects.filter(slug=slug).exclude(pk=self.pk).exists():
-            slug = f"{base_slug}-{counter}"       # pepito‑1, pepito‑2, …
-            #	पायथन f‑string से "pepito-bistro-1", "pepito-bistro-2" बनाते जाते हैं।
+        # Slug auto create
+        if not self.slug:
+          base_slug = slugify(self.name)
+          slug = base_slug
+          counter = 1
+          while Restaurant.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{counter}"
             counter += 1
-        self.slug = slug
+          self.slug = slug
 
-    # ── ② (your existing cuisine / city extraction below) ───────────
-        # List of cuisines and cities
-        # CUISINES = [
-        #     'spots', 'legendary', 'buffets', 'gujarati thali',
-        #     'asian restaurant', 'rollins with dosas'
-        # ]
-        # CITIES = ['ahmedabad']
-
-        # def extract_from_text(text, options):
-        #     if not text:
-        #         return None
-        #     text = text.lower()
-        #     for item in options:
-        #         if item.lower() in text:
-        #             return item.title()
-        #     return None
-
-        # self.cuisine = extract_from_text(self.description, CUISINES)
-        # self.city = extract_from_text(self.address, CITIES)
-        
-     # Automatically set owner_name from owner_profile if available
-     if not self.owner_name and hasattr(self.owner, 'restaurantownerprofile'):
+    # Auto-fill owner_name from RestaurantOwnerProfile
+    
+        if self.owner and hasattr(self.owner, "restaurantownerprofile"):
             self.owner_name = self.owner.restaurantownerprofile.full_name
-            
-     super().save(*args, **kwargs)
+        if self.owner:
+          if hasattr(self.owner, "restaurantownerprofile"):
+            self.owner_name = self.owner.restaurantownerprofile.full_name
+          else:
+            self.owner_name = str(self.owner)  # fallback username
+
+        super().save(*args, **kwargs)
+
+    
+    # @property
+    # def display_owner_name(self):
+    #     """Alias to get updated owner name."""
+    #     return (
+    #         getattr(self.owner.owner_profile, "full_name", None)
+    #         or self.owner.full_name
+    #     )
+    
+    # @property
+    # def display_owner_name(self):
+    #    """Safe owner name display for admin."""
+    #    if not self.owner:
+    #      return "No Owner Assigned"
+    
+    # # Agar owner_profile exist karta hai
+    #    if hasattr(self.owner, "owner_profile") and self.owner.owner_profile:
+    #      return self.owner.owner_profile.full_name
+    
+    # # Agar User model me first_name/last_name fields hain
+    #    if hasattr(self.owner, "get_full_name"):
+    #      return self.owner.get_full_name()
+    
+    # # Agar custom User me full_name field hai
+    #    if hasattr(self.owner, "full_name"):
+    #      return self.owner.full_name
+    
+    #    return str(self.owner.full_name)  # fallback → username/email
+        
+    # def __str__(self):
+    #     #यह Python का special (dunder) method है। Admin या Django shell में जब किसी Restaurant ऑब्जेक्ट को print करते हैं, तो यह method कॉल होता है।
+    #     return self.name
+    
      
+    # def save(self, *args, **kwargs):
+    #     # ── ① create slug automatically ────────────────────────────────
+    #  if not self.slug:                             # slug empty?
+    #     base_slug = slugify(self.name)            # e.g. "Pepito"
+    #     slug = base_slug
+    #     counter = 1
+    #     # guarantee uniqueness if another restaurant already has that slug
+    #     #डेटाबेस में चेक: क्या यही slug पहले से किसी दूसरे रेस्टोरेंट की row में है? (exclude(pk=self.pk) का मतलब—अपनी ही row को इग्नोर करो, ताकि edit पर clash न हो)।
+    #     while Restaurant.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+    #         slug = f"{base_slug}-{counter}"       # pepito‑1, pepito‑2, …
+    #         #	पायथन f‑string से "pepito-bistro-1", "pepito-bistro-2" बनाते जाते हैं।
+    #         counter += 1
+    #     self.slug = slug
+
+    # # ── ② (your existing cuisine / city extraction below) ───────────
+    #     # List of cuisines and cities
+    #     # CUISINES = [
+    #     #     'spots', 'legendary', 'buffets', 'gujarati thali',
+    #     #     'asian restaurant', 'rollins with dosas'
+    #     # ]
+    #     # CITIES = ['ahmedabad']
+
+    #     # def extract_from_text(text, options):
+    #     #     if not text:
+    #     #         return None
+    #     #     text = text.lower()
+    #     #     for item in options:
+    #     #         if item.lower() in text:
+    #     #             return item.title()
+    #     #     return None
+
+    #     # self.cuisine = extract_from_text(self.description, CUISINES)
+    #     # self.city = extract_from_text(self.address, CITIES)
+        
+    #  # Automatically set owner_name from owner_profile if available
+    # #  if not self.owner_name and hasattr(self.owner, 'restaurantownerprofile'):
+    # #         self.owner_name = self.owner.restaurantownerprofile.full_name
+    
+    #     if self.owner and not self.owner_name and hasattr(self.owner, 'restaurantownerprofile'):
+    #       self.owner_name = self.owner.restaurantownerprofile.full_name
+            
+    #  super().save(*args, **kwargs)
      
 
 
@@ -114,17 +174,40 @@ class RestaurantOwnerProfile(models.Model):
     Stores personal / compliance info that is **not** specific
     to a single restaurant menu.
     """
-    user        = models.OneToOneField(
-                    settings.AUTH_USER_MODEL,
-                    on_delete=models.CASCADE,
-                    related_name='owner_profile')
+    # user        = models.ForeignKey(
+    #                 settings.AUTH_USER_MODEL,
+    #                 on_delete=models.CASCADE,
+    #                 related_name='owner_profile')
+    # restaurant  = models.ForeignKey(   # 👈 NEW FIELD
+    #                 'Restaurant',
+    #                 on_delete=models.CASCADE,
+    #                 related_name='owner_profile',
+    #                 null=True, blank=True
+    # )
+    # full_name   = models.CharField(max_length=100, blank=True)
+    # email       = models.EmailField(blank=True)
+    # phone       = models.CharField(max_length=20, blank=True)
 
-    full_name   = models.CharField(max_length=100, blank=True)
-    email       = models.EmailField(blank=True)
-    phone       = models.CharField(max_length=20, blank=True)
+    # gst_number  = models.CharField(max_length=20, blank=True, null=True)
+    # created_at  = models.DateTimeField(auto_now_add=True)
+    
+    
+    user = models.ForeignKey(   # ek user ke multiple profiles
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='owner_profiles'
+    )
+    restaurant = models.OneToOneField(   # ek restaurant ka ek hi profile
+        'Restaurant',
+        on_delete=models.CASCADE,
+        related_name='owner_profile',
+        null=True, blank=True
+    )
 
-    gst_number  = models.CharField(max_length=20, blank=True, null=True)
-    created_at  = models.DateTimeField(auto_now_add=True)
+    full_name  = models.CharField(max_length=100, blank=True)
+    email      = models.EmailField(blank=True)
+    phone      = models.CharField(max_length=20, blank=True)
+    gst_number = models.CharField(max_length=20, blank=True, null=True)
     
     @receiver(post_save, sender=User)
     def update_owner_profile_name(sender, instance, **kwargs):
@@ -137,6 +220,19 @@ class RestaurantOwnerProfile(models.Model):
     
     def __str__(self):
         return self.full_name or self.user.full_name or self.user.email
+
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=RestaurantOwnerProfile)
+def update_restaurant_setowner(sender, instance, **kwargs):
+    if instance.restaurant:
+        restaurant = instance.restaurant
+        if instance.full_name and restaurant.owner_name != instance.full_name:
+            restaurant.owner_name = instance.full_name
+            restaurant.save()
+
 
 
 class RestaurantImage(models.Model):

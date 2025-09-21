@@ -670,8 +670,11 @@
           <div class="alert-badge">8</div>
         </a>
         <div class="user-profile">
-          <div class="user-avatar">KD</div>
-          <div>Kartik Draianati</div>
+          <div class="user-avatar">
+            {% comment %} {{ request.user.first_name|slice:":1" }}{{
+            request.user.last_name|slice:":1" }} {% endcomment %}
+          </div>
+          <div>{{ request.user.get_full_name }}</div>
         </div>
       </div>
     </div>
@@ -707,7 +710,7 @@
         <div class="nav-icon"><i class="fas fa-cog"></i></div>
         <div class="nav-label">Settings</div>
       </a>
-      <a href="#" class="nav-item">
+      <a href="{% url 'logout' %}" class="nav-item">
         <div class="nav-icon"><i class="fas fa-sign-out-alt"></i></div>
         <div class="nav-label">Logout</div>
       </a>

@@ -22,7 +22,8 @@ def dashboard_view(request, slug):
         Restaurant, 
         slug=slug, 
         # owner=request.user,
-        owner_name__iexact=request.user.full_name,  # Case-insensitive match
+        # owner_name__iexact=request.user,  # Case-insensitive match
+        owner=request.user,
         is_approved=True
     )
     
@@ -69,9 +70,9 @@ def dashboard_view(request, slug):
     
     # Get owner profile
     try:
-        owner_profile = request.user.owner_profile
+        owner_profiles = request.user.owner_profiles
     except RestaurantOwnerProfile.DoesNotExist:
-        owner_profile = None
+        owner_profiles = None
     
     # Get cart items count for user
     cart_items_count = CartItem.objects.filter(user=request.user).count()
@@ -80,11 +81,12 @@ def dashboard_view(request, slug):
     user_restaurants = Restaurant.objects.filter(
         owner=request.user,
         is_approved=True
-    )
+    ).exclude(id=restaurant.id) #current ko hatao
     
     context = {
-        'owner_profile': owner_profile,
-        'restaurant': restaurant,
+        'owner_profile': owner_profiles,
+        'restaurant': restaurant, # current restaurant
+        'user_restaurants': user_restaurants,  # dropdown ke liye sirf current
         'approval_request': approval_request,
         'menu_categories_count': menu_categories.count(),
         'menu_items_count': menu_items.count(),
@@ -409,6 +411,9 @@ def profile_settings_view(request):
         # Handle logo upload
         if request.FILES.get("logo"):
             restaurant.logo = request.FILES["logo"]
+            
+        # ✅ STEP 1: Save restaurant first
+        restaurant.save()
 
         # Owner name logic
         updated_owner_name = request.POST.get("owner_name", "").strip()
@@ -418,11 +423,11 @@ def profile_settings_view(request):
         owner_profile.email = request.POST.get("owner_email", "").strip()
         owner_profile.phone = request.POST.get("owner_phone", "").strip()
         owner_profile.gst_number = request.POST.get("gst_number", "").strip()
+        owner_profile.restaurant = restaurant
         owner_profile.save()
 
         # ✅ Always sync restaurant.owner_name with updated profile name
         restaurant.owner_name = owner_profile.full_name
-            
         restaurant.save()
         
         # Create approval request if it doesn’t exist
@@ -1199,7 +1204,8 @@ def book_table_view(request, slug):
 @login_required(login_url="/accounts/login/")   # 👈 confirmation page भी सिर्फ logged-in देख सके
 def booking_confirmation(request, booking_id):
     booking = get_object_or_404(TableBooking, id=booking_id, user=request.user)
-    return render(request, "users/user_side/table_booking_confirmation.html", {"booking": booking})
+    restaurant=booking.restaurant
+    return render(request, "users/user_side/table_booking_confirmation.html", {"booking": booking,"restaurant":restaurant})
 
 
 
@@ -1264,7 +1270,6 @@ from django.db.models import Avg, Count
 
 def restaurant_detail(request, slug):
     restaurant = get_object_or_404(Restaurant, slug=slug)
-
     # Get all images for this restaurant
     # all_images = RestaurantImage.objects.filter(restaurant=restaurant)
     all_images=restaurant.images.all()

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin-dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
@@ -11,4 +12,6 @@ urlpatterns = [
     
     path('admin-approve/<int:pk>/', views.approve_restaurant, name='approve_restaurant'),
     path('admin-reject/<int:pk>/', views.reject_restaurant, name='reject_restaurant'),
+    
+    path('logout/', auth_views.LogoutView.as_view(next_page='authentication/loginsignup/'), name='logout'),
 ]

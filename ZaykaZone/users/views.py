@@ -182,14 +182,29 @@ def login_user(request):
                 return render(request, 'users/authentication/loginsignup.html', {'error': 'Incorrect role selected.'})
             
             login(request, user)
+            
 
             if role == "restaurant":
-                # Ensure owner profile exists
-                RestaurantOwnerProfile.objects.get_or_create(user=user)
+                # # Ensure owner profile exists
+                # RestaurantOwnerProfile.objects.get_or_create(user=user)
                 
-                # Get approved restaurants for current user
+                # # Get approved restaurants for current user
+                # approved_restaurants = Restaurant.objects.filter(
+                #     owner=user, 
+                #     is_approved=True
+                # )
+                 # ✅ ensure profile exists (no duplicate creation)
+                owner_profile, created = RestaurantOwnerProfile.objects.get_or_create(user=user)
+                
+                # Agar galti se multiple profiles hain, toh ek ko rakhkar baaki delete kar do
+                extra_profiles = RestaurantOwnerProfile.objects.filter(user=user).exclude(id=owner_profile.id)
+                if extra_profiles.exists():
+                    extra_profiles.delete()
+
+                # ✅ get all restaurants linked to this owner profile
                 approved_restaurants = Restaurant.objects.filter(
-                    owner=user, 
+                    # owner_profile__user=user, 
+                    owner_profile=owner_profile, # 🔑 relation via owner_profile
                     is_approved=True
                 )
                 
@@ -341,7 +356,7 @@ def select_restaurant_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('index')
+    return redirect('login_signup')
 
 def switch_account(request):
     if request.user.is_authenticated and request.user.role == 'customer':

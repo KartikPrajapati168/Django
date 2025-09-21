@@ -41,7 +41,7 @@ class MenuItemAdmin(admin.ModelAdmin):
     
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
-    list_display = ('name', 'get_owner_name','owner', 'city', 'cuisine', 'dining_out_available', 'is_approved')
+    list_display = ('name', 'set_owner_name','owner', 'city', 'cuisine', 'dining_out_available', 'is_approved')
     # inlines = [RestaurantImageInline]  # 💥 This line ensures safe FK linkage
     # # ... keep rest of your code unchanged
     list_filter = ('is_approved', 'city', 'cuisine')
@@ -49,9 +49,14 @@ class RestaurantAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     actions = ['approve_restaurants']
     
-    def get_owner_name(self, obj):
-        return obj.display_owner_name
-    get_owner_name.short_description = 'Set Owner Name'
+    # def get_owner_name(self, obj):
+    #     return obj.owner_name if obj.owner_name else "Not Set"
+    # get_owner_name.short_description = 'Set Owner Name'
+    def set_owner_name(self, obj):
+        # profile = RestaurantOwnerProfile.objects.filter(user=obj.owner).first()
+        profile = RestaurantOwnerProfile.objects.filter(restaurant=obj).first()
+        return profile.full_name if profile else "-"
+    set_owner_name.short_description = "SET OWNER NAME"
     
     
     @admin.display(description="Owner")
@@ -82,8 +87,8 @@ class RestaurantAdmin(admin.ModelAdmin):
 
 @admin.register(RestaurantOwnerProfile)
 class OwnerProfileAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'phone', 'gst_number')
-    search_fields = ('full_name', 'email', 'phone', 'gst_number')
+    list_display = ('full_name', 'restaurant','email', 'phone', 'gst_number')
+    search_fields = ('full_name', 'restaurant','email', 'phone', 'gst_number')
     
 
 @admin.register(RestaurantImage)
