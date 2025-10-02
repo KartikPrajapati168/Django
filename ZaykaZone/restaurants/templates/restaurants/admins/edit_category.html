@@ -1,0 +1,114 @@
+{% comment %}
+<h2>Edit Category</h2>
+<form method="POST">
+  {% csrf_token %} {{ form.as_p }}
+  <button type="submit">Update</button>
+</form>
+{% endcomment %} {% comment %} {% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Category - {{ restaurant.name }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Category</h2>
+
+      <form method="POST">
+        {% csrf_token %}
+        <div class="space-y-4">
+          {% for field in form %}
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >{{ field.label }}</label
+            >
+            {{ field|add_class:"w-full border border-gray-300 rounded px-3 py-2
+            focus:outline-none focus:ring-2 focus:ring-blue-400" }} {% if
+            field.errors %}
+            <p class="text-red-500 text-sm mt-1">
+              {{ field.errors|striptags }}
+            </p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <a
+            href="{% url 'restaurants:menu' restaurant.slug %}"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded mr-2 hover:bg-gray-300"
+            >Cancel</a
+          >
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Update Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Category - {{ restaurant.name }}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-lg">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Category</h2>
+
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="space-y-4">
+          {% for field in form %}
+          <div>
+            <label class="block text-gray-700 font-medium mb-1"
+              >{{ field.label }}</label
+            >
+            <input
+              type="{{ field.field.widget.input_type|default:'text' }}"
+              name="{{ field.name }}"
+              value="{{ field.value|default_if_none:'' }}"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            {% if field.errors %}
+            <p class="text-red-500 text-sm mt-1">
+              {{ field.errors|striptags }}
+            </p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <a
+            href="{% url 'restaurants:menu' restaurant.slug %}"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded mr-2 hover:bg-gray-300"
+          >
+            Cancel
+          </a>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Update Category
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

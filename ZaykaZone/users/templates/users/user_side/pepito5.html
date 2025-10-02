@@ -2311,7 +2311,7 @@ function initiateOrderPayment() {
         
         // Open Razorpay
         var options = {
-            "key": "rzp_test_ROa0H24lCuEtfC",
+            "key": rzp_test_ROa0H24lCuEtfC,
             "amount": data.amount,
             "currency": data.currency,
             "name": "ZaykaZone",
@@ -2326,9 +2326,7 @@ function initiateOrderPayment() {
             },
             "handler": function (response) {
                 console.log('Payment successful:', response);
-                console.log('Payment_id',response.razorpay_order_id);
-                console.log('Payment_id',response.razorpay_payment_id);
-                console.log('Payment_id',response.razorpay_signature);
+                
                 fetch("{% url 'restaurants:payment_success' %}", {
                     method: 'POST',
                     headers: {
@@ -2343,11 +2341,9 @@ function initiateOrderPayment() {
                     })
                 })
                 .then(res => res.json())
-                //if dont want json response
-                //.then(res => res.text())
                 .then(successData => {
                     console.log('Verification response:', successData);
-                    console.log('payment id :', successData.razorpay_payment_id);
+                    
                     if (successData.status === "Payment successful") {
                         cart = {};
                         updateCartUI();

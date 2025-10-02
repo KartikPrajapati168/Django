@@ -50,6 +50,9 @@ INSTALLED_APPS = [
     'users',
     'restaurants',
     'adminpanel',
+    
+    
+    'widget_tweaks',
 
 ]
 
@@ -216,3 +219,40 @@ LOGIN_REDIRECT_URL = '/index/'
 #         cursor.execute("PRAGMA foreign_keys=ON;")
 #         cursor.close()
 
+
+
+#Razorpay Keys
+import os
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_ROa0H24lCuEtfC")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "rKBun7IfqORb96Lbdud7jHVZ")
+
+# RAZORPAY_KEY_ID = "rzp_test_ROAs3Bf6B2qhG5"
+# RAZORPAY_KEY_SECRET = "1Dk89y2EJlpUz1Oagic2bUBK"
+
+CSRF_COOKIE_NAME = 'csrftoken'  # Default, but confirm it's not overridden.
+CSRF_COOKIE_SECURE = False  # Set to False for local development (HTTP).
+CSRF_COOKIE_HTTPONLY = False  # Allows JS to read it.
+
+
+# import environ
+
+# env = environ.Env()
+# environ.Env.read_env()  # .env file read karega
+
+# RAZORPAY_KEY_ID = env("rzp_test_RNiVYdRjDE6hUC")
+# RAZORPAY_KEY_SECRET = env("eZH9uYH2bDNC93EOYyTJFiYW")
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Change to DEBUG for more details
+    },
+}

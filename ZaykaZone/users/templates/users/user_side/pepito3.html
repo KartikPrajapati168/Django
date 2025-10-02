@@ -1813,18 +1813,19 @@
     <!-- BootstrapJS Bundle -->
 <script src="{% static 'users/js/pepito.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    
+    
+    <!-- Add this script section right after the <body> tag and before your main JavaScript -->
+        <script>
+            // Get authentication status from Django template variables
+            var userAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+            var userRoleType = {% if user.is_authenticated %}'{{ user.role|default:"customer" }}'{% else %}null{% endif %};
+            
+            console.log('Django authentication status:', userAuthenticated);
+            console.log('User role:', userRoleType);
+        </script>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    
-    
-    <script>
-    // Get authentication status from Django template variables
-    var userAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
-    var userRoleType = {% if user.is_authenticated %}'{{ user.role|default:"customer" }}'{% else %}null{% endif %};
-    
-    console.log('Django authentication status:', userAuthenticated);
-    console.log('User role:', userRoleType);
-</script>
 
 <!-- Then update your main cart script -->
 <script>
@@ -1833,435 +1834,520 @@
     
     // Authentication state - Get from Django template variables
     let isUserLoggedIn = userAuthenticated || false;
-    let userRole = userRoleType || null;
+let userRole = userRoleType || null;
 
-    console.log('Initial auth state:', { isUserLoggedIn, userRole });
+console.log('Initial auth state:', { isUserLoggedIn, userRole });
 
-    // DOM Elements
-    const cartItemsEl = document.getElementById('cart-items');
-    const cartCountEl = document.getElementById('cart-count');
-    const cartTotalEl = document.getElementById('cart-total');
-    const placeOrderBtn = document.getElementById('place-order');
-    const notificationEl = document.getElementById('notification');
-    const cartToggle = document.getElementById('cart-toggle');
-    const cartContainer = document.getElementById('cart-container');
-    const closeCartBtn = document.getElementById('close-cart');
-    const overlay = document.getElementById('overlay');
+// DOM Elements
+const cartItemsEl = document.getElementById('cart-items');
+const cartCountEl = document.getElementById('cart-count');
+const cartTotalEl = document.getElementById('cart-total');
+const placeOrderBtn = document.getElementById('place-order');
+const notificationEl = document.getElementById('notification');
+const cartToggle = document.getElementById('cart-toggle');
+const cartContainer = document.getElementById('cart-container');
+const closeCartBtn = document.getElementById('close-cart');
+const overlay = document.getElementById('overlay');
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, initializing cart...');
-        
-        // Check authentication status from server/session
-        checkAuthenticationStatus();
-        
-        // Setup event listeners
-        setupEventListeners();
-        updateCartUI();
-        
-        // Show first category by default
-        const firstCategory = document.querySelector('#category-list .list-group-item.active');
-        if (firstCategory) {
-            const categoryMatch = firstCategory.getAttribute('onclick');
-            if (categoryMatch) {
-                const categoryId = categoryMatch.match(/'(category_\d+)'/);
-                if (categoryId && categoryId[1]) {
-                    const categoryElement = document.getElementById(categoryId[1]);
-                    if (categoryElement) {
-                        categoryElement.classList.remove('d-none');
-                    }
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, initializing cart...');
+    
+    // Check authentication status from server/session
+    checkAuthenticationStatus();
+    
+    // Setup event listeners
+    setupEventListeners();
+    updateCartUI();
+    
+    // Show first category by default
+    const firstCategory = document.querySelector('#category-list .list-group-item.active');
+    if (firstCategory) {
+        const categoryMatch = firstCategory.getAttribute('onclick');
+        if (categoryMatch) {
+            const categoryId = categoryMatch.match(/'(category_\d+)'/);
+            if (categoryId && categoryId[1]) {
+                const categoryElement = document.getElementById(categoryId[1]);
+                if (categoryElement) {
+                    categoryElement.classList.remove('d-none');
                 }
             }
+        }
+    }
+});
+
+// Function to check if user is authenticated
+function checkAuthenticationStatus() {
+    // Get authentication status from Django template variables
+    isUserLoggedIn = userAuthenticated || false;
+    userRole = userRoleType || null;
+    
+    console.log('Authentication status updated:', { isUserLoggedIn, userRole });
+    updatePlaceOrderButton();
+}
+
+// Update place order button based on authentication
+function updatePlaceOrderButton() {
+    if (!placeOrderBtn) return;
+    
+    if (!isUserLoggedIn) {
+        placeOrderBtn.innerHTML = `
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Login to Place Order
+            `;
+            placeOrderBtn.classList.add('btn-warning');
+            placeOrderBtn.classList.remove('btn-success');
+        placeOrderBtn.disabled = false; // Allow clicking for redirect
+    } else if (userRole === 'customer') {
+        placeOrderBtn.innerHTML = `
+        <i class="fas fa-shopping-bag me-2"></i>
+        Place Order
+        `;
+        placeOrderBtn.classList.add('btn-success');
+        placeOrderBtn.classList.remove('btn-warning');
+        placeOrderBtn.disabled = false;
+    } else {
+        placeOrderBtn.innerHTML = `
+        <i class="fas fa-user-slash me-2"></i>
+        Customer Access Required
+        `;
+        placeOrderBtn.classList.add('btn-secondary');
+        placeOrderBtn.classList.remove('btn-success', 'btn-warning');
+        placeOrderBtn.disabled = true;
+    }
+}
+
+function setupEventListeners() {
+    console.log('Setting up event listeners...');
+    
+    // Use event delegation for dynamic content
+    document.body.addEventListener('click', function(e) {
+        console.log('Click detected on:', e.target);
+        
+        // Handle plus buttons
+        if (e.target.matches('.plus-btn') || 
+        e.target.matches('.quantity-btn.plus-btn') || 
+        e.target.closest('.plus-btn') || 
+        e.target.closest('.quantity-btn.plus-btn')) {
+            
+            console.log('Plus button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const quantityDisplay = card.querySelector('.quantity-display');
+                if (quantityDisplay) {
+                    let quantity = parseInt(quantityDisplay.textContent) + 1;
+                    quantityDisplay.textContent = quantity;
+                    quantityDisplay.classList.add('pulse');
+                    setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
+                }
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle minus buttons
+        if (e.target.matches('.minus-btn') || 
+            e.target.matches('.quantity-btn.minus-btn') || 
+            e.target.closest('.minus-btn') || 
+            e.target.closest('.quantity-btn.minus-btn')) {
+            
+            console.log('Minus button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const quantityDisplay = card.querySelector('.quantity-display');
+                if (quantityDisplay) {
+                    let quantity = parseInt(quantityDisplay.textContent) - 1;
+                    if (quantity < 1) quantity = 1;
+                    quantityDisplay.textContent = quantity;
+                    quantityDisplay.classList.add('pulse');
+                    setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
+                }
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle add-to-cart buttons
+        if (e.target.matches('.add-to-cart-btn') || e.target.closest('.add-to-cart-btn')) {
+            console.log('Add to cart button clicked');
+            const card = e.target.closest('.card');
+            if (card) {
+                const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
+                const quantityDisplay = card.querySelector('.quantity-display');
+                const quantity = quantityDisplay ? parseInt(quantityDisplay.textContent) : 1;
+                console.log('Adding to cart:', itemId, quantity);
+                addToCart(itemId, quantity);
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        
+        // Handle card click (add 1 item) - but exclude clicks on buttons
+        if ((e.target.matches('.menu-item-card') || e.target.closest('.menu-item-card')) && 
+        !e.target.closest('.quantity-controls') && 
+        !e.target.closest('.add-to-cart-btn') &&
+        !e.target.matches('button') &&
+        !e.target.closest('button')) {
+            
+            console.log('Card clicked');
+            const card = e.target.closest('.card') || e.target.closest('.menu-item-card');
+            if (card) {
+                const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
+                console.log('Adding to cart from card click:', itemId);
+                addToCart(itemId, 1);
+            }
+            return;
+        }
+        
+        // Handle cart quantity buttons
+        if (e.target.matches('.cart-plus-btn')) {
+            const id = e.target.dataset.id;
+            if (cart[id]) {
+                cart[id].quantity++;
+                updateCartUI();
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        if (e.target.matches('.cart-minus-btn')) {
+            const id = e.target.dataset.id;
+            if (cart[id]) {
+                if (cart[id].quantity > 1) {
+                    cart[id].quantity--;
+                } else {
+                    delete cart[id];
+                }
+                updateCartUI();
+            }
+            e.preventDefault();
+            return;
+        }
+        
+        // Handle remove buttons
+        if (e.target.matches('.remove-btn') || e.target.closest('.remove-btn')) {
+            const btn = e.target.matches('.remove-btn') ? e.target : e.target.closest('.remove-btn');
+            const id = btn.dataset.id;
+            if (cart[id]) {
+                delete cart[id];
+                updateCartUI();
+                showNotification('Item removed from cart');
+            }
+            e.preventDefault();
+            return;
         }
     });
-
-    // Function to check if user is authenticated
-    function checkAuthenticationStatus() {
-        // Get authentication status from Django template variables
-        isUserLoggedIn = userAuthenticated || false;
-        userRole = userRoleType || null;
-        
-        console.log('Authentication status updated:', { isUserLoggedIn, userRole });
-        updatePlaceOrderButton();
+    
+    // Place order button
+    if (placeOrderBtn) {
+        placeOrderBtn.addEventListener('click', handlePlaceOrderClick);
     }
-
-    // Update place order button based on authentication
-    function updatePlaceOrderButton() {
-        if (!placeOrderBtn) return;
-        
-        if (!isUserLoggedIn) {
-            placeOrderBtn.innerHTML = `
-                <i class="fas fa-sign-in-alt me-2"></i>
-                Login to Place Order
-                `;
-                placeOrderBtn.classList.add('btn-warning');
-                placeOrderBtn.classList.remove('btn-success');
-            placeOrderBtn.disabled = false; // Allow clicking for redirect
-        } else if (userRole === 'customer') {
-            placeOrderBtn.innerHTML = `
-            <i class="fas fa-shopping-bag me-2"></i>
-            Place Order
-            `;
-            placeOrderBtn.classList.add('btn-success');
-            placeOrderBtn.classList.remove('btn-warning');
-            placeOrderBtn.disabled = false;
-        } else {
-            placeOrderBtn.innerHTML = `
-            <i class="fas fa-user-slash me-2"></i>
-            Customer Access Required
-            `;
-            placeOrderBtn.classList.add('btn-secondary');
-            placeOrderBtn.classList.remove('btn-success', 'btn-warning');
-            placeOrderBtn.disabled = true;
-        }
+    
+    // Cart toggle
+    if (cartToggle) {
+        cartToggle.addEventListener('click', toggleCart);
     }
-
-    function setupEventListeners() {
-        console.log('Setting up event listeners...');
-        
-        // Use event delegation for dynamic content
-        document.body.addEventListener('click', function(e) {
-            console.log('Click detected on:', e.target);
-            
-            // Handle plus buttons
-            if (e.target.matches('.plus-btn') || 
-            e.target.matches('.quantity-btn.plus-btn') || 
-            e.target.closest('.plus-btn') || 
-            e.target.closest('.quantity-btn.plus-btn')) {
-                
-                console.log('Plus button clicked');
-                const card = e.target.closest('.card');
-                if (card) {
-                    const quantityDisplay = card.querySelector('.quantity-display');
-                    if (quantityDisplay) {
-                        let quantity = parseInt(quantityDisplay.textContent) + 1;
-                        quantityDisplay.textContent = quantity;
-                        quantityDisplay.classList.add('pulse');
-                        setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
-                    }
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            
-            // Handle minus buttons
-            if (e.target.matches('.minus-btn') || 
-                e.target.matches('.quantity-btn.minus-btn') || 
-                e.target.closest('.minus-btn') || 
-                e.target.closest('.quantity-btn.minus-btn')) {
-                
-                console.log('Minus button clicked');
-                const card = e.target.closest('.card');
-                if (card) {
-                    const quantityDisplay = card.querySelector('.quantity-display');
-                    if (quantityDisplay) {
-                        let quantity = parseInt(quantityDisplay.textContent) - 1;
-                        if (quantity < 1) quantity = 1;
-                        quantityDisplay.textContent = quantity;
-                        quantityDisplay.classList.add('pulse');
-                        setTimeout(() => quantityDisplay.classList.remove('pulse'), 300);
-                    }
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            
-            // Handle add-to-cart buttons
-            if (e.target.matches('.add-to-cart-btn') || e.target.closest('.add-to-cart-btn')) {
-                console.log('Add to cart button clicked');
-                const card = e.target.closest('.card');
-                if (card) {
-                    const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
-                    const quantityDisplay = card.querySelector('.quantity-display');
-                    const quantity = quantityDisplay ? parseInt(quantityDisplay.textContent) : 1;
-                    console.log('Adding to cart:', itemId, quantity);
-                    addToCart(itemId, quantity);
-                }
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            
-            // Handle card click (add 1 item) - but exclude clicks on buttons
-            if ((e.target.matches('.menu-item-card') || e.target.closest('.menu-item-card')) && 
-            !e.target.closest('.quantity-controls') && 
-            !e.target.closest('.add-to-cart-btn') &&
-            !e.target.matches('button') &&
-            !e.target.closest('button')) {
-                
-                console.log('Card clicked');
-                const card = e.target.closest('.card') || e.target.closest('.menu-item-card');
-                if (card) {
-                    const itemId = card.dataset.itemId || card.getAttribute('data-item-id');
-                    console.log('Adding to cart from card click:', itemId);
-                    addToCart(itemId, 1);
-                }
-                return;
-            }
-            
-            // Handle cart quantity buttons
-            if (e.target.matches('.cart-plus-btn')) {
-                const id = e.target.dataset.id;
-                if (cart[id]) {
-                    cart[id].quantity++;
-                    updateCartUI();
-                }
-                e.preventDefault();
-                return;
-            }
-            
-            if (e.target.matches('.cart-minus-btn')) {
-                const id = e.target.dataset.id;
-                if (cart[id]) {
-                    if (cart[id].quantity > 1) {
-                        cart[id].quantity--;
-                    } else {
-                        delete cart[id];
-                    }
-                    updateCartUI();
-                }
-                e.preventDefault();
-                return;
-            }
-            
-            // Handle remove buttons
-            if (e.target.matches('.remove-btn') || e.target.closest('.remove-btn')) {
-                const btn = e.target.matches('.remove-btn') ? e.target : e.target.closest('.remove-btn');
-                const id = btn.dataset.id;
-                if (cart[id]) {
-                    delete cart[id];
-                    updateCartUI();
-                    showNotification('Item removed from cart');
-                }
-                e.preventDefault();
-                return;
-            }
-        });
-        
-        // Place order button (now triggers payment for orders)
-        if (placeOrderBtn) {
-            placeOrderBtn.addEventListener('click', handlePlaceOrderClick);
-        }
-        
-        // Cart toggle
-        if (cartToggle) {
-            cartToggle.addEventListener('click', toggleCart);
-        }
-        
-        // Close cart
-        if (closeCartBtn) {
-            closeCartBtn.addEventListener('click', closeCart);
-        }
-        
-        // Close cart when clicking overlay
-        if (overlay) {
-            overlay.addEventListener('click', closeCart);
-        }
+    
+    // Close cart
+    if (closeCartBtn) {
+        closeCartBtn.addEventListener('click', closeCart);
     }
-
-    function addToCart(itemId, quantity) {
-        console.log('addToCart called:', itemId, quantity);
-        
-        if (!itemId) {
-            console.error('No item ID provided');
-            return;
-        }
-        
-        // Find the item details
-        const card = document.querySelector(`[data-item-id="${itemId}"]`) || 
-                     document.querySelector(`.card[data-item-id="${itemId}"]`);
-        
-        if (!card) {
-            console.error('Card not found for item ID:', itemId);
-            return;
-        }
-        
-        console.log('Card found:', card);
-        
-        // Get item details with fallbacks
-        const titleElement = card.querySelector('.menu-item-title') || 
-                            card.querySelector('.card-title') || 
-                            card.querySelector('h5') || 
-                            card.querySelector('h6');
-        
-        const priceElement = card.querySelector('.menu-item-price') || 
-                            card.querySelector('.price') || 
-                            card.querySelector('[class*="price"]');
-        
-        const imageElement = card.querySelector('img');
-        
-        const name = titleElement ? titleElement.textContent.trim() : `Item ${itemId}`;
-        const priceText = priceElement ? priceElement.textContent.trim() : '0';
-        const price = parseFloat(priceText.replace(/[₹$£€,]/g, '')) || 0;
-        const image = imageElement ? imageElement.src : '';
-        
-        console.log('Item details:', { name, price, image, quantity });
-        
-        if (cart[itemId]) {
-            cart[itemId].quantity += quantity;
-        } else {
-            cart[itemId] = {
-                id: itemId,
-                name: name,
-                price: price,
-                image: image,
-                quantity: quantity
-            };
-        }
-        
-        console.log('Cart updated:', cart);
-        
-        // Reset quantity display
-        const quantityDisplay = card.querySelector('.quantity-display');
-        if (quantityDisplay) {
-            quantityDisplay.textContent = '1';
-        }
-        
-        // Show notification
-        showNotification(`${quantity} ${name} added to cart!`);
-        
-        // Update cart UI
-        updateCartUI();
-        
-        // Open cart automatically when adding items
-        openCart();
-        
-        // Add animation if image exists
-        if (image) {
-            animateAddToCart(card, image);
-        }
+    
+    // Close cart when clicking overlay
+    if (overlay) {
+        overlay.addEventListener('click', closeCart);
     }
+}
 
-    function updateCartUI() {
-        console.log('Updating cart UI, current cart:', cart);
-        
-        if (!cartCountEl || !cartItemsEl || !cartTotalEl) {
-            console.error('Cart UI elements not found');
-            return;
-        }
-        
-        // Update cart count
-        const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
-        cartCountEl.textContent = itemCount;
-        cartCountEl.style.display = itemCount > 0 ? 'inline-block' : 'none';
-        
-        console.log('Cart count updated:', itemCount);
-        
-        // Update cart items
-        if (itemCount === 0) {
-            cartItemsEl.innerHTML = `
-            <div class="empty-cart text-center p-4">
-                <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
-                    <p class="text-muted">Your cart is empty</p>
-                    <p class="text-sm text-muted">Add some items to get started!</p>
-                </div>
-            `;
-            cartTotalEl.textContent = '0.00';
-            
-            // Update place order button state
-            updatePlaceOrderButton();
-            return;
-        }
-        
-        // Generate cart items HTML
-        let cartItemsHTML = '';
-        let total = 0;
-        
-        Object.values(cart).forEach(item => {
-            const itemTotal = item.price * item.quantity;
-            total += itemTotal;
-            
-            cartItemsHTML += `
-            <div class="cart-item d-flex align-items-center p-3 border-bottom">
-                <img src="${item.image}" alt="${item.name}" class="cart-item-img me-3" 
-                        style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
-                        onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23f5f5f5\'/%3E%3Ctext x=\'30\' y=\'35\' font-family=\'Arial\' font-size=\'10\' fill=\'%23888\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E'">
-                    <div class="cart-item-details flex-grow-1">
-                        <div class="cart-item-name fw-bold">${item.name}</div>
-                        <div class="cart-item-price text-primary">₹${item.price.toFixed(2)}</div>
-                        <div class="cart-item-quantity d-flex align-items-center mt-2">
-                            <button class="btn btn-outline-secondary btn-sm cart-minus-btn" data-id="${item.id}">-</button>
-                            <span class="mx-3">${item.quantity}</span>
-                            <button class="btn btn-outline-secondary btn-sm cart-plus-btn" data-id="${item.id}">+</button>
-                            <button class="btn btn-outline-danger btn-sm ms-3 remove-btn" data-id="${item.id}" title="Remove from cart">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="cart-item-total fw-bold">
-                        ₹${itemTotal.toFixed(2)}
-                    </div>
-                </div>
-            `;
-        });
-        
-        cartItemsEl.innerHTML = cartItemsHTML;
-        cartTotalEl.textContent = total.toFixed(2);
+function addToCart(itemId, quantity) {
+    console.log('addToCart called:', itemId, quantity);
+    
+    if (!itemId) {
+        console.error('No item ID provided');
+        return;
+    }
+    
+    // Find the item details
+    const card = document.querySelector(`[data-item-id="${itemId}"]`) || 
+                 document.querySelector(`.card[data-item-id="${itemId}"]`);
+    
+    if (!card) {
+        console.error('Card not found for item ID:', itemId);
+        return;
+    }
+    
+    console.log('Card found:', card);
+    
+    // Get item details with fallbacks
+    const titleElement = card.querySelector('.menu-item-title') || 
+                        card.querySelector('.card-title') || 
+                        card.querySelector('h5') || 
+                        card.querySelector('h6');
+    
+    const priceElement = card.querySelector('.menu-item-price') || 
+                        card.querySelector('.price') || 
+                        card.querySelector('[class*="price"]');
+    
+    const imageElement = card.querySelector('img');
+    
+    const name = titleElement ? titleElement.textContent.trim() : `Item ${itemId}`;
+    const priceText = priceElement ? priceElement.textContent.trim() : '0';
+    const price = parseFloat(priceText.replace(/[₹$£€,]/g, '')) || 0;
+    const image = imageElement ? imageElement.src : '';
+    
+    console.log('Item details:', { name, price, image, quantity });
+    
+    if (cart[itemId]) {
+        cart[itemId].quantity += quantity;
+    } else {
+        cart[itemId] = {
+            id: itemId,
+            name: name,
+            price: price,
+            image: image,
+            quantity: quantity
+        };
+    }
+    
+    console.log('Cart updated:', cart);
+    
+    // Reset quantity display
+    const quantityDisplay = card.querySelector('.quantity-display');
+    if (quantityDisplay) {
+        quantityDisplay.textContent = '1';
+    }
+    
+    // Show notification
+    showNotification(`${quantity} ${name} added to cart!`);
+    
+    // Update cart UI
+    updateCartUI();
+    
+    // Open cart automatically when adding items
+    openCart();
+    
+    // Add animation if image exists
+    if (image) {
+        animateAddToCart(card, image);
+    }
+}
+
+function updateCartUI() {
+    console.log('Updating cart UI, current cart:', cart);
+    
+    if (!cartCountEl || !cartItemsEl || !cartTotalEl) {
+        console.error('Cart UI elements not found');
+        return;
+    }
+    
+    // Update cart count
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    cartCountEl.textContent = itemCount;
+    cartCountEl.style.display = itemCount > 0 ? 'inline-block' : 'none';
+    
+    console.log('Cart count updated:', itemCount);
+    
+    // Update cart items
+    if (itemCount === 0) {
+        cartItemsEl.innerHTML = `
+        <div class="empty-cart text-center p-4">
+            <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i>
+                <p class="text-muted">Your cart is empty</p>
+                <p class="text-sm text-muted">Add some items to get started!</p>
+            </div>
+        `;
+        cartTotalEl.textContent = '0.00';
         
         // Update place order button state
         updatePlaceOrderButton();
-        
-        console.log('Cart UI updated, total:', total);
+        return;
     }
-
-    function handlePlaceOrderClick(e) {
-        e.preventDefault();  // Prevent default form submit to avoid direct POST
-        
-        const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
-        
-        // Check if cart is empty
-        if (itemCount === 0) {
-            showNotification('Your cart is empty! Add some items first.', 'warning');
-            return;
-        }
-        
-        // Re-check authentication status from current page state
-        checkAuthenticationStatus();
-        
-        // Check authentication status
-        if (!isUserLoggedIn) {
-            showNotification('Please login to place an order', 'warning');
-            
-            // Redirect to login page after showing notification
-            setTimeout(() => {
-                // Replace with your actual login URL
-                window.location.href = "{% url 'users:login_signup' %}";
-            }, 2000);
-            return;
-        }
-        
-        // Check user role
-        if (userRole !== 'customer') {
-            showNotification('Only customers can place orders', 'error');
-            return;
-        }
-        
-        // All checks passed, proceed with payment for order
-        initiateOrderPayment();
-    }
-
-    function loadRazorpaySDK() {
-        if (!document.getElementById('razorpay-sdk')) {
-            var script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.id = 'razorpay-sdk';
-            document.body.appendChild(script);
-            script.onload = () => console.log('Razorpay SDK loaded');
-        }
-    }
-    // Call this before initiateOrderPayment()
-
-function initiateOrderPayment() {
-    console.log('=== Starting Payment ===');
-    console.log('Cart:', cart);
-    console.log('Total:', cartTotalEl.textContent);
     
-    const originalContent = placeOrderBtn.innerHTML;
-    placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+    // Generate cart items HTML
+    let cartItemsHTML = '';
+    let total = 0;
+    
+    Object.values(cart).forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        
+        cartItemsHTML += `
+        <div class="cart-item d-flex align-items-center p-3 border-bottom">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-img me-3" 
+                    style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
+                    onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23f5f5f5\'/%3E%3Ctext x=\'30\' y=\'35\' font-family=\'Arial\' font-size=\'10\' fill=\'%23888\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E'">
+                <div class="cart-item-details flex-grow-1">
+                    <div class="cart-item-name fw-bold">${item.name}</div>
+                    <div class="cart-item-price text-primary">₹${item.price.toFixed(2)}</div>
+                    <div class="cart-item-quantity d-flex align-items-center mt-2">
+                        <button class="btn btn-outline-secondary btn-sm cart-minus-btn" data-id="${item.id}">-</button>
+                        <span class="mx-3">${item.quantity}</span>
+                        <button class="btn btn-outline-secondary btn-sm cart-plus-btn" data-id="${item.id}">+</button>
+                        <button class="btn btn-outline-danger btn-sm ms-3 remove-btn" data-id="${item.id}" title="Remove from cart">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="cart-item-total fw-bold">
+                    ₹${itemTotal.toFixed(2)}
+                </div>
+            </div>
+        `;
+    });
+    
+    cartItemsEl.innerHTML = cartItemsHTML;
+    cartTotalEl.textContent = total.toFixed(2);
+    
+    // Update place order button state
+    updatePlaceOrderButton();
+    
+    console.log('Cart UI updated, total:', total);
+}
+
+function handlePlaceOrderClick() {
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    
+    // Check if cart is empty
+    if (itemCount === 0) {
+        showNotification('Your cart is empty! Add some items first.');
+        return;
+    }
+    
+    // Re-check authentication status from current page state
+    checkAuthenticationStatus();
+    
+    // Check authentication status
+    if (!isUserLoggedIn) {
+        showNotification('Please login to place an order', 'warning');
+        
+        // Redirect to login page after showing notification
+        setTimeout(() => {
+            // Replace with your actual login URL
+            window.location.href = "{% url 'users:login_signup' %}";
+        }, 2000);
+        return;
+    }
+    
+    // Check user role
+    if (userRole !== 'customer') {
+        showNotification('Only customers can place orders', 'error');
+        return;
+    }
+    
+    // All checks passed, proceed with order
+    placeOrder();
+}
+
+function placeOrder() {
+    const itemCount = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    
+    console.log('Placing order with authentication check passed');
+    
+    // Show loading state
+    const originalButtonContent = placeOrderBtn.innerHTML;
+    placeOrderBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        Placing Order...
+    `;
     placeOrderBtn.disabled = true;
     
+    // Send order to server
+    sendOrder(originalButtonContent);
+}
+
+function showNotification(message, type = 'success') {
+    if (!notificationEl) {
+        console.log('Notification:', message);
+        return;
+    }
+    
+    // Remove existing type classes
+    notificationEl.classList.remove('alert-success', 'alert-warning', 'alert-danger', 'alert-info');
+    
+    // Add appropriate type class
+    switch(type) {
+        case 'success':
+            notificationEl.classList.add('alert-success');
+            break;
+        case 'warning':
+            notificationEl.classList.add('alert-warning');
+            break;
+            case 'error':
+            notificationEl.classList.add('alert-danger');
+            break;
+        case 'info':
+            notificationEl.classList.add('alert-info');
+            break;
+        default:
+            notificationEl.classList.add('alert-success');
+        }
+    
+    const messageEl = notificationEl.querySelector('p') || notificationEl;
+    messageEl.textContent = message;
+    notificationEl.classList.add('show');
+    
+    setTimeout(() => {
+        notificationEl.classList.remove('show');
+    }, 3000);
+}
+
+function toggleCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.toggle('show');
+        overlay.classList.toggle('show');
+    }
+}
+
+function openCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.add('show');
+        overlay.classList.add('show');
+    }
+}
+
+function closeCart() {
+    if (cartContainer && overlay) {
+        cartContainer.classList.remove('show');
+        overlay.classList.remove('show');
+    }
+}
+
+function animateAddToCart(sourceElement, imageSrc) {
+    const animationElement = document.createElement('div');
+    animationElement.className = 'add-to-cart-animation';
+    animationElement.style.position = 'fixed';
+    animationElement.style.zIndex = '9999';
+    animationElement.style.pointerEvents = 'none';
+    animationElement.style.transition = 'all 0.8s ease-in-out';
+    
+    const rect = sourceElement.getBoundingClientRect();
+    animationElement.style.left = `${rect.left + rect.width/2 - 25}px`;
+    animationElement.style.top = `${rect.top + rect.height/2 - 25}px`;
+    animationElement.innerHTML = `<img src="${imageSrc}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">`;
+    document.body.appendChild(animationElement);
+    
+    const cartIcon = document.querySelector('.bi-cart') || cartToggle;
+    if (cartIcon) {
+        const cartRect = cartIcon.getBoundingClientRect();
+        setTimeout(() => {
+            animationElement.style.left = `${cartRect.left + cartRect.width/2 - 25}px`;
+            animationElement.style.top = `${cartRect.top + cartRect.height/2 - 25}px`;
+            animationElement.style.transform = 'scale(0.1)';
+            animationElement.style.opacity = '0';
+        }, 100);
+    }
+    
+    setTimeout(() => {
+        if (animationElement.parentNode) {
+            animationElement.remove();
+        }
+    }, 1000);
+}
+
+function sendOrder(originalButtonContent) {
     const orderData = {
         restaurant_id: {{ restaurant.id }},
         items: Object.values(cart).map(item => ({
@@ -2270,230 +2356,119 @@ function initiateOrderPayment() {
             price: item.price,
             quantity: item.quantity
         })),
-        total_price: parseFloat(cartTotalEl.textContent)
+        total: parseFloat(cartTotalEl.textContent)
     };
     
-    console.log('Sending order data:', orderData);
+    console.log('Sending order:', orderData);
     
-    fetch("{% url 'restaurants:create_razorpay_order' %}", {
+    fetch("{% url 'restaurants:place_order' %}", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify(orderData)
+        /*orderData ek JS object hai (items, price, etc.).
+        → JSON.stringify(...) usko JSON string me convert karta hai kyunki server raw text JSON hi expect karta hai.*/
     })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        return response.text();
-    })
-    .then(text => {
-        console.log('Raw response:', text);
+    /*fetch() ek Promise return karta hai.
+    then(...) tab run hota hai jab server se response aa jata hai.
+    👉 response ek raw HTTP Response object hai (status code, headers, body, etc.).
+    👉 response.json() ek aur promise return karta hai jo server ki body ko JSON object me parse karta hai.*/
+    .then(response => response.json())
+    
+
+    /*Yaha data ek JS object hai jo server ne JSON format me bheja tha.
+    Example server response ho sakta hai:
+    {"success": true,"order_id": 123,"message": "Order placed"}*/
+    .then(data => {
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
         
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('Failed to parse JSON:', e);
-            throw new Error('Server returned invalid response: ' + text.substring(0, 200));
+        if (data.success) {
+            cart = {};
+            updateCartUI();
+            closeCart();
+            showNotification('Order placed successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = `/order-confirmation/${data.order_id}/`; // if you have a confirmation page
+            }, 1500);
+        } else {
+            showNotification('Failed to place order: ' + data.message, 'error');
         }
-        
-        console.log('Parsed data:', data);
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        if (!data.id || !data.amount) {
-            throw new Error('Missing order_id or amount in response');
-        }
-        
-        // Open Razorpay
-        var options = {
-            "key": "rzp_test_ROa0H24lCuEtfC",
-            "amount": data.amount,
-            "currency": data.currency,
-            "name": "ZaykaZone",
-            "description": "Order Payment",
-            "order_id": data.id,
-            "prefill": {
-                "name":"{{ user.full_name|default:'Guest' }}",
-                "email": "{{ user.email|default:'guest@example.com' }}"
-            },
-            "theme": {
-                "color": "#F37254"
-            },
-            "handler": function (response) {
-                console.log('Payment successful:', response);
-                console.log('Payment_id',response.razorpay_order_id);
-                console.log('Payment_id',response.razorpay_payment_id);
-                console.log('Payment_id',response.razorpay_signature);
-                fetch("{% url 'restaurants:payment_success' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: new URLSearchParams({
-                        'razorpay_order_id': response.razorpay_order_id,
-                        'razorpay_payment_id': response.razorpay_payment_id,
-                        'razorpay_signature': response.razorpay_signature,
-                        'type': 'order'
-                    })
-                })
-                .then(res => res.json())
-                //if dont want json response
-                //.then(res => res.text())
-                .then(successData => {
-                    console.log('Verification response:', successData);
-                    console.log('payment id :', successData.razorpay_payment_id);
-                    if (successData.status === "Payment successful") {
-                        cart = {};
-                        updateCartUI();
-                        closeCart();
-                        alert('Order placed successfully!');
-                        window.location.href = successData.redirect_url;
-                    } else {
-                        alert('Payment verification failed: ' + successData.status);
-                        placeOrderBtn.innerHTML = originalContent;
-                        placeOrderBtn.disabled = false;
-                    }
-                })
-                .catch(err => {
-                    console.error('Verification error:', err);
-                    alert('Failed to verify payment: ' + err.message);
-                    placeOrderBtn.innerHTML = originalContent;
-                    placeOrderBtn.disabled = false;
-                });
-            },
-            "modal": {
-                "ondismiss": function() {
-                    console.log('Modal dismissed');
-                    placeOrderBtn.innerHTML = originalContent;
-                    placeOrderBtn.disabled = false;
-                }
-            }
-        };
-        
-        console.log('Opening Razorpay with options:', options);
-        var rzp = new Razorpay(options);
-        rzp.open();
     })
     .catch(error => {
-        console.error('=== ERROR ===');
-        console.error('Error:', error);
-        console.error('Stack:', error.stack);
-        
-        alert('Payment failed: ' + error.message);
-        placeOrderBtn.innerHTML = originalContent;
+        placeOrderBtn.innerHTML = originalButtonContent;
         placeOrderBtn.disabled = false;
+        console.error('Order error:', error);
+        showNotification('An error occurred while placing your order.', 'error');
     });
-}
+    
+    // For demo purposes - replace with actual API call
+    setTimeout(() => {
+        // Reset button state
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
+        
+        // Clear cart and show success
+        cart = {};
+        updateCartUI();
+        closeCart();
+        showNotification('Order placed successfully!', 'success');
+        
+        // Optional: Redirect to order confirmation page
+        // setTimeout(() => {
+            //     window.location.href = '/order-confirmation/';
+            // }, 2000);
+        
+        }, 2000);
 
-// Also add this helper at the top of your script if not already present
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 
-    function showNotification(message, type = 'success') {
-        if (!notificationEl) {
-            console.log('Notification:', message);
-            return;
-        }
-        
-        // Remove existing type classes
-        notificationEl.classList.remove('alert-success', 'alert-warning', 'alert-danger', 'alert-info');
-        
-        // Add appropriate type class
-        switch(type) {
-            case 'success':
-                notificationEl.classList.add('alert-success');
-                break;
-            case 'warning':
-                notificationEl.classList.add('alert-warning');
-                break;
-            case 'error':
-                notificationEl.classList.add('alert-danger');
-                break;
-            case 'info':
-                notificationEl.classList.add('alert-info');
-                break;
-            default:
-                notificationEl.classList.add('alert-success');
-        }
-        
-        const messageEl = notificationEl.querySelector('p') || notificationEl;
-        messageEl.textContent = message;
-        notificationEl.classList.add('show');
-        
-        setTimeout(() => {
-            notificationEl.classList.remove('show');
-        }, 3000);
-    }
+    /*
+    Overall Flow (Hinglish)
 
-    function toggleCart() {
-        if (cartContainer && overlay) {
-            cartContainer.classList.toggle('show');
-            overlay.classList.toggle('show');
+    [1]  .JS object ko JSON banake POST request me bheja server ko.
+    [2]  Server ne ek response diya (jaise {"success": true, "order_id": 123} ).
+    [3]  .then(response => response.json()) → raw response ko JSON object me convert kiya.
+    [4]  .then(data => {...}) → JSON object ke andar ka data handle kiya.
+    [5]  .catch(error => {...}) → agar beech me koi problem hui toh handle kiya.
+    */
+    
+    // Uncomment and modify this for actual implementation:
+    /*
+    fetch("{% url 'restaurants:create_order' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(orderData)
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Reset button state
+                placeOrderBtn.innerHTML = originalButtonContent;
+                placeOrderBtn.disabled = false;
+                
+                if (data.success) {
+                    cart = {};
+                    updateCartUI();
+                    closeCart();
+                    showNotification('Order placed successfully!', 'success');
+                    setTimeout(() => window.location.href = `/confirmation/${data.order_id}/`, 1500);
+                    } else {
+                        showNotification('Failed to place order: ' + data.message, 'error');
         }
-    }
-
-    function openCart() {
-        if (cartContainer && overlay) {
-            cartContainer.classList.add('show');
-            overlay.classList.add('show');
-        }
-    }
-
-    function closeCart() {
-        if (cartContainer && overlay) {
-            cartContainer.classList.remove('show');
-            overlay.classList.remove('show');
-        }
-    }
-
-    function animateAddToCart(sourceElement, imageSrc) {
-        const animationElement = document.createElement('div');
-        animationElement.className = 'add-to-cart-animation';
-        animationElement.style.position = 'fixed';
-        animationElement.style.zIndex = '9999';
-        animationElement.style.pointerEvents = 'none';
-        animationElement.style.transition = 'all 0.8s ease-in-out';
+    })
+    .catch(error => {
+        // Reset button state
+        placeOrderBtn.innerHTML = originalButtonContent;
+        placeOrderBtn.disabled = false;
         
-        const rect = sourceElement.getBoundingClientRect();
-        animationElement.style.left = `${rect.left + rect.width/2 - 25}px`;
-        animationElement.style.top = `${rect.top + rect.height/2 - 25}px`;
-        animationElement.innerHTML = `<img src="${imageSrc}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">`;
-        document.body.appendChild(animationElement);
-        
-        const cartIcon = document.querySelector('.bi-cart') || cartToggle;
-        if (cartIcon) {
-            const cartRect = cartIcon.getBoundingClientRect();
-            setTimeout(() => {
-                animationElement.style.left = `${cartRect.left + cartRect.width/2 - 25}px`;
-                animationElement.style.top = `${cartRect.top + cartRect.height/2 - 25}px`;
-                animationElement.style.transform = 'scale(0.1)';
-                animationElement.style.opacity = '0';
-            }, 100);
-        }
-        
-        setTimeout(() => {
-            if (animationElement.parentNode) {
-                animationElement.remove();
-            }
-        }, 1000);
+        console.error('Order error:', error);
+        showNotification('An error occurred while placing your order.', 'error');
+        });
+        */
     }
 
     function getCookie(name) {
@@ -2705,8 +2680,7 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(data => {
                 if (data.success) {
-                    // Instead of redirect, initiate payment for booking
-                    initiateBookingPayment(data.booking_id, data.amount);  // Assume server returns booking_id and amount
+                    window.location.href = data.redirect_url;  
                 } else if (bookingMessage) {
                     bookingMessage.innerHTML = `
                         <div class="alert alert-danger">
@@ -2726,16 +2700,20 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+</script>
 
-function initiateBookingPayment(bookingId, amount) {
-    console.log('Initiating payment for table booking', { bookingId, amount });
-    
-    // Create Razorpay order for booking
-    fetch("{% url 'restaurants:create_razorpay_order' %}", {  // Fixed: Absolute URL, added 'restaurants/'
+
+<script>
+document.getElementById('pay-button').addEventListener('click', function() {  // Or '#place-order' for cart
+    // For dynamic amount (e.g., from cart total or booking)
+    const amount = parseFloat(document.getElementById('cart-total')?.textContent || 500);  // Use cart total if available
+    const bookingId = '123';  // Dynamic from your form/session (e.g., from POST)
+
+    fetch('/restaurants/create-razorpay-order/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': '{{ csrf_token }}'
         },
         body: new URLSearchParams({
             'amount': amount.toString(),
@@ -2751,15 +2729,15 @@ function initiateBookingPayment(bookingId, amount) {
 
         // Open modal with fetched data
         var options = {
-            "key": "rzp_test_ROa0H24lCuEtfC",
+            "key": "{{ RAZORPAY_KEY_ID }}",
             "amount": data.amount,  // From server (in paise)
-            "currency": data.currency,
+            "currency": "INR",
             "name": "ZaykaZone",
-            "description": "Table Booking Payment",
+            "description": "Order / Table Booking",
             "image": "https://yourdomain.com/static/logo.png",
             "order_id": data.id,  // From server
             "prefill": {
-                "name": "{{ user.full_name}}",
+                "name": "{{ user.full_name|default:user.username }}",
                 "email": "{{ user.email }}",
                 "contact": "9999999999"  // Dynamic if possible
             },
@@ -2767,26 +2745,24 @@ function initiateBookingPayment(bookingId, amount) {
                 "color": "#F37254"
             },
             "handler": function (response) {
-                // Handle success: POST to payment_success for booking
-                fetch("{% url 'restaurants:payment_success' %}", {  // Fixed: Absolute URL
+                // Handle success: POST to payment_success
+                fetch('/restaurants/payment-success/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': '{{ csrf_token }}'
                     },
                     body: new URLSearchParams({
                         'razorpay_payment_id': response.razorpay_payment_id,
                         'razorpay_order_id': response.razorpay_order_id,
-                        'razorpay_signature': response.razorpay_signature,
-                        'type': 'booking',  // To distinguish from order
-                        'booking_id': bookingId
+                        'razorpay_signature': response.razorpay_signature
                     })
                 })
                 .then(res => res.json())
                 .then(successData => {
                     if (successData.status === "Payment successful") {
-                        alert('Payment Successful! Booking confirmed.');
-                        window.location.href = successData.redirect_url || '/booking-confirmation/';  // Redirect
+                        alert('Payment Successful!');
+                        window.location.href = '/order-confirmation/';  // Redirect
                     } else {
                         alert('Payment failed: ' + successData.status);
                     }
@@ -2807,7 +2783,25 @@ function initiateBookingPayment(bookingId, amount) {
         console.error('Error:', error);
         alert('Failed to initiate payment: ' + error.message);
     });
-}
+});
+</script>
+
+<script>
+    document.getElementById('pay-button').addEventListener('click', function() {
+    fetch('/restaurants/create-razorpay-order/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: new URLSearchParams({ 'amount': '500', 'booking_id': '123' })  // Dynamic values
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update script attributes
+        document.querySelector('script').setAttribute('data-order_id', data.id);
+        document.querySelector('script').setAttribute('data-amount', data.amount);
+        // Trigger Razorpay modal (or auto-submit form)
+    })
+    .catch(error => console.error('Error:', error));
+});
 </script>
 
 

@@ -321,7 +321,6 @@
       .table-container {
         overflow-x: auto;
         border-radius: 0 0 12px 12px;
-        font-size: 13px;
       }
 
       table {
@@ -850,6 +849,7 @@
           <table>
             <thead>
               <tr>
+                <th>Order ID</th>
                 <th>Customer</th>
                 <th>Date & Time</th>
                 <th>Items</th>
@@ -859,12 +859,214 @@
               </tr>
             </thead>
             <tbody>
-              {% for order in orders %}
+              {% comment %}
               <tr>
+                <td class="order-id">#ORD-78901</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">MP</div>
+                    <div>
+                      <div class="customer-name">Michael Parker</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        michael@example.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 25, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >10:30 AM</span
+                  >
+                </td>
+                <td>3 items</td>
+                <td>₹2,850</td>
+                <td>
+                  <span class="status-badge status-ready"
+                    >Ready for Pickup</span
+                  >
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="order-id">#ORD-78900</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">SJ</div>
+                    <div>
+                      <div class="customer-name">Sarah Johnson</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        sarahj@mail.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 25, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >9:15 AM</span
+                  >
+                </td>
+                <td>5 items</td>
+                <td>₹4,580</td>
+                <td>
+                  <span class="status-badge status-preparing">Preparing</span>
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="order-id">#ORD-78899</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">RK</div>
+                    <div>
+                      <div class="customer-name">Robert Kim</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        robertk@company.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 24, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >7:45 PM</span
+                  >
+                </td>
+                <td>2 items</td>
+                <td>₹2,210</td>
+                <td>
+                  <span class="status-badge status-completed">Completed</span>
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="order-id">#ORD-78898</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">AD</div>
+                    <div>
+                      <div class="customer-name">Amanda Davis</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        amandad@example.org
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 24, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >6:20 PM</span
+                  >
+                </td>
+                <td>4 items</td>
+                <td>₹3,880</td>
+                <td>
+                  <span class="status-badge status-cancelled">Cancelled</span>
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="order-id">#ORD-78897</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">TW</div>
+                    <div>
+                      <div class="customer-name">Thomas Wilson</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        thomasw@mail.com
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 24, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >5:05 PM</span
+                  >
+                </td>
+                <td>1 item</td>
+                <td>₹1,110</td>
+                <td>
+                  <span class="status-badge status-completed">Completed</span>
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td class="order-id">#ORD-78896</td>
+                <td>
+                  <div class="customer-info">
+                    <div class="customer-avatar">JM</div>
+                    <div>
+                      <div class="customer-name">Jessica Miller</div>
+                      <div
+                        style="font-size: 13px; color: var(--text-secondary)"
+                      >
+                        jessm@example.net
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  Jul 24, 2023<br /><span
+                    style="color: var(--text-secondary); font-size: 13px"
+                    >3:40 PM</span
+                  >
+                </td>
+                <td>3 items</td>
+                <td>₹3,040</td>
+                <td>
+                  <span class="status-badge status-pending">Pending</span>
+                </td>
+                <td>
+                  <button class="action-btn">
+                    <i data-lucide="eye"></i>
+                    View
+                  </button>
+                </td>
+              </tr>
+              {% endcomment %} {% for order in orders %}
+              <tr>
+                <td class="order-id">#ORD-{{ order.id }}</td>
                 <td>
                   <div class="customer-info">
                     <div class="customer-avatar">
-                      {{ order.user.full_name|slice:":1" }}
+                      {{ order.user.first_name|slice:":1" }}
                     </div>
                     <div>
                       <div class="customer-name">
@@ -884,17 +1086,8 @@
                     {{ order.timestamp|time:"h:i A" }}
                   </span>
                 </td>
-                <td>
-                  {% for item in order.order_items.all %}
-                  <div>
-                    <strong>{{ item.menu_item.name }}</strong>
-                    (x{{ item.quantity }}) → ₹{{ item.price_at_order }}
-                  </div>
-                  {% empty %}
-                  <span>No items in this order.</span>
-                  {% endfor %}
-                </td>
-                <td>₹{{ order.total_price|floatformat:2 }}</td>
+                <td>{{ order.order_items.count }} items</td>
+                <td>₹{{ order.total_price }}</td>
                 <td>
                   <span class="status-badge status-{{ order.status|lower }}">
                     {{ order.get_status_display|default:order.status }}
@@ -906,9 +1099,28 @@
                   </button>
                 </td>
               </tr>
+
+              <!-- order details row -->
+              <tr>
+                <td></td>
+                <td
+                  colspan="6"
+                  style="font-size: 14px; color: #555; padding-left: 40px"
+                >
+                  {% for item in order.order_items.all %}
+                  <div>
+                    <strong>{{ item.menu_item.name }}</strong>
+                    (x{{ item.quantity }}) → ₹{{
+                    item.price_at_order|floatformat:2 }}
+                  </div>
+                  {% empty %}
+                  <span>No items in this order.</span>
+                  {% endfor %}
+                </td>
+              </tr>
               {% empty %}
               <tr>
-                <td colspan="6" style="text-align: center">No orders found</td>
+                <td colspan="7" style="text-align: center">No orders found</td>
               </tr>
               {% endfor %}
             </tbody>

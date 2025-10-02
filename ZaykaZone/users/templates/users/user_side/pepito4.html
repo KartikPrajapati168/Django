@@ -1813,8 +1813,7 @@
     <!-- BootstrapJS Bundle -->
 <script src="{% static 'users/js/pepito.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
     
     
     <script>
@@ -2242,170 +2241,116 @@
         initiateOrderPayment();
     }
 
-    function loadRazorpaySDK() {
-        if (!document.getElementById('razorpay-sdk')) {
-            var script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.id = 'razorpay-sdk';
-            document.body.appendChild(script);
-            script.onload = () => console.log('Razorpay SDK loaded');
-        }
-    }
-    // Call this before initiateOrderPayment()
-
-function initiateOrderPayment() {
-    console.log('=== Starting Payment ===');
-    console.log('Cart:', cart);
-    console.log('Total:', cartTotalEl.textContent);
-    
-    const originalContent = placeOrderBtn.innerHTML;
-    placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-    placeOrderBtn.disabled = true;
-    
-    const orderData = {
-        restaurant_id: {{ restaurant.id }},
-        items: Object.values(cart).map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-        })),
-        total_price: parseFloat(cartTotalEl.textContent)
-    };
-    
-    console.log('Sending order data:', orderData);
-    
-    fetch("{% url 'restaurants:create_razorpay_order' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(orderData)
-    })
-    .then(response => {
-        console.log('Response status:', response.status);
-        console.log('Response ok:', response.ok);
-        return response.text();
-    })
-    .then(text => {
-        console.log('Raw response:', text);
+    function initiateOrderPayment() {
+        console.log('Initiating payment for cart order');
         
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('Failed to parse JSON:', e);
-            throw new Error('Server returned invalid response: ' + text.substring(0, 200));
-        }
+        // Show loading state
+        const originalButtonContent = placeOrderBtn.innerHTML;
+        placeOrderBtn.innerHTML = `
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Processing Payment...
+        `;
+        placeOrderBtn.disabled = true;
         
-        console.log('Parsed data:', data);
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-        
-        if (!data.id || !data.amount) {
-            throw new Error('Missing order_id or amount in response');
-        }
-        
-        // Open Razorpay
-        var options = {
-            "key": "rzp_test_ROa0H24lCuEtfC",
-            "amount": data.amount,
-            "currency": data.currency,
-            "name": "ZaykaZone",
-            "description": "Order Payment",
-            "order_id": data.id,
-            "prefill": {
-                "name":"{{ user.full_name|default:'Guest' }}",
-                "email": "{{ user.email|default:'guest@example.com' }}"
-            },
-            "theme": {
-                "color": "#F37254"
-            },
-            "handler": function (response) {
-                console.log('Payment successful:', response);
-                console.log('Payment_id',response.razorpay_order_id);
-                console.log('Payment_id',response.razorpay_payment_id);
-                console.log('Payment_id',response.razorpay_signature);
-                fetch("{% url 'restaurants:payment_success' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: new URLSearchParams({
-                        'razorpay_order_id': response.razorpay_order_id,
-                        'razorpay_payment_id': response.razorpay_payment_id,
-                        'razorpay_signature': response.razorpay_signature,
-                        'type': 'order'
-                    })
-                })
-                .then(res => res.json())
-                //if dont want json response
-                //.then(res => res.text())
-                .then(successData => {
-                    console.log('Verification response:', successData);
-                    console.log('payment id :', successData.razorpay_payment_id);
-                    if (successData.status === "Payment successful") {
-                        cart = {};
-                        updateCartUI();
-                        closeCart();
-                        alert('Order placed successfully!');
-                        window.location.href = successData.redirect_url;
-                    } else {
-                        alert('Payment verification failed: ' + successData.status);
-                        placeOrderBtn.innerHTML = originalContent;
-                        placeOrderBtn.disabled = false;
-                    }
-                })
-                .catch(err => {
-                    console.error('Verification error:', err);
-                    alert('Failed to verify payment: ' + err.message);
-                    placeOrderBtn.innerHTML = originalContent;
-                    placeOrderBtn.disabled = false;
-                });
-            },
-            "modal": {
-                "ondismiss": function() {
-                    console.log('Modal dismissed');
-                    placeOrderBtn.innerHTML = originalContent;
-                    placeOrderBtn.disabled = false;
-                }
-            }
+        // Prepare order data
+        const orderData = {
+            restaurant_id: {{ restaurant.id }},
+            items: Object.values(cart).map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            })),
+            total: parseFloat(cartTotalEl.textContent)
         };
         
-        console.log('Opening Razorpay with options:', options);
-        var rzp = new Razorpay(options);
-        rzp.open();
-    })
-    .catch(error => {
-        console.error('=== ERROR ===');
-        console.error('Error:', error);
-        console.error('Stack:', error.stack);
-        
-        alert('Payment failed: ' + error.message);
-        placeOrderBtn.innerHTML = originalContent;
-        placeOrderBtn.disabled = false;
-    });
-}
+        // Create Razorpay order
+        fetch('restaurants/create-razorpay-order/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network error');
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) throw new Error(data.error);
 
-// Also add this helper at the top of your script if not already present
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+            // Open modal with fetched data
+            var options = {
+                "key": "{{ rzp_test_RNiVYdRjDE6hUC }}",
+                "amount": data.amount,  // From server (in paise)
+                "currency": "INR",
+                "name": "ZaykaZone",
+                "description": "Order Payment",
+                "image": "https://yourdomain.com/static/logo.png",
+                "order_id": data.id,  // From server
+                "prefill": {
+                    "name": "{{ user.full_name }}",
+                    "email": "{{ user.email }}",
+                    "contact": "9999999999"  // Dynamic if possible
+                },
+                "theme": {
+                    "color": "#F37254"
+                },
+                "handler": function (response) {
+                    // Handle success: POST to payment_success for order
+                    fetch('restaurants/payment-success/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: new URLSearchParams({
+                            'razorpay_payment_id': response.razorpay_payment_id,
+                            'razorpay_order_id': response.razorpay_order_id,
+                            'razorpay_signature': response.razorpay_signature,
+                            'type': 'order'  // To distinguish from booking
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(successData => {
+                        if (successData.status === "Payment successful") {
+                            cart = {};
+                            updateCartUI();
+                            closeCart();
+                            alert('Payment Successful! Order placed.');
+                            window.location.href = '/order-confirmation/';  // Redirect
+                        } else {
+                            alert('Payment failed: ' + successData.status);
+                            placeOrderBtn.innerHTML = originalButtonContent;
+                            placeOrderBtn.disabled = false;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Success handler error:', err);
+                        placeOrderBtn.innerHTML = originalButtonContent;
+                        placeOrderBtn.disabled = false;
+                    });
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        console.log('Checkout modal closed');
+                        placeOrderBtn.innerHTML = originalButtonContent;
+                        placeOrderBtn.disabled = false;
+                    }
+                }
+            };
+
+            var rzp = new Razorpay(options);
+            rzp.open();  // This opens the modal
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to initiate payment: ' + error.message);
+            placeOrderBtn.innerHTML = originalButtonContent;
+            placeOrderBtn.disabled = false;
+        });
     }
-    return cookieValue;
-}
 
     function showNotification(message, type = 'success') {
         if (!notificationEl) {
@@ -2731,11 +2676,11 @@ function initiateBookingPayment(bookingId, amount) {
     console.log('Initiating payment for table booking', { bookingId, amount });
     
     // Create Razorpay order for booking
-    fetch("{% url 'restaurants:create_razorpay_order' %}", {  // Fixed: Absolute URL, added 'restaurants/'
+    fetch('restaurants/create-razorpay-order/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken')
+            'X-CSRFToken': '{{ csrf_token }}'
         },
         body: new URLSearchParams({
             'amount': amount.toString(),
@@ -2751,9 +2696,9 @@ function initiateBookingPayment(bookingId, amount) {
 
         // Open modal with fetched data
         var options = {
-            "key": "rzp_test_ROa0H24lCuEtfC",
+            "key": "{{ rzp_test_RNiVYdRjDE6hUC }}",
             "amount": data.amount,  // From server (in paise)
-            "currency": data.currency,
+            "currency": "INR",
             "name": "ZaykaZone",
             "description": "Table Booking Payment",
             "image": "https://yourdomain.com/static/logo.png",
@@ -2768,11 +2713,11 @@ function initiateBookingPayment(bookingId, amount) {
             },
             "handler": function (response) {
                 // Handle success: POST to payment_success for booking
-                fetch("{% url 'restaurants:payment_success' %}", {  // Fixed: Absolute URL
+                fetch('/restaurants/payment-success/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCookie('csrftoken')
+                        'X-CSRFToken': '{{ csrf_token }}'
                     },
                     body: new URLSearchParams({
                         'razorpay_payment_id': response.razorpay_payment_id,

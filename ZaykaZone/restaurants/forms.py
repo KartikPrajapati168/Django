@@ -83,7 +83,7 @@ class MenuItemCreateForm(forms.ModelForm):
 
     class Meta:
         model = MenuItem
-        fields = ['name', 'description', 'price', 'image', 'is_available']
+        fields = ['name', 'description', 'price', 'image','is_available']
 
     def __init__(self, *args, **kwargs):
         restaurant = kwargs.pop('restaurant', None)
@@ -93,10 +93,18 @@ class MenuItemCreateForm(forms.ModelForm):
         self.restaurant = restaurant
         self.category = category
 
-        self.fields['predefined_item'].queryset = MenuItem.objects.filter(
-            restaurant__isnull=True,
-            category__name=category.name
-        )
+        # self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+        #     restaurant__isnull=True,
+        #     category__name=category.name
+        # )
+         # ✅ Safe check
+        if category is not None:
+            self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+                restaurant__isnull=True,
+                category__name=category.name
+            )
+        else:
+            self.fields['predefined_item'].queryset = MenuItem.objects.none()
 
     def save(self, commit=True):
         predefined = self.cleaned_data.get('predefined_item')
@@ -118,5 +126,34 @@ class MenuItemCreateForm(forms.ModelForm):
         if commit:
             new_item.save()
         return new_item
+    
+    
+    # def save(self, commit=True):
+    #     predefined = self.cleaned_data.get('predefined_item')
+
+    #     if self.instance.pk:  
+    #         # Editing existing item
+    #         item = super().save(commit=False)
+    #     elif predefined:
+    #         # Creating from predefined
+    #         item = MenuItem(
+    #         name=predefined.name,
+    #         description=predefined.description,
+    #         price=predefined.price,
+    #         image=predefined.image,
+    #         restaurant=self.restaurant,
+    #         category=self.category,
+    #         is_available=True
+    #     )
+    #     else:
+    #         # Creating new
+    #         item = super().save(commit=False)
+    #         item.restaurant = self.restaurant
+    #         item.category = self.category
+
+    #     if commit:
+    #         item.save()
+    #     return item
+
     
     

@@ -173,6 +173,19 @@
           dropdown.style.display = "none";
         }
       });
+
+      // New code for enabling/disabling price field based on checkbox
+      document.addEventListener("DOMContentLoaded", function () {
+        const checkbox = document.getElementById("dining_out");
+        const priceInput = document.getElementById("per_person_booking_price");
+
+        function togglePriceField() {
+          priceInput.disabled = !checkbox.checked;
+        }
+
+        togglePriceField(); // Set initial state
+        checkbox.addEventListener("change", togglePriceField);
+      });
     </script>
   </head>
   <body>
@@ -325,10 +338,11 @@
           />
         </div>
 
-        <div class="checkbox-group">
+        <div class="checkbox-group" style="flex: 1 1 100%">
           <input
             type="checkbox"
             name="dining_out"
+            id="dining_out"
             {%
             if
             dining_out_available
@@ -337,6 +351,27 @@
             %}
           />
           <label for="dining_out">Dining Out Available</label>
+          <label for="per_person_booking_price" style="margin-left: 20px"
+            >Per Person Table Booking Price</label
+          >
+          <input
+            type="number"
+            name="per_person_booking_price"
+            id="per_person_booking_price"
+            value="{{ form.per_person_booking_price.value|default_if_none:'' }}"
+            placeholder="E.g. 500"
+            min="0"
+            step="0.01"
+            style="
+              max-width: 150px;
+              padding: 8px 10px;
+              border-radius: 8px;
+              font-size: 13px;
+              border: 1px solid #ccc;
+              background: #fff;
+              transition: all 0.3s ease;
+            "
+          />
         </div>
 
         <div class="form-group">

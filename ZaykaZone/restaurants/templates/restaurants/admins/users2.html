@@ -319,7 +319,6 @@
       .table-container {
         overflow-x: auto;
         border-radius: 0 0 12px 12px;
-        font-size: 13px;
       }
 
       table {
@@ -841,6 +840,7 @@
             <table id="userTable">
               <thead>
                 <tr>
+                  <th>#</th>
                   <th>Full Name</th>
                   <th>Email</th>
                   <th>Phone</th>
@@ -850,19 +850,143 @@
                 </tr>
               </thead>
               <tbody>
-                {% for item in users %}
+                {% comment %}
                 <tr>
-                  <td>{{ item.user.get_full_name }}</td>
-                  <td>{{ item.user.email }}</td>
-                  <td>{{ item.user.full_phone|default:"N/A" }}</td>
+                  <td>1</td>
+                  <td>John Doe</td>
+                  <td>john@example.com</td>
+                  <td>+919876543210</td>
                   <td>
-                    {% if item.role == "customer" %}
                     <span class="role-badge role-customer">Customer</span>
-                    {% elif item.role == "user" %}
-                    <span class="role-badge role-user">User</span>
+                  </td>
+                  <td>2025-06-30</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Jane Smith</td>
+                  <td>jane@example.com</td>
+                  <td>+919876543211</td>
+                  <td><span class="role-badge role-admin">Admin</span></td>
+                  <td>2025-06-28</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Robert Johnson</td>
+                  <td>robert@example.com</td>
+                  <td>+919876543212</td>
+                  <td>
+                    <span class="role-badge role-restaurant">Restaurant</span>
+                  </td>
+                  <td>2025-06-25</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>Sarah Williams</td>
+                  <td>sarah@example.com</td>
+                  <td>+919876543213</td>
+                  <td>
+                    <span class="role-badge role-customer">Customer</span>
+                  </td>
+                  <td>2025-06-22</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>Michael Brown</td>
+                  <td>michael@example.com</td>
+                  <td>+919876543214</td>
+                  <td>
+                    <span class="role-badge role-customer">Customer</span>
+                  </td>
+                  <td>2025-06-20</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>Lisa Anderson</td>
+                  <td>lisa@example.com</td>
+                  <td>+919876543215</td>
+                  <td><span class="role-badge role-admin">Admin</span></td>
+                  <td>2025-06-18</td>
+                  <td>
+                    <div class="actions">
+                      <button class="action-btn" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endcomment %}
+              </tbody>
+
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ user.get_full_name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.profile.phone|default:"N/A" }}</td>
+                  <td>
+                    {% if user.role == "admin" %}
+                    <span class="role-badge role-admin">Admin</span>
+                    {% elif user.role == "restaurant" %}
+                    <span class="role-badge role-restaurant">Restaurant</span>
+                    {% else %}
+                    <span class="role-badge role-customer">Customer</span>
                     {% endif %}
                   </td>
-                  <td>{{ item.user.created_at|date:"Y-m-d" }}</td>
+                  <td>{{ user.date_joined|date:"Y-m-d" }}</td>
                   <td>
                     <div class="actions">
                       <button class="action-btn" title="Edit">
@@ -876,7 +1000,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="6" style="text-align: center">No users found</td>
+                  <td colspan="7" style="text-align: center">No users found</td>
                 </tr>
                 {% endfor %}
               </tbody>

@@ -9,7 +9,7 @@
 
 from django.contrib import admin
 from .models import Restaurant, RestaurantOwnerProfile, MenuCategory, MenuItem
-from .models import RestaurantImage
+from .models import RestaurantImage,RestaurantUserVisit
 from .utils import extract_from_text, CUISINES, CITIES
 from django.utils.html import format_html
 from users.models import User  # agar custom user use kar rahe ho
@@ -153,4 +153,10 @@ class OrderAdmin(admin.ModelAdmin):
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('order', 'menu_item', 'quantity', 'price_at_order')
     search_fields = ('order__user__email', 'menu_item__name')
+
+    
+from .models import RestaurantUserVisit
+@admin.register(RestaurantUserVisit)
+class RestaurantUserVisitAdmin(admin.ModelAdmin):
+    list_display = ('user', 'restaurant', 'visited_at')
     

@@ -8,6 +8,8 @@ from django.dispatch import receiver
 
 # Create your models here.
 class Restaurant(models.Model):
+    #many owner can have one restaurant
+    #foreign key follows many to one relationship
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='restaurants',null=True, blank=True)
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)  # ✅ Add this line
@@ -16,6 +18,7 @@ class Restaurant(models.Model):
     address = models.TextField()
     dining_out_available = models.BooleanField(default=False)
     timings = models.CharField(max_length=100)
+    table_booking_price = models.DecimalField(max_digits=7, decimal_places=2, default=800)
     
      # Optional visual name of the owner
     owner_name = models.CharField(max_length=100, blank=True, null=True)
@@ -153,6 +156,24 @@ class Restaurant(models.Model):
 #         return f"{self.user.full_name}'s Profile"
 
 
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+class RestaurantUserVisit(models.Model):
+    restaurant = models.ForeignKey("Restaurant", on_delete=models.CASCADE, related_name="visits")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="restaurant_visits")
+    visited_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        # unique_together = ('restaurant', 'user')  # एक ही user बार-बार count ना हो
+        ordering = ['-visited_at']
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} → {self.restaurant.name}"
+
+
+
 class RestaurantApprovalRequest(models.Model):
     restaurant = models.OneToOneField(Restaurant, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -264,6 +285,7 @@ class MenuCategory(models.Model):
         Restaurant, on_delete=models.CASCADE,
         related_name='menu_categories', null=True, blank=True
     )
+    #related_name='menu_categories' → अब आप restaurant.menu_categories.all() लिखकर उस restaurant की categories पा सकते हो।
     image = models.ImageField(upload_to='category_icons/', blank=True, null=True)
     is_global = models.BooleanField(default=False)  # True = fixed system category
 
@@ -282,6 +304,8 @@ class MenuItem(models.Model):
     image = models.ImageField(upload_to='menu_items/')
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    
 
     def __str__(self):
         return f"{self.name} ({self.restaurant.name})" if self.restaurant else self.name
@@ -299,6 +323,7 @@ class TableBooking(models.Model):
     date = models.DateField()
     time = models.TimeField()
     no_of_guests = models.PositiveIntegerField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # 🔑 Add this
     meal_type = models.CharField(
         max_length=10,
         choices=[('lunch', 'Lunch'), ('dinner', 'Dinner')]
@@ -310,8 +335,16 @@ class TableBooking(models.Model):
         choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('cancelled', 'Cancelled')],
         default='pending'
     )
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=200, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    
+    def calculate_total(self):
+        """Auto calculate based on restaurant price × guests"""
+        if self.restaurant and self.restaurant.table_booking_price:
+            self.total_amount = self.no_of_guests * self.restaurant.table_booking_price
+            
     def __str__(self):
         return f"{self.name or self.user} - {self.restaurant.name} on {self.date}"
 
@@ -328,57 +361,143 @@ class TableBooking(models.Model):
 #     def __str__(self):
 #         return f"Review by {self.user.email} for {self.restaurant.name}" if self.user else "Review"
 
+
+
+# class Review(models.Model):
+#     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    
+#     # Review details
+#     visit_date = models.DateField(null=True, blank=True)
+#     visit_type = models.CharField(max_length=20, choices=[
+#         ('Dine-In', 'Dine-In'),
+#         ('Takeaway', 'Takeaway'),
+#         ('Delivery', 'Delivery')
+#     ],null=True, blank=True)
+    
+#     # Ratings (1-5 scale)
+#     rating = models.PositiveIntegerField(null=True, blank=True)  # Overall rating
+#     food_quality = models.PositiveIntegerField(null=True, blank=True)
+#     service_quality = models.PositiveIntegerField(null=True, blank=True)
+    
+#     # Comment
+#     comment = models.TextField(null=True, blank=True)
+    
+#     # Timestamps
+#     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+#     updated_at = models.DateTimeField(auto_now=True,null=True, blank=True)
+
+#     class Meta:
+#         ordering = ['-created_at']
+#         # Prevent duplicate reviews from same user for same restaurant
+#         unique_together = ['restaurant', 'user', 'visit_date']
+
+#     def __str__(self):
+#         user_name = self.user.get_full_name() if self.user else "Anonymous"
+#         return f"Review by {user_name} for {self.restaurant.name}"
+
+#     @property
+#     def user_display_name(self):
+#         """Return user's full name or username"""
+#         if self.user:
+#             return self.user.get_full_name() or self.user.username
+#         return "Anonymous"
+
+#     def clean(self):
+#         """Validate rating values"""
+#         from django.core.exceptions import ValidationError
+        
+#         ratings = [self.rating, self.food_quality, self.service_quality]
+#         for rating in ratings:
+#             if rating and (rating < 1 or rating > 5):
+#                 raise ValidationError("Ratings must be between 1 and 5")
+                
+#     def save(self, *args, **kwargs):
+#         self.clean()
+#         super().save(*args, **kwargs)
+
+
+
 class Review(models.Model):
+    PRIORITY_CHOICES = [
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+        ('system', 'System'),
+    ]
+
     restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    
+
     # Review details
     visit_date = models.DateField(null=True, blank=True)
-    visit_type = models.CharField(max_length=20, choices=[
-        ('Dine-In', 'Dine-In'),
-        ('Takeaway', 'Takeaway'),
-        ('Delivery', 'Delivery')
-    ],null=True, blank=True)
-    
-    # Ratings (1-5 scale)
+    visit_type = models.CharField(
+        max_length=20,
+        choices=[('Dine-In', 'Dine-In'), ('Takeaway', 'Takeaway'), ('Delivery', 'Delivery')],
+        null=True, blank=True
+    )
+
+    # Ratings
     rating = models.PositiveIntegerField(null=True, blank=True)  # Overall rating
     food_quality = models.PositiveIntegerField(null=True, blank=True)
     service_quality = models.PositiveIntegerField(null=True, blank=True)
-    
+
     # Comment
     comment = models.TextField(null=True, blank=True)
-    
-    # Timestamps
+
+    # 🔑 New Field
+    priority = models.CharField(
+        max_length=10,
+        choices=PRIORITY_CHOICES,
+        default='medium'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True,null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
-        # Prevent duplicate reviews from same user for same restaurant
         unique_together = ['restaurant', 'user', 'visit_date']
 
     def __str__(self):
         user_name = self.user.get_full_name() if self.user else "Anonymous"
         return f"Review by {user_name} for {self.restaurant.name}"
 
-    @property
-    def user_display_name(self):
-        """Return user's full name or username"""
-        if self.user:
-            return self.user.get_full_name() or self.user.username
-        return "Anonymous"
-
     def clean(self):
-        """Validate rating values"""
         from django.core.exceptions import ValidationError
-        
         ratings = [self.rating, self.food_quality, self.service_quality]
         for rating in ratings:
             if rating and (rating < 1 or rating > 5):
                 raise ValidationError("Ratings must be between 1 and 5")
-                
+
+    def assign_priority(self):
+        """Auto-assign priority based on rating + keywords in comment"""
+        msg = (self.comment or "").lower()
+
+        # Keyword based detection
+        if any(word in msg for word in ["worst", "angry", "bad", "poor", "issue", "problem"]):
+            return "high"
+        elif any(word in msg for word in ["average", "okay", "fine"]):
+            return "medium"
+        elif any(word in msg for word in ["good", "great", "nice", "excellent", "happy", "love"]):
+            return "low"
+
+        # Rating based fallback
+        if self.rating:
+            if self.rating <= 2:
+                return "high"
+            elif self.rating == 3:
+                return "medium"
+            elif self.rating >= 4:
+                return "low"
+
+        return "medium"
+
     def save(self, *args, **kwargs):
         self.clean()
+        # Auto-assign priority if not manually set
+        if not self.priority or self.priority == "medium":
+            self.priority = self.assign_priority()
         super().save(*args, **kwargs)
 
 
@@ -396,6 +515,14 @@ class Order(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     timestamp = models.DateTimeField(auto_now_add=True)
+    payment_status = models.CharField(
+        max_length=20,
+        choices=[('pending', 'Pending'), ('paid', 'Paid'), ('failed', 'Failed')],
+        default='pending'
+    )
+    razorpay_order_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, null=True)
+    razorpay_signature = models.CharField(max_length=200, blank=True, null=True)
 
     def __str__(self):
         return f"Order #{self.pk} by {self.user.email}"
