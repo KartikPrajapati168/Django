@@ -13,5 +13,7 @@ urlpatterns = [
     path('admin-approve/<int:pk>/', views.approve_restaurant, name='approve_restaurant'),
     path('admin-reject/<int:pk>/', views.reject_restaurant, name='reject_restaurant'),
     
-    path('logout/', auth_views.LogoutView.as_view(next_page='authentication/loginsignup/'), name='logout'),
+    # path('logout/', auth_views.LogoutView.as_view(next_page='/authentication/loginsignup/'), name='logout'),
+    #or
+    path('logout/', views.custom_logout, name='logout'),
 ]

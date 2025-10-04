@@ -105,6 +105,170 @@ from datetime import timedelta
 #     return render(request, 'restaurants/admins/dashboard.html', context)
 
 
+# @login_required
+# def dashboard_view(request, slug):
+#     # Get restaurant with security checks
+#     restaurant = get_object_or_404(
+#         Restaurant, 
+#         slug=slug, 
+#         owner=request.user,
+#         is_approved=True
+#     )
+    
+#     # Get approval status
+#     approval_request = RestaurantApprovalRequest.objects.filter(
+#         restaurant=restaurant
+#     ).first()
+    
+#     # Get menu data
+#     menu_categories = MenuCategory.objects.filter(restaurant=restaurant)
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+    
+#     # Get bookings (today and upcoming)
+#     today = timezone.now().date()
+#     upcoming_bookings = TableBooking.objects.filter(
+#         restaurant=restaurant,
+#         date__gte=today,
+#         status__in=['pending', 'confirmed']
+#     ).order_by('date', 'time')[:5]
+    
+#     # Get recent reviews
+#     recent_reviews = Review.objects.filter(
+#         restaurant=restaurant
+#     ).order_by('-created_at')[:5]
+    
+#     # Get recent orders (last 7 days)
+#     one_week_ago = timezone.now() - timedelta(days=7)
+#     recent_orders = Order.objects.filter(
+#         restaurant=restaurant,
+#         timestamp__gte=one_week_ago
+#     ).order_by('-timestamp')[:10]
+    
+#     # Get preview images
+#     preview_images = RestaurantImage.objects.filter(
+#         restaurant=restaurant,
+#         is_preview=True
+#     )[:4]
+    
+#     # Calculate pending orders count
+#     pending_orders_count = Order.objects.filter(
+#         restaurant=restaurant,
+#         status__in=['pending', 'confirmed', 'preparing']
+#     ).count()
+    
+#     # NEW: Calculate total users/customers
+#     total_users = User.objects.filter(
+#         order__restaurant=restaurant
+#     ).distinct().count()
+    
+#     # FIXED: Use total_price instead of total_amount
+#     revenue = Order.objects.filter(
+#         restaurant=restaurant,
+#         status='delivered'  # Changed from 'completed' to 'delivered' as per your model
+#     ).aggregate(total_revenue=Sum('total_price'))['total_revenue'] or 0
+    
+#     # NEW: Calculate total orders count
+#     orders_count = Order.objects.filter(restaurant=restaurant).count()
+    
+#     # NEW: Calculate total reviews count
+#     reviews_count = Review.objects.filter(restaurant=restaurant).count()
+    
+#     # NEW: Get top products (most ordered)
+#     top_products = MenuItem.objects.filter(
+#         restaurant=restaurant
+#     ).annotate(
+#         total_ordered=Count('orderitem')
+#     ).order_by('-total_ordered')[:5]
+    
+#     # NEW: Create activities from recent events
+#     activities = []
+    
+#     # Add recent orders as activities
+#     for order in recent_orders[:3]:
+#         activities.append({
+#             'user': order.user,
+#             'message': f'New order placed',
+#             'details': f'Order #{order.id} - ₹{order.total_price}',  # FIXED: total_price
+#             'time': order.timestamp
+#         })
+    
+#     # Add recent reviews as activities
+#     for review in recent_reviews[:2]:
+#         activities.append({
+#             'user': review.user,
+#             'message': f'New review received',
+#             'details': f'Rating: {review.rating}/5',
+#             'time': review.created_at
+#         })
+    
+#     # Add recent bookings as activities
+#     for booking in upcoming_bookings[:2]:
+#         activities.append({
+#             'user': booking.user,
+#             'message': f'Table booking made',
+#             'details': f'For {booking.no_of_guests} people on {booking.date}',  # FIXED: no_of_guests
+#             'time': booking.created_at
+#         })
+    
+#     # Sort activities by time (newest first)
+#     activities.sort(key=lambda x: x['time'], reverse=True)
+    
+#     # Get owner profile
+#     try:
+#         owner_profiles = request.user.owner_profiles
+#     except RestaurantOwnerProfile.DoesNotExist:
+#         owner_profiles = None
+    
+#     # Get cart items count for user
+#     cart_items_count = CartItem.objects.filter(user=request.user).count()
+    
+#     # Get all user's restaurants for switcher
+#     user_restaurants = Restaurant.objects.filter(
+#         owner=request.user,
+#         is_approved=True
+#     ).exclude(id=restaurant.id)
+    
+#     context = {
+#         'owner_profile': owner_profiles,
+#         'restaurant': restaurant,
+#         'user_restaurants': user_restaurants,
+#         'approval_request': approval_request,
+#         'menu_categories_count': menu_categories.count(),
+#         'menu_items_count': menu_items.count(),
+#         'upcoming_bookings': upcoming_bookings,
+#         'upcoming_bookings_count': upcoming_bookings.count(),
+#         'recent_reviews': recent_reviews,
+#         'recent_reviews_count': recent_reviews.count(),
+#         'recent_orders': recent_orders,
+#         'recent_orders_count': recent_orders.count(),
+#         'preview_images': preview_images,
+#         'pending_orders_count': pending_orders_count,
+#         'cart_items_count': cart_items_count,
+        
+#         # NEW VARIABLES ADDED
+#         'total_users': total_users,
+#         'revenue': revenue,
+#         'orders_count': orders_count,
+#         'reviews_count': reviews_count,
+#         'activities': activities,
+#         'top_products': top_products,
+#     }
+    
+#     return render(request, 'restaurants/admins/dashboard.html', context)
+
+
+# Updated views.py (assuming this is in your restaurants/views.py or similar)
+# I've included the original two views and added the new search_suggestions view.
+# Make sure to add all necessary imports at the top.
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum, Count, Q
+from django.db.models.functions import TruncDay, TruncWeek, TruncMonth
+from datetime import timedelta, date
+from .models import Restaurant, RestaurantApprovalRequest, MenuCategory, MenuItem, TableBooking, Review, Order, RestaurantImage, RestaurantOwnerProfile, CartItem, User
+import json 
+
 @login_required
 def dashboard_view(request, slug):
     # Get restaurant with security checks
@@ -150,64 +314,87 @@ def dashboard_view(request, slug):
         is_preview=True
     )[:4]
     
-    # Calculate pending orders count
+    # Calculate total users/customers (unique from orders and bookings)
+    order_users = User.objects.filter(order__restaurant=restaurant).distinct()
+    booking_users = User.objects.filter(tablebooking__restaurant=restaurant).distinct()
+    total_users = order_users.union(booking_users).count()
+    
+    # Revenue calculations - FIXED: Use total_amount instead of amount
+    order_revenue = Order.objects.filter(
+        restaurant=restaurant,
+        status='delivered'
+    ).aggregate(total=Sum('total_price'))['total'] or 0
+    
+    booking_revenue = TableBooking.objects.filter(
+        restaurant=restaurant,
+        status='confirmed'
+    ).aggregate(total=Sum('total_amount'))['total'] or 0  # FIXED: amount -> total_amount
+    
+    # Total revenue (both orders and bookings)
+    total_revenue = order_revenue + booking_revenue
+    
+    # Transaction counts
+    orders_count = Order.objects.filter(restaurant=restaurant).count()
+    bookings_count = TableBooking.objects.filter(restaurant=restaurant).count()
+    total_transactions = orders_count + bookings_count
+    
+    # Reviews count
+    reviews_count = Review.objects.filter(restaurant=restaurant).count()
+    
+    # Pending counts
     pending_orders_count = Order.objects.filter(
         restaurant=restaurant,
         status__in=['pending', 'confirmed', 'preparing']
     ).count()
     
-    # NEW: Calculate total users/customers
-    total_users = User.objects.filter(
-        order__restaurant=restaurant
-    ).distinct().count()
-    
-    # FIXED: Use total_price instead of total_amount
-    revenue = Order.objects.filter(
+    pending_bookings_count = TableBooking.objects.filter(
         restaurant=restaurant,
-        status='delivered'  # Changed from 'completed' to 'delivered' as per your model
-    ).aggregate(total_revenue=Sum('total_price'))['total_revenue'] or 0
+        status='pending'
+    ).count()
     
-    # NEW: Calculate total orders count
-    orders_count = Order.objects.filter(restaurant=restaurant).count()
+    pending_count = pending_orders_count + pending_bookings_count
     
-    # NEW: Calculate total reviews count
-    reviews_count = Review.objects.filter(restaurant=restaurant).count()
-    
-    # NEW: Get top products (most ordered)
+    # Get top products
     top_products = MenuItem.objects.filter(
         restaurant=restaurant
     ).annotate(
         total_ordered=Count('orderitem')
     ).order_by('-total_ordered')[:5]
     
-    # NEW: Create activities from recent events
+    # Create activities from recent events
     activities = []
     
     # Add recent orders as activities
     for order in recent_orders[:3]:
         activities.append({
+            'type': 'order',
             'user': order.user,
             'message': f'New order placed',
-            'details': f'Order #{order.id} - ₹{order.total_price}',  # FIXED: total_price
-            'time': order.timestamp
+            'details': f'Order #{order.id} - ₹{order.total_price}',
+            'time': order.timestamp,
+            'status': order.status
         })
     
     # Add recent reviews as activities
     for review in recent_reviews[:2]:
         activities.append({
+            'type': 'review',
             'user': review.user,
             'message': f'New review received',
             'details': f'Rating: {review.rating}/5',
-            'time': review.created_at
+            'time': review.created_at,
+            'rating': review.rating
         })
     
     # Add recent bookings as activities
     for booking in upcoming_bookings[:2]:
         activities.append({
+            'type': 'booking',
             'user': booking.user,
             'message': f'Table booking made',
-            'details': f'For {booking.no_of_guests} people on {booking.date}',  # FIXED: no_of_guests
-            'time': booking.created_at
+            'details': f'For {booking.no_of_guests} people on {booking.date}',
+            'time': booking.created_at,
+            'status': booking.status
         })
     
     # Sort activities by time (newest first)
@@ -228,6 +415,116 @@ def dashboard_view(request, slug):
         is_approved=True
     ).exclude(id=restaurant.id)
     
+    # Revenue data for charts (Orders + Bookings) - FIXED: Use total_amount
+    def compute_revenue_data(days, trunc_func, date_format):
+        start_date = timezone.now().date() - timedelta(days=days - 1)
+        end_date = timezone.now().date()
+        
+        # Orders revenue
+        orders_data = Order.objects.filter(
+            restaurant=restaurant,
+            status='delivered',
+            timestamp__date__gte=start_date,
+            timestamp__date__lte=end_date
+        ).annotate(
+            period=trunc_func('timestamp')
+        ).values('period').annotate(
+            total=Sum('total_price')
+        ).order_by('period')
+        
+        # Bookings revenue - FIXED: amount -> total_amount
+        bookings_data = TableBooking.objects.filter(
+            restaurant=restaurant,
+            status='confirmed',
+            date__gte=start_date,
+            date__lte=end_date
+        ).annotate(
+            period=trunc_func('date')
+        ).values('period').annotate(
+            total=Sum('total_amount')  # FIXED: amount -> total_amount
+        ).order_by('period')
+        
+        # Combine data using period as date key
+        combined = {}
+        for item in orders_data:
+            period_date = item['period'].date() if isinstance(item['period'], datetime) else item['period']
+            if period_date not in combined:
+                combined[period_date] = {'orders': 0, 'bookings': 0, 'total': 0}
+            combined[period_date]['orders'] = float(item['total'] or 0)
+            combined[period_date]['total'] += float(item['total'] or 0)
+        
+        for item in bookings_data:
+            period_date = item['period'].date() if isinstance(item['period'], datetime) else item['period']
+            if period_date not in combined:
+                combined[period_date] = {'orders': 0, 'bookings': 0, 'total': 0}
+            combined[period_date]['bookings'] = float(item['total'] or 0)
+            combined[period_date]['total'] += float(item['total'] or 0)
+        
+        # Generate complete list of periods
+        labels = []
+        orders_revenue = []
+        bookings_revenue = []
+        total_revenue = []
+        
+        if trunc_func == TruncDay:
+            current_period = start_date
+            delta = timedelta(days=1)
+            label_func = lambda d: d.strftime(date_format)
+            key_func = lambda d: d
+        elif trunc_func == TruncWeek:
+            current_period = start_date - timedelta(days=start_date.weekday())
+            delta = timedelta(days=7)
+            label_func = lambda d: f'Week starting {d.strftime("%b %d")}'
+            key_func = lambda d: d
+        elif trunc_func == TruncMonth:
+            current_period = start_date.replace(day=1)
+            delta = None
+            label_func = lambda d: d.strftime('%b %Y')
+            key_func = lambda d: d
+        
+        while current_period <= end_date:
+            period_key = key_func(current_period)
+            label = label_func(current_period)
+            data_point = combined.get(period_key, {'orders': 0, 'bookings': 0, 'total': 0})
+            
+            labels.append(label)
+            orders_revenue.append(data_point['orders'])
+            bookings_revenue.append(data_point['bookings'])
+            total_revenue.append(data_point['total'])
+            
+            if delta:
+                current_period += delta
+            else:  # For months
+                next_month = current_period.month + 1
+                next_year = current_period.year + (next_month > 12)
+                next_month = next_month if next_month <= 12 else 1
+                current_period = current_period.replace(year=next_year, month=next_month)
+        
+        return {
+            'labels': labels,
+            'datasets': {
+                'orders': orders_revenue,
+                'bookings': bookings_revenue,
+                'total': total_revenue
+            }
+        }
+    
+    # Generate revenue data for different periods
+    revenue_data = {
+        '7': compute_revenue_data(7, TruncDay, '%b %d'),
+        '30': compute_revenue_data(30, TruncWeek, 'Week starting %b %d'),
+        '90': compute_revenue_data(90, TruncMonth, '%b %Y'),
+    }
+    
+    # Search suggestions data
+    search_suggestions = {
+        'orders': list(Order.objects.filter(restaurant=restaurant).values_list('id', flat=True)[:10]),
+        'customers': list(User.objects.filter(
+            Q(order__restaurant=restaurant) | Q(tablebooking__restaurant=restaurant)
+        ).distinct().values_list('full_name', flat=True)[:10]),
+        'menu_items': list(MenuItem.objects.filter(restaurant=restaurant).values_list('name', flat=True)[:10]),
+    }
+    
     context = {
         'owner_profile': owner_profiles,
         'restaurant': restaurant,
@@ -242,19 +539,28 @@ def dashboard_view(request, slug):
         'recent_orders': recent_orders,
         'recent_orders_count': recent_orders.count(),
         'preview_images': preview_images,
-        'pending_orders_count': pending_orders_count,
         'cart_items_count': cart_items_count,
         
-        # NEW VARIABLES ADDED
+        # Revenue and metrics
         'total_users': total_users,
-        'revenue': revenue,
+        'revenue': total_revenue,
+        'order_revenue': order_revenue,
+        'booking_revenue': booking_revenue,
         'orders_count': orders_count,
+        'bookings_count': bookings_count,
+        'total_transactions': total_transactions,
         'reviews_count': reviews_count,
         'activities': activities,
         'top_products': top_products,
+        'pending_orders_count': pending_count,
+        
+        # Chart data
+        'revenue_data_json': json.dumps(revenue_data),
+        'search_suggestions_json': json.dumps(search_suggestions),
     }
     
     return render(request, 'restaurants/admins/dashboard.html', context)
+
 
 # def dashboard_redirect_view(request):
 #     # redirect to select restaurant or default dashboard
@@ -1694,9 +2000,11 @@ def book_table_view(request, slug):
             booking.restaurant = restaurant
             booking.user = request.user
             booking.save()
+            
+            table_price=booking.restaurant.table_booking_price
 
             # Calculate amount (example: 100 per guest)
-            amount = booking.no_of_guests * booking  # Adjust as needed
+            amount = booking.no_of_guests * table_price  # Adjust as needed
 
             # agar AJAX request hai
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -1780,14 +2088,178 @@ def send_confirmation_email(booking):
     )
 
     
+# from itertools import islice
+# from django.utils import timezone
+# from django.db.models import Prefetch
+# from .models import Restaurant, MenuCategory, MenuItem
+# from django.db.models import Q # For complex queries if needed
+# from restaurants.models import Review
+# from django.db.models import Avg, Count
+# from django.views.decorators.csrf import ensure_csrf_cookie
+
+# @ensure_csrf_cookie
+# def restaurant_detail(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     # Get all images for this restaurant
+#     # all_images = RestaurantImage.objects.filter(restaurant=restaurant)
+#     all_images=restaurant.images.all()
+    
+#     print(all_images)
+
+#     # Get the latest 4 images for the gallery preview (right-side section)
+#     # preview_images = all_images.order_by('-uploaded_at')[:4]
+#     # preview_qs = list(all_images.filter(is_preview=True).order_by('-uploaded_at'))
+#     # if not preview_qs:
+#     #         preview_qs = list(all_images.order_by('-uploaded_at'))
+        
+#     # preview_images = list(islice(preview_qs, 4))
+#     # Manually filter preview images (no queryset operations)
+#     preview_qs = [img for img in all_images if img.is_preview]
+
+#     # Fallback: if no is_preview marked, use latest by uploaded_at manually
+#     if not preview_qs:
+#         preview_qs = sorted(all_images, key=lambda x: x.uploaded_at or timezone.now(), reverse=True)
+
+#     preview_images = list(islice(preview_qs, 4))  # final safe 4 preview images
+
+#     # Filter category-wise for full gallery filtering counts
+#     food_images = all_images.filter(category='food')
+#     ambience_images = all_images.filter(category='ambience')
+    
+#     # menu categorys and menu items data
+#     menu_data = []
+#     # Get all menu categories related to this specific restaurant
+#     # You might also want to include global categories if applicable
+#     categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).order_by('name')
+
+#     for category in categories:
+#         # Get all active menu items for the current category and restaurant
+#         items = MenuItem.objects.filter(
+#             restaurant=restaurant,
+#             category=category,
+#             is_available=True
+#         ).order_by('name')
+
+#         # Only add categories that have at least one item, or always add if you want empty categories displayed
+#         if items.exists(): # or if True to always include category even if empty
+#             menu_data.append({
+#                 'category': category,
+#                 'items': items,
+#             })
+
+#     reviews = Review.objects.filter(restaurant=restaurant)
+#     rating_stats = reviews.aggregate(avg_rating=Avg('rating'), total=Count('id'))
+
+#     context = {
+#         'restaurant': restaurant,
+#         'images': all_images,  # for full gallery
+#         'preview_images': preview_images,  # for the 4-image preview section
+#         'food_images': food_images,        # optional if you're categorizing in template
+#         'ambience_images': ambience_images,
+#         'food_count': food_images.count(),
+#         'ambience_count': ambience_images.count(),
+#         'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,  # ✅ Add this
+#         'menu_data': menu_data,
+#         'reviews': reviews,
+#         'avg_rating': round(rating_stats['avg_rating'] or 0, 1),
+#         'total_reviews': rating_stats['total'],
+#     }
+#     return render(request, 'users/user_side/pepito.html', context)
+
+
+# def cuisine_page(request, slug):
+#     # Page content for heading, description, background
+#     # page_content = get_object_or_404(CuisinePageContent, cuisine_name__iexact=cuisine)
+#     page_content = get_object_or_404(CuisinePageContent, slug=slug)
+    
+#     cuisine = page_content.cuisine_name
+    
+#     # Approved restaurants with matching cuisine
+#     restaurants = (
+#         Restaurant.objects.filter(cuisine__icontains=cuisine, is_approved=True)
+#         .prefetch_related('images')
+#     )
+
+#     restaurant_data = []
+#     for restaurant in restaurants:
+#         preview_image = (
+#             restaurant.images.first().image.url
+#             if restaurant.images.exists()
+#             else '/static/users/assets/img/about.jpg'
+#         )
+
+#         restaurant_data.append({
+#             'restaurant': restaurant,
+#             'preview_image': preview_image,
+#         })
+
+#     return render(request, 'users/user_side/spots.html', {
+#         'restaurant_data': restaurant_data,
+#         'page_content': page_content,
+#         'cuisine_name': cuisine,
+#     })
+    
+
+# Updated views.py (assuming this is in your restaurants/views.py or similar)
+# I've included the original two views and added the new search_suggestions view.
+# Make sure to add all necessary imports at the top.
+
+# Updated views.py (assuming this is in your restaurants/views.py or similar)
+# I've included the original two views and added the new search_suggestions view.
+# Make sure to add all necessary imports at the top.
+
+# Updated views.py (assuming this is in your restaurants/views.py or similar)
+# I've included the original two views and added the new search_suggestions view.
+# Make sure to add all necessary imports at the top.
+
+# Updated views.py (assuming this is in your restaurants/views.py or similar)
+# I've included the original two views and added the new search_suggestions view.
+# Make sure to add all necessary imports at the top.
+
+from django.shortcuts import render, get_object_or_404
 from itertools import islice
 from django.utils import timezone
 from django.db.models import Prefetch
-from .models import Restaurant, MenuCategory, MenuItem
-from django.db.models import Q # For complex queries if needed
-from restaurants.models import Review
-from django.db.models import Avg, Count
+from .models import Restaurant, MenuCategory, MenuItem, Review
+from adminpanel.models import CuisinePageContent
+from django.db.models import Q, Avg, Count
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
+from django.urls import reverse
+# Add any other imports as needed, e.g., from restaurants.models import *
+
+def cuisine_page(request, slug):
+    # Page content for heading, description, background
+    # page_content = get_object_or_404(CuisinePageContent, cuisine_name__iexact=cuisine)
+    page_content = get_object_or_404(CuisinePageContent, slug=slug)
+    
+    cuisine = page_content.cuisine_name
+    
+    # Approved restaurants with matching cuisine
+    restaurants = (
+        Restaurant.objects.filter(cuisine__icontains=cuisine, is_approved=True)
+        .prefetch_related('images', 'reviews')
+    )
+    restaurant_data = []
+    for restaurant in restaurants:
+        preview_image = (
+            restaurant.images.first().image.url
+            if restaurant.images.exists()
+            else '/static/users/assets/img/about.jpg'
+        )
+        dining_reviews = restaurant.reviews.filter(visit_type__in=['Dine-In', 'Takeaway'])
+        dining_stats = dining_reviews.aggregate(avg_rating=Avg('rating'), total=Count('id'))
+        restaurant_data.append({
+            'restaurant': restaurant,
+            'preview_image': preview_image,
+            'dining_avg': round(dining_stats['avg_rating'] or 0, 1),
+            'dining_count': dining_stats['total'],
+        })
+    return render(request, 'users/user_side/spots.html', {
+        'restaurant_data': restaurant_data,
+        'page_content': page_content,
+        'cuisine_name': cuisine,
+    })
 
 @ensure_csrf_cookie
 def restaurant_detail(request, slug):
@@ -1797,7 +2269,6 @@ def restaurant_detail(request, slug):
     all_images=restaurant.images.all()
     
     print(all_images)
-
     # Get the latest 4 images for the gallery preview (right-side section)
     # preview_images = all_images.order_by('-uploaded_at')[:4]
     # preview_qs = list(all_images.filter(is_preview=True).order_by('-uploaded_at'))
@@ -1807,13 +2278,10 @@ def restaurant_detail(request, slug):
     # preview_images = list(islice(preview_qs, 4))
     # Manually filter preview images (no queryset operations)
     preview_qs = [img for img in all_images if img.is_preview]
-
     # Fallback: if no is_preview marked, use latest by uploaded_at manually
     if not preview_qs:
         preview_qs = sorted(all_images, key=lambda x: x.uploaded_at or timezone.now(), reverse=True)
-
     preview_images = list(islice(preview_qs, 4))  # final safe 4 preview images
-
     # Filter category-wise for full gallery filtering counts
     food_images = all_images.filter(category='food')
     ambience_images = all_images.filter(category='ambience')
@@ -1823,7 +2291,6 @@ def restaurant_detail(request, slug):
     # Get all menu categories related to this specific restaurant
     # You might also want to include global categories if applicable
     categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).order_by('name')
-
     for category in categories:
         # Get all active menu items for the current category and restaurant
         items = MenuItem.objects.filter(
@@ -1831,17 +2298,17 @@ def restaurant_detail(request, slug):
             category=category,
             is_available=True
         ).order_by('name')
-
         # Only add categories that have at least one item, or always add if you want empty categories displayed
         if items.exists(): # or if True to always include category even if empty
             menu_data.append({
                 'category': category,
                 'items': items,
             })
-
     reviews = Review.objects.filter(restaurant=restaurant)
-    rating_stats = reviews.aggregate(avg_rating=Avg('rating'), total=Count('id'))
-
+    dining_reviews = reviews.filter(visit_type__in=['Dine-In', 'Takeaway'])
+    delivery_reviews = reviews.filter(visit_type='Delivery')
+    dining_stats = dining_reviews.aggregate(avg_rating=Avg('rating'), total=Count('id'))
+    delivery_stats = delivery_reviews.aggregate(avg_rating=Avg('rating'), total=Count('id'))
     context = {
         'restaurant': restaurant,
         'images': all_images,  # for full gallery
@@ -1853,11 +2320,51 @@ def restaurant_detail(request, slug):
         'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,  # ✅ Add this
         'menu_data': menu_data,
         'reviews': reviews,
-        'avg_rating': round(rating_stats['avg_rating'] or 0, 1),
-        'total_reviews': rating_stats['total'],
+        'dining_avg': round(dining_stats['avg_rating'] or 0, 1),
+        'dining_count': dining_stats['total'],
+        'delivery_avg': round(delivery_stats['avg_rating'] or 0, 1),
+        'delivery_count': delivery_stats['total'],
     }
     return render(request, 'users/user_side/pepito.html', context)
+    
+def search_suggestions(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if len(query) >= 2:
+        # Search restaurants
+        restaurants = Restaurant.objects.filter(name__icontains=query, is_approved=True)[:10]
+        for r in restaurants:
+            results.append({
+                'type': 'restaurant',
+                'name': r.name,
+                'logo': r.logo.url if r.logo else '/static/default-logo.jpg',
+                'location': r.address,
+                'url': reverse('restaurants:restaurant_detail', kwargs={'slug': r.slug})
+            })
 
+        # Search cuisines
+        cuisines = CuisinePageContent.objects.filter(cuisine_name__icontains=query)[:10]
+        for c in cuisines:
+            results.append({
+                'type': 'cuisine',
+                'name': c.cuisine_name,
+                'image': c.background_image.url if c.background_image else '/static/default-cuisine.jpg',
+                'url': reverse('restaurants:cuisine_page', kwargs={'slug': c.slug})  # Assuming URL name is 'restaurants:cuisine_page'
+            })
+
+        # Search dishes (menu items)
+        menu_items = MenuItem.objects.filter(name__icontains=query, is_available=True)[:10]
+        for m in menu_items:
+            results.append({
+                'type': 'dish',
+                'name': m.name,
+                'image': m.image.url if m.image else '/static/default-dish.jpg',
+                'price': str(m.price),
+                'restaurant': m.restaurant.name,
+                'url': reverse('restaurants:restaurant_detail', kwargs={'slug': m.restaurant.slug})
+            })
+
+    return JsonResponse({'results': results})
 
 
 from django.http import JsonResponse
@@ -1869,6 +2376,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 import json
 
+@csrf_exempt
 @require_POST
 def submit_review(request, slug):
     """Handle review submission via AJAX"""
@@ -1989,6 +2497,11 @@ def submit_review(request, slug):
             "message": "An error occurred while submitting your review. Please try again."
         }, status=500)
         
+
+
+
+
+
         
 # from django.http import JsonResponse
 # from django.template.loader import render_to_string
@@ -2147,44 +2660,36 @@ def submit_review(request, slug):
 #     return render(request, 'users/user_side/spots.html', {'restaurant_data': restaurant_data})
 
 
-def cuisine_page(request, slug):
-    # Page content for heading, description, background
-    # page_content = get_object_or_404(CuisinePageContent, cuisine_name__iexact=cuisine)
-    page_content = get_object_or_404(CuisinePageContent, slug=slug)
-    
-    cuisine = page_content.cuisine_name
-    
-    # Approved restaurants with matching cuisine
-    restaurants = (
-        Restaurant.objects.filter(cuisine__icontains=cuisine, is_approved=True)
-        .prefetch_related('images')
-    )
 
-    restaurant_data = []
-    for restaurant in restaurants:
-        preview_image = (
-            restaurant.images.first().image.url
-            if restaurant.images.exists()
-            else '/static/users/assets/img/about.jpg'
-        )
 
-        restaurant_data.append({
-            'restaurant': restaurant,
-            'preview_image': preview_image,
-        })
 
-    return render(request, 'users/user_side/spots.html', {
-        'restaurant_data': restaurant_data,
-        'page_content': page_content,
-        'cuisine_name': cuisine,
-    })
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import HttpResponseForbidden
+from .forms import RestaurantForm, OwnerProfileForm  # Assuming forms are defined
+from .models import RestaurantOwnerProfile, Restaurant
 
+# Assume extract_from_text, CUISINES, CITIES are defined somewhere
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.http import HttpResponseForbidden
+from .forms import RestaurantForm, OwnerProfileForm  # Assuming forms are defined
+from .models import RestaurantOwnerProfile, Restaurant
+
+# Assume extract_from_text, CUISINES, CITIES are defined somewhere
 
 @login_required
 def restaurant_create_view(request):
     """
     Owner onboarding - ek hi page par Restaurant + OwnerProfile (GST आदि) भरते हैं.
     """
+
+    # Check if user has restaurant owner role
+    if request.user.role != 'owner':  # Assuming User model has 'role' field with 'owner' value
+        return redirect("authentication/loginsignup/")  # Redirect to login if not owner
 
     # ⬇️ OwnerProfile हमेशा मिल जाएगा, वरना बन जाएगा
     owner_profile, _ = RestaurantOwnerProfile.objects.get_or_create(user=request.user)
@@ -2564,6 +3069,7 @@ def create_razorpay_order(request):
             # Save order details to database
             if order_type == 'booking':
                 booking = get_object_or_404(TableBooking, id=booking_id)
+                booking.total_amount=amount / 100  # Store in rupees
                 booking.razorpay_order_id = razorpay_order['id']
                 booking.save()
             else:
@@ -2621,9 +3127,17 @@ def payment_success(request):
             if payment_type == 'booking':
                 booking = TableBooking.objects.get(razorpay_order_id=response['razorpay_order_id'])
                 booking.razorpay_payment_id = response['razorpay_payment_id']
+                booking.razorpay_signature = response['razorpay_signature']
                 booking.paid=True
                 booking.save()
-                return render(request,'payment_status.html',{'status':True})
+                # return render(request,'payment_status.html',{'status':True})
+                return JsonResponse({
+    "status": "Payment successful",
+    "razorpay_order_id": response['razorpay_order_id'],
+    "razorpay_payment_id": response['razorpay_payment_id'],
+    "razorpay_signature": response['razorpay_signature'],
+    "redirect_url": reverse("restaurants:table_booking_confirmation", args=[booking.id])
+})
             else:
                 order = Order.objects.get(razorpay_order_id=response['razorpay_order_id'])
                 order.razorpay_payment_id = response['razorpay_payment_id']

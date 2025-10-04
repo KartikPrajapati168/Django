@@ -65,6 +65,8 @@ urlpatterns = [
     #for razorpay payment
     path('create-razorpay-order', create_razorpay_order, name='create_razorpay_order'),
     path('payment-success', payment_success, name='payment_success'),
+    
+    path('search-suggestions/', views.search_suggestions, name='search_suggestions'),
 ]
 
 
