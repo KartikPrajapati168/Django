@@ -22,7 +22,7 @@
     {% comment %} {% for review in restaurant.reviews.all|slice:":5" %} {% endcomment %}
       <div class="review mb-4 p-3 border rounded-3 shadow-sm">
         <div class="d-flex justify-content-between">
-          <strong>{{ review.user_display_name }}</strong>
+          <strong>{{ review.user }}</strong>
           <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
         </div>
         <div>

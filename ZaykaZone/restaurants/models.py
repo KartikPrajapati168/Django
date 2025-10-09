@@ -292,7 +292,10 @@ class MenuCategory(models.Model):
     def __str__(self):
         if self.is_global:
             return f"{self.name} (Global)"
-        return f"{self.name} ({self.restaurant.name})"
+        elif self.restaurant:
+            return f"{self.name} ({self.restaurant.name})"
+        else:
+            return self.name
 
 
 class MenuItem(models.Model):

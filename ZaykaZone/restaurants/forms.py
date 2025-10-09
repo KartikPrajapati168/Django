@@ -37,6 +37,10 @@ class OwnerProfileForm(forms.ModelForm):
         # exclude = ["user", "restaurant"]
 
 
+
+from django import forms
+from .models import MenuCategory, MenuItem  # Adjust if models are elsewhere
+
 class MenuCategoryCreateForm(forms.ModelForm):
     predefined_category = forms.ModelChoiceField(
         queryset=MenuCategory.objects.filter(is_global=True),
@@ -46,7 +50,7 @@ class MenuCategoryCreateForm(forms.ModelForm):
 
     class Meta:
         model = MenuCategory
-        fields = ['name', 'image','is_global']
+        fields = ['name', 'image']
         
     def __init__(self, *args, **kwargs):
         restaurant = kwargs.pop('restaurant', None)
@@ -71,9 +75,21 @@ class MenuCategoryCreateForm(forms.ModelForm):
         if commit:
             new_category.save()
         return new_category
-    
-    
-    
+
+class MenuCategoryUpdateForm(forms.ModelForm):
+    class Meta:
+        model = MenuCategory
+        fields = ['name', 'image']  # No predefined
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        category = super().save(commit=False)
+        if commit:
+            category.save()
+        return category
+
 class MenuItemCreateForm(forms.ModelForm):
     predefined_item = forms.ModelChoiceField(
         queryset=MenuItem.objects.none(),  # override in init
@@ -83,25 +99,19 @@ class MenuItemCreateForm(forms.ModelForm):
 
     class Meta:
         model = MenuItem
-        fields = ['name', 'description', 'price', 'image','is_available']
+        fields = ['category','name', 'description', 'price', 'image','is_available']
 
     def __init__(self, *args, **kwargs):
         restaurant = kwargs.pop('restaurant', None)
-        category = kwargs.pop('category', None)
+        category_for_queryset = kwargs.pop('category', None)  # Renamed to avoid confusion
         super().__init__(*args, **kwargs)
 
         self.restaurant = restaurant
-        self.category = category
 
-        # self.fields['predefined_item'].queryset = MenuItem.objects.filter(
-        #     restaurant__isnull=True,
-        #     category__name=category.name
-        # )
-         # ✅ Safe check
-        if category is not None:
+        if category_for_queryset is not None:
             self.fields['predefined_item'].queryset = MenuItem.objects.filter(
                 restaurant__isnull=True,
-                category__name=category.name
+                category__name=category_for_queryset.name
             )
         else:
             self.fields['predefined_item'].queryset = MenuItem.objects.none()
@@ -115,18 +125,293 @@ class MenuItemCreateForm(forms.ModelForm):
                 price=predefined.price,
                 image=predefined.image,
                 restaurant=self.restaurant,
-                category=self.category,
+                category=predefined.category,  # Use the predefined's category, or self.cleaned_data['category'] if you want to override
                 is_available=True
             )
         else:
             new_item = super().save(commit=False)
             new_item.restaurant = self.restaurant
-            new_item.category = self.category
+            # Removed: new_item.category = self.category  # This was overwriting with None
 
         if commit:
             new_item.save()
         return new_item
     
+# class MenuCategoryCreateForm(forms.ModelForm):
+#     predefined_category = forms.ModelChoiceField(
+#         queryset=MenuCategory.objects.filter(is_global=True),
+#         required=False,
+#         label="Choose Predefined Category"
+#     )
+
+#     class Meta:
+#         model = MenuCategory
+#         fields = ['name', 'description','image']
+        
+#     def __init__(self, *args, **kwargs):
+#         restaurant = kwargs.pop('restaurant', None)
+#         super().__init__(*args, **kwargs)
+#         self.restaurant = restaurant
+
+#     def save(self, commit=True):
+#         predefined = self.cleaned_data.get('predefined_category')
+#         if predefined:
+#             # Clone the global category
+#             new_category = MenuCategory(
+#                 name=predefined.name,
+#                 image=predefined.image,
+#                 restaurant=self.restaurant,
+#                 is_global=False
+#             )
+#         else:
+#             new_category = super().save(commit=False)
+#             new_category.restaurant = self.restaurant
+#             new_category.is_global = False
+
+#         if commit:
+#             new_category.save()
+#         return new_category
+    
+    
+    
+# class MenuItemCreateForm(forms.ModelForm):
+#     predefined_item = forms.ModelChoiceField(
+#         queryset=MenuItem.objects.none(),  # override in init
+#         required=False,
+#         label="Choose Predefined Item (optional)"
+#     )
+
+#     class Meta:
+#         model = MenuItem
+#         fields = ['category','name', 'description', 'price', 'image','is_available']
+
+#     def __init__(self, *args, **kwargs):
+#         restaurant = kwargs.pop('restaurant', None)
+#         category = kwargs.pop('category', None)
+#         super().__init__(*args, **kwargs)
+
+#         self.restaurant = restaurant
+#         self.category = category
+
+#         # self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+#         #     restaurant__isnull=True,
+#         #     category__name=category.name
+#         # )
+#          # ✅ Safe check
+#         if category is not None:
+#             self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+#                 restaurant__isnull=True,
+#                 category__name=category.name
+#             )
+#         else:
+#             self.fields['predefined_item'].queryset = MenuItem.objects.none()
+
+#     def save(self, commit=True):
+#         predefined = self.cleaned_data.get('predefined_item')
+#         if predefined:
+#             new_item = MenuItem(
+#                 name=predefined.name,
+#                 description=predefined.description,
+#                 price=predefined.price,
+#                 image=predefined.image,
+#                 restaurant=self.restaurant,
+#                 category=self.category,
+#                 is_available=True
+#             )
+#         else:
+#             new_item = super().save(commit=False)
+#             new_item.restaurant = self.restaurant
+#             new_item.category = self.category
+
+#         if commit:
+#             new_item.save()
+#         return new_item
+
+
+# class MenuCategoryCreateForm(forms.ModelForm):
+#     predefined_category = forms.ModelChoiceField(
+#         queryset=MenuCategory.objects.filter(is_global=True),
+#         required=False,
+#         label="Choose Predefined Category"
+#     )
+
+#     class Meta:
+#         model = MenuCategory
+#         fields = ['name','image']
+        
+#     def __init__(self, *args, **kwargs):
+#         restaurant = kwargs.pop('restaurant', None)
+#         super().__init__(*args, **kwargs)
+#         self.restaurant = restaurant
+
+#     def save(self, commit=True):
+#         predefined = self.cleaned_data.get('predefined_category')
+#         if predefined:
+#             # Clone the global category
+#             new_category = MenuCategory(
+#                 name=predefined.name,
+#                 image=predefined.image,
+#                 restaurant=self.restaurant,
+#                 is_global=False
+#             )
+#         else:
+#             new_category = super().save(commit=False)
+#             new_category.restaurant = self.restaurant
+#             new_category.is_global = False
+
+#         if commit:
+#             new_category.save()
+#         return new_category
+    
+# class MenuCategoryCreateForm(forms.ModelForm):
+#     predefined_category = forms.ModelChoiceField(
+#         queryset=MenuCategory.objects.filter(is_global=True),
+#         required=False,
+#         label="Choose Predefined Category"
+#     )
+
+#     class Meta:
+#         model = MenuCategory
+#         fields = ['name','image']
+        
+#     def __init__(self, *args, **kwargs):
+#         restaurant = kwargs.pop('restaurant', None)
+#         super().__init__(*args, **kwargs)
+#         self.restaurant = restaurant
+
+#     def save(self, commit=True):
+#         predefined = self.cleaned_data.get('predefined_category')
+#         if predefined:
+#             # Clone the global category
+#             new_category = MenuCategory(
+#                 name=predefined.name,
+#                 image=predefined.image,
+#                 restaurant=self.restaurant,
+#                 is_global=False
+#             )
+#         else:
+#             new_category = super().save(commit=False)
+#             new_category.restaurant = self.restaurant
+#             new_category.is_global = False
+
+#         if commit:
+#             new_category.save()
+#         return new_category
+
+# class MenuCategoryUpdateForm(forms.ModelForm):
+#     class Meta:
+#         model = MenuCategory
+#         fields = ['name', 'image']  # No predefined_category
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+
+#     def save(self, commit=True):
+#         category = super().save(commit=False)
+#         if commit:
+#             category.save()
+#         return category    
+    
+# # class MenuItemCreateForm(forms.ModelForm):
+# #     predefined_item = forms.ModelChoiceField(
+# #         queryset=MenuItem.objects.none(),  # override in init
+# #         required=False,
+# #         label="Choose Predefined Item (optional)"
+# #     )
+
+# #     class Meta:
+# #         model = MenuItem
+# #         fields = ['category','name', 'description', 'price', 'image','is_available']
+
+# #     def __init__(self, *args, **kwargs):
+# #         restaurant = kwargs.pop('restaurant', None)
+# #         category = kwargs.pop('category', None)
+# #         super().__init__(*args, **kwargs)
+
+# #         self.restaurant = restaurant
+# #         self.category = category
+
+# #         # self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+# #         #     restaurant__isnull=True,
+# #         #     category__name=category.name
+# #         # )
+# #          # ✅ Safe check
+# #         if category is not None:
+# #             self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+# #                 restaurant__isnull=True,
+# #                 category__name=category.name
+# #             )
+# #         else:
+# #             self.fields['predefined_item'].queryset = MenuItem.objects.none()
+
+# #     def save(self, commit=True):
+# #         predefined = self.cleaned_data.get('predefined_item')
+# #         if predefined:
+# #             new_item = MenuItem(
+# #                 name=predefined.name,
+# #                 description=predefined.description,
+# #                 price=predefined.price,
+# #                 image=predefined.image,
+# #                 restaurant=self.restaurant,
+# #                 category=self.category,
+# #                 is_available=True
+# #             )
+# #         else:
+# #             new_item = super().save(commit=False)
+# #             new_item.restaurant = self.restaurant
+# #             new_item.category = self.category
+
+# #         if commit:
+# #             new_item.save()
+# #         return new_item
+    
+    
+#     class MenuItemCreateForm(forms.ModelForm):
+#         predefined_item = forms.ModelChoiceField(
+#         queryset=MenuItem.objects.none(),  # override in init
+#         required=False,
+#         label="Choose Predefined Item (optional)"
+#         )
+
+#     class Meta:
+#         model = MenuItem
+#         fields = ['category','name', 'description', 'price', 'image','is_available']
+
+#     def __init__(self, *args, **kwargs):
+#         restaurant = kwargs.pop('restaurant', None)
+#         category_for_queryset = kwargs.pop('category', None)  # Renamed to avoid confusion
+#         super().__init__(*args, **kwargs)
+
+#         self.restaurant = restaurant
+
+#         if category_for_queryset is not None:
+#             self.fields['predefined_item'].queryset = MenuItem.objects.filter(
+#                 restaurant__isnull=True,
+#                 category__name=category_for_queryset.name
+#             )
+#         else:
+#             self.fields['predefined_item'].queryset = MenuItem.objects.none()
+
+#     def save(self, commit=True):
+#         predefined = self.cleaned_data.get('predefined_item')
+#         if predefined:
+#             new_item = MenuItem(
+#                 name=predefined.name,
+#                 description=predefined.description,
+#                 price=predefined.price,
+#                 image=predefined.image,
+#                 restaurant=self.restaurant,
+#                 category=predefined.category,  # Use the predefined's category, or self.cleaned_data['category'] if you want to override
+#                 is_available=True
+#             )
+#         else:
+#             new_item = super().save(commit=False)
+#             new_item.restaurant = self.restaurant
+#             # Removed: new_item.category = self.category  # This was overwriting with None
+
+#         if commit:
+#             new_item.save()
+#         return new_item
     
     # def save(self, commit=True):
     #     predefined = self.cleaned_data.get('predefined_item')

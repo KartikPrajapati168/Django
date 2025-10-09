@@ -815,24 +815,442 @@ def approval_pending(request):
         'menu_item': menu_item
     })
 
-from django.shortcuts import render, redirect, get_object_or_404
+
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib import messages
+# from .models import Restaurant, MenuCategory, MenuItem
+# from .forms import MenuCategoryCreateForm, MenuItemCreateForm
+
+# def menu_view(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     categories = MenuCategory.objects.filter(restaurant=restaurant).prefetch_related("items")
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+
+#     return render(request, "restaurants/admins/menus.html", {
+#         "restaurant": restaurant,
+#         "categories": categories,
+#         "menu_items": menu_items,
+#     })
+
+
+# 2nd way
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.contrib import messages
+# from .models import Restaurant, MenuCategory, MenuItem
+# from .forms import MenuCategoryCreateForm, MenuItemCreateForm
+
+# def menu_view(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     categories = MenuCategory.objects.filter(restaurant=restaurant).prefetch_related("items")
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+
+#     return render(request, "restaurants/admins/menus.html", {
+#         "restaurant": restaurant,
+#         "categories": categories,
+#         "menu_items": menu_items,
+#     })
+
+
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from django.http import JsonResponse
+# from .models import Restaurant, MenuCategory, MenuItem
+# from .forms import MenuCategoryCreateForm, MenuItemCreateForm
+
+# def menu_view(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+
+#     # Fetch categories with their items (reverse relation)
+#     categories = MenuCategory.objects.filter(
+#         restaurant=restaurant
+#     ).prefetch_related('items')
+
+#     # Fetch items with their category and restaurant (forward relation)
+#     menu_items = MenuItem.objects.filter(
+#         restaurant=restaurant
+#     ).select_related('category', 'restaurant')
+
+#     # Forms
+#     category_form = MenuCategoryCreateForm()
+#     menu_item_form = MenuItemCreateForm(restaurant=restaurant)
+
+#     context = {
+#         'restaurant': restaurant,
+#         'categories': categories,
+#         'menu_items': menu_items,
+#         'category_form': category_form,
+#         'menu_item_form': menu_item_form,
+#     }
+#     return render(request, 'restaurants/admins/menus.html', context)
+
+
+# def add_category(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+    
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             category = form.save(commit=False)
+#             category.restaurant = restaurant
+#             category.save()
+#             messages.success(request, f'Category "{category.name}" added successfully!')
+#             return redirect('restaurants:menu', slug=restaurant.slug)
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+    
+#     return redirect('restaurants:menu', slug=restaurant.slug)
+
+# def edit_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+    
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, request.FILES, instance=category)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, f'Category "{category.name}" updated successfully!')
+#             return redirect('restaurants:menu_management', slug=restaurant.slug)
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+#     else:
+#         form = MenuCategoryCreateForm(instance=category)
+    
+#     categories = MenuCategory.objects.filter(restaurant=restaurant)
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+    
+#     context = {
+#         'restaurant': restaurant,
+#         'categories': categories,
+#         'menu_items': menu_items,
+#         'category_form': form,
+#         'editing_category': category,
+#     }
+#     return render(request, 'restaurants/admins/menus.html', context)
+
+# def delete_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+    
+#     if request.method == "POST":
+#         category_name = category.name
+#         category.delete()
+#         messages.success(request, f'Category "{category_name}" deleted successfully!')
+#         return redirect('restaurants:menu', slug=restaurant.slug)
+    
+#     return redirect('restaurants:menu', slug=restaurant.slug)
+
+# def add_menu_item(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+    
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(request.POST, request.FILES, restaurant=restaurant)
+#         if form.is_valid():
+#             menu_item = form.save(commit=False)
+#             menu_item.restaurant = restaurant
+#             menu_item.save()
+#             messages.success(request, f'Menu item "{menu_item.name}" added successfully!')
+#             return redirect('restaurants:menu', slug=restaurant.slug)
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+    
+#     return redirect('restaurants:menu', slug=restaurant.slug)
+
+# def edit_menu_item(request, slug, item_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     menu_item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+    
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(request.POST, request.FILES, instance=menu_item, restaurant=restaurant)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, f'Menu item "{menu_item.name}" updated successfully!')
+#             return redirect('restaurants:menu', slug=restaurant.slug)
+#         else:
+#             messages.error(request, 'Please correct the errors below.')
+#     else:
+#         form = MenuItemCreateForm(instance=menu_item, restaurant=restaurant)
+    
+#     categories = MenuCategory.objects.filter(restaurant=restaurant)
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+    
+#     context = {
+#         'restaurant': restaurant,
+#         'categories': categories,
+#         'menu_items': menu_items,
+#         'menu_item_form': form,
+#         'editing_item': menu_item,
+#     }
+#     return render(request, 'restaurants/admins/menus.html', context)
+
+# def delete_menu_item(request, slug, item_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     menu_item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+    
+#     if request.method == "POST":
+#         item_name = menu_item.name
+#         menu_item.delete()
+#         messages.success(request, f'Menu item "{item_name}" deleted successfully!')
+#         return redirect('restaurants:menu', slug=restaurant.slug)
+    
+#     return redirect('restaurants:menu', slug=restaurant.slug)
+
+
+#3rd way
+
+# from .forms import MenuItemCreateForm, MenuCategoryCreateForm
+
+# # ✅ Menu Management View (Handles listing and adding menu items)
+# def add_menu_item(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     categories = MenuCategory.objects.filter(restaurant=restaurant)
+#     menu_items = MenuItem.objects.filter(restaurant=restaurant).order_by('-id')  # Latest first if needed
+
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(request.POST, request.FILES, restaurant=restaurant)
+#         if form.is_valid():
+#             item = form.save(commit=False)
+#             item.restaurant = restaurant
+#             item.save()
+#             messages.success(request, "Menu item added successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+    
+#     context = {
+#         'restaurant': restaurant,
+#         'categories': categories,
+#         'menu_items': menu_items,
+#     }
+#     return render(request, "restaurants/admins/menu.html", context)  # Assuming template name
+
+# # ✅ Add Category
+# def add_category(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST)
+#         if form.is_valid():
+#             category = form.save(commit=False)
+#             category.restaurant = restaurant
+#             category.save()
+#             messages.success(request, "Category added successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
+# # ✅ Delete Category (Delete associated items first)
+# def delete_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+#     # Delete associated menu items
+#     category.menuitem_set.all().delete()
+#     category.delete()
+#     messages.success(request, "Category and associated items deleted successfully!")
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
+# # ✅ Edit Category
+# def edit_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, instance=category)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Category updated successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#     else:
+#         form = MenuCategoryCreateForm(instance=category)
+
+#     return render(request, "restaurants/admins/edit_category.html", {
+#         "restaurant": restaurant,
+#         "form": form,
+#         "category": category,
+#     })
+
+# # ✅ Delete Menu Item
+# def delete_menu_item(request, slug, item_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+#     item.delete()
+#     messages.success(request, "Menu item deleted successfully!")
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
+# # ✅ Edit Menu Item
+# def edit_menu_item(request, slug, item_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(
+#             request.POST, 
+#             request.FILES, 
+#             instance=item,
+#             restaurant=restaurant
+#         )
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Menu item updated successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#     else:
+#         form = MenuItemCreateForm(
+#             instance=item,
+#             restaurant=restaurant
+#         )
+
+#     return render(request, "restaurants/admins/edit_item.html", {
+#         "restaurant": restaurant,
+#         "form": form,
+#         "item": item,
+#     })
+    
+
+
+#4th way
+
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.db.models import Q
 from .models import Restaurant, MenuCategory, MenuItem
-from .forms import MenuCategoryCreateForm, MenuItemCreateForm
+from .forms import MenuCategoryCreateForm,MenuCategoryUpdateForm,MenuItemCreateForm
+
+from django.db.models import Q, Prefetch
 
 def menu_view(request, slug):
     restaurant = get_object_or_404(Restaurant, slug=slug)
-    categories = MenuCategory.objects.filter(restaurant=restaurant).prefetch_related("items")
+    
+    # Get categories with their items, including global
+    categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).prefetch_related(
+        Prefetch('items', queryset=MenuItem.objects.filter(restaurant=restaurant), to_attr='restaurant_items')
+    )
     menu_items = MenuItem.objects.filter(restaurant=restaurant)
+    
+    context = {
+        'restaurant': restaurant,
+        'categories': categories,
+        'menu_items': menu_items,
+    }
+    return render(request, 'restaurants/admins/menus.html', context)
 
-    return render(request, "restaurants/admins/menus.html", {
-        "restaurant": restaurant,
-        "categories": categories,
-        "menu_items": menu_items,
-    })
+# def add_category(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+    
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             category = form.save(commit=False)
+#             category.restaurant = restaurant
+#             category.save()
+#             messages.success(request, "Category added successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#             categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).prefetch_related('items')
+#             menu_items = MenuItem.objects.filter(restaurant=restaurant)
+#             context = {
+#                 'restaurant': restaurant,
+#                 'categories': categories,
+#                 'menu_items': menu_items,
+#             }
+#             return render(request, 'restaurants/admins/menus.html', context)
+    
+#     return redirect("restaurants:menu", slug=restaurant.slug)
 
+def delete_category(request, slug, category_id):
+    restaurant = get_object_or_404(Restaurant, slug=slug)
+    category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+    
+    # Check if category has items before deleting
+    if category.items.exists():
+        messages.error(request, "Cannot delete category that has menu items. Please delete or move the items first.")
+        return redirect("restaurants:menu", slug=restaurant.slug)
+    
+    category.delete()
+    messages.success(request, "Category deleted successfully!")
+    return redirect("restaurants:menu", slug=restaurant.slug)
 
-# ✅ Add Category
+# def add_menu_item(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category_id = request.POST.get("category")  # category select hone par mil jayegi
+#     category = None
+#     if category_id:
+#         category = get_object_or_404(MenuCategory, id=category_id)
+
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(request.POST, request.FILES, restaurant=restaurant, category=category)
+#         if form.is_valid():
+#             item = form.save(commit=False)
+#             item.restaurant = restaurant
+#             item.category = category  # ✅ ensure category is saved
+#             item.save()
+#             messages.success(request, "Menu item added successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#         else:
+#             categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).prefetch_related('items')
+#             menu_items = MenuItem.objects.filter(restaurant=restaurant)
+#             context = {
+#                 'restaurant': restaurant,
+#                 'categories': categories,
+#                 'menu_items': menu_items,
+#                 'dish_form': form,
+#             }
+#             return render(request, 'restaurants/admins/menus.html', context)
+    
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
+def delete_menu_item(request, slug, item_id):
+    restaurant = get_object_or_404(Restaurant, slug=slug)
+    item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+    item.delete()
+    messages.success(request, "Menu item deleted successfully!")
+    return redirect("restaurants:menu", slug=restaurant.slug)
+
+# def edit_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, request.FILES, instance=category)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Category updated successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#             categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).prefetch_related('items')
+#             menu_items = MenuItem.objects.filter(restaurant=restaurant)
+#             context = {
+#                 'restaurant': restaurant,
+#                 'categories': categories,
+#                 'menu_items': menu_items,
+#                 'editing_category': category,
+#             }
+#             return render(request, 'restaurants/admins/menus.html', context)
+    
+#     # If GET, just redirect to menu (modal handles it)
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
+# def edit_menu_item(request, slug, item_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
+
+#     if request.method == "POST":
+#         form = MenuItemCreateForm(request.POST, request.FILES, instance=item)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, "Menu item updated successfully!")
+#             return redirect("restaurants:menu", slug=restaurant.slug)
+#         else:
+#             messages.error(request, "Please correct the errors below.")
+#             categories = MenuCategory.objects.filter(Q(restaurant=restaurant) | Q(is_global=True)).prefetch_related('items')
+#             menu_items = MenuItem.objects.filter(restaurant=restaurant)
+#             context = {
+#                 'restaurant': restaurant,
+#                 'categories': categories,
+#                 'menu_items': menu_items,
+#                 'editing_item': item,
+#             }
+#             return render(request, 'restaurants/admins/menus.html', context)
+    
+#     # If GET, redirect to menu
+#     return redirect("restaurants:menu", slug=restaurant.slug)
+
 def add_category(request, slug):
     restaurant = get_object_or_404(Restaurant, slug=slug)
     if request.method == "POST":
@@ -841,96 +1259,105 @@ def add_category(request, slug):
             category = form.save(commit=False)
             category.restaurant = restaurant
             category.save()
-            messages.success(request, "Category added successfully!")
-            return redirect("restaurants:menu", slug=restaurant.slug)
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Category added successfully!'})
+            else:
+                messages.success(request, "Category added successfully!")
+                return redirect("restaurants:menu", slug=restaurant.slug)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
+            else:
+                messages.error(request, "Please correct the errors below.")
     return redirect("restaurants:menu", slug=restaurant.slug)
 
-
-# ✅ Delete Category
-def delete_category(request, slug, category_id):
-    restaurant = get_object_or_404(Restaurant, slug=slug)
-    category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
-    category.delete()
-    messages.success(request, "Category deleted successfully!")
-    return redirect("restaurants:menu", slug=restaurant.slug)
-
-
-# ✅ Add Menu Item
-def add_menu_item(request, slug):
-    restaurant = get_object_or_404(Restaurant, slug=slug)
-    if request.method == "POST":
-        form = MenuItemCreateForm(request.POST, request.FILES)
-        if form.is_valid():
-            item = form.save(commit=False)
-            item.restaurant = restaurant
-            item.save()
-            messages.success(request, "Menu item added successfully!")
-            return redirect("restaurants:menu", slug=restaurant.slug)
-    return redirect("restaurants:menu", slug=restaurant.slug)
+# def edit_category(request, slug, category_id):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+#     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
+#     if request.method == "POST":
+#         form = MenuCategoryCreateForm(request.POST, instance=category)
+#         if form.is_valid():
+#             form.save()
+#             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                 return JsonResponse({'success': True, 'message': 'Category updated successfully!'})
+#             else:
+#                 messages.success(request, "Category updated successfully!")
+#                 return redirect("restaurants:menu", slug=restaurant.slug)
+#         else:
+#             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#                 return JsonResponse({'success': False, 'errors': form.errors})
+#             else:
+#                 messages.error(request, "Please correct the errors below.")
+#     return redirect("restaurants:menu", slug=restaurant.slug)
 
 
-# ✅ Delete Menu Item
-def delete_menu_item(request, slug, item_id):
-    restaurant = get_object_or_404(Restaurant, slug=slug)
-    item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
-    item.delete()
-    messages.success(request, "Menu item deleted successfully!")
-    return redirect("restaurants:menu", slug=restaurant.slug)
-
-
-# ✅ Edit Category
 def edit_category(request, slug, category_id):
     restaurant = get_object_or_404(Restaurant, slug=slug)
     category = get_object_or_404(MenuCategory, id=category_id, restaurant=restaurant)
-
-    if request.method == "POST":
-        form = MenuCategoryCreateForm(request.POST, instance=category)
+    if request.method == 'POST':
+        form = MenuCategoryUpdateForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             form.save()
-            messages.success(request, "Category updated successfully!")
-            return redirect("restaurants:menu", slug=restaurant.slug)
+            messages.success(request, 'Category updated successfully!')
+            return redirect('restaurants:menu', slug=slug)
     else:
-        form = MenuCategoryCreateForm(instance=category)
+        form = MenuCategoryUpdateForm(instance=category)
+    # If rendering the template on error, pass {'form': form, 'editing_category': category} to context
+    return render(request, 'restaurants/menu.html', {'restaurant': restaurant, 'categories': MenuCategory.objects.filter(restaurant=restaurant), 'menu_items': MenuItem.objects.filter(restaurant=restaurant), 'form': form, 'editing_category': category})
 
-    return render(request, "restaurants/admins/edit_category.html", {
-        "restaurant": restaurant,
-        "form": form,
-        "category": category,
-    })
+def add_menu_item(request, slug):
+    restaurant = get_object_or_404(Restaurant, slug=slug)
+    category_id = request.POST.get("category")
+    category = None
+    if category_id:
+        category = get_object_or_404(MenuCategory, id=category_id)
 
+    if request.method == "POST":
+        form = MenuItemCreateForm(request.POST, request.FILES, restaurant=restaurant, category=category)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.restaurant = restaurant
+            item.category = category
+            item.save()
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Menu item added successfully!'})
+            else:
+                messages.success(request, "Menu item added successfully!")
+                return redirect("restaurants:menu", slug=restaurant.slug)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
+            else:
+                messages.error(request, "Please correct the errors below.")
+    return redirect("restaurants:menu", slug=restaurant.slug)
 
-# ✅ Edit Menu Item
 def edit_menu_item(request, slug, item_id):
     restaurant = get_object_or_404(Restaurant, slug=slug)
     item = get_object_or_404(MenuItem, id=item_id, restaurant=restaurant)
 
     if request.method == "POST":
-        form = MenuItemCreateForm(
-            request.POST, 
-            request.FILES, 
-            instance=item,
-            restaurant=restaurant,
-            category=item.category   # 👈 यह ज़रूरी है
-        )
+        form = MenuItemCreateForm(request.POST, request.FILES, instance=item, restaurant=restaurant, category=item.category)
         if form.is_valid():
             form.save()
-            messages.success(request, "Menu item updated successfully!")
-            return redirect("restaurants:menu", slug=restaurant.slug)
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Menu item updated successfully!'})
+            else:
+                messages.success(request, "Menu item updated successfully!")
+                return redirect("restaurants:menu", slug=restaurant.slug)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
+            else:
+                messages.error(request, "Please correct the errors below.")
     else:
-        form = MenuItemCreateForm(
-            instance=item,
-            restaurant=restaurant,
-            category=item.category   # 👈 यह ज़रूरी है
-        )
+        form = MenuItemCreateForm(instance=item, restaurant=restaurant, category=item.category)
 
     return render(request, "restaurants/admins/edit_item.html", {
         "restaurant": restaurant,
         "form": form,
         "item": item,
     })
-
-
-    
+        
 # def order_view(request,slug):
 #     restaurant = get_object_or_404(Restaurant, slug=slug)
 #     return render(request, 'restaurants/admins/orders.html', {'restaurant': restaurant})

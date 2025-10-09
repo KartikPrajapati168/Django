@@ -195,7 +195,21 @@ function scrollToPhotos() {
     }, 100);
 }
 
+function scrollToReviews(){
+    document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('d-none'));
+    document.getElementById('reviews-section').classList.remove('d-none');
 
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.innerText.trim() === 'Reviews') {
+            btn.classList.add('active');
+        }
+    });
+
+    setTimeout(() => {
+        document.getElementById('reviews-section').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+}
 
 
 // =================== STAR RATING + REVIEW FORM ===================
