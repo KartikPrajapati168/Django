@@ -281,6 +281,7 @@
         align-items: center;
         gap: 10px;
         margin-top: 10px;
+        flex-wrap: wrap;
       }
 
       .phone-wrapper {
@@ -630,9 +631,7 @@
 
               <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea class="form-control" name="description" required>
-{{ restaurant.description }}</textarea
-                >
+                <textarea class="form-control" name="description" required>{{ restaurant.description }}</textarea>
               </div>
             </div>
 
@@ -669,14 +668,21 @@
                   type="checkbox"
                   name="dining_out"
                   id="dining_out"
-                  {%
-                  if
-                  restaurant.dining_out
-                  %}checked{%
-                  endif
-                  %}
+                  {% if restaurant.dining_out_available %}checked{% endif %}
                 />
                 <label for="dining_out">Dining Out Available</label>
+                <label for="per_person_booking_price" style="margin-left: 20px">Per Person Table Booking Price</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  name="per_person_booking_price"
+                  id="per_person_booking_price"
+                  value="{{ restaurant.table_booking_price|default_if_none:'' }}"
+                  placeholder="E.g. 500"
+                  min="0"
+                  step="0.01"
+                  style="max-width: 200px; margin-left: 10px;"
+                />
               </div>
             </div>
 
@@ -690,7 +696,7 @@
                     type="text"
                     class="form-control"
                     name="owner_name"
-                    value="{{ request.user.get_full_name }}"
+                    value="{{ profile.full_name|default:request.user.get_full_name }}"
                     required
                   />
                 </div>
@@ -701,7 +707,7 @@
                     type="email"
                     class="form-control"
                     name="owner_email"
-                    value="{{ request.user.email }}"
+                    value="{{ profile.email|default:request.user.email }}"
                     required
                   />
                 </div>
@@ -735,7 +741,7 @@
                     type="tel"
                     name="owner_phone"
                     placeholder="Phone number"
-                    value="{{ restaurant.phone }}"
+                    value="{{ profile.phone|default:'' }}" 
                     required
                   />
                 </div>
@@ -767,7 +773,7 @@
                   type="text"
                   class="form-control"
                   name="gst_number"
-                  value="{{ restaurant.gst_number }}"
+                  value="{{ profile.gst_number|default:'' }}"
                 />
               </div>
             </div>
@@ -841,6 +847,21 @@
         ) {
           sidebar.classList.remove("active");
         }
+      });
+
+      // New code for enabling/disabling price field based on checkbox
+      document.addEventListener("DOMContentLoaded", function () {
+        const checkbox = document.getElementById("dining_out");
+        const priceInput = document.getElementById("per_person_booking_price");
+
+        function togglePriceField() {
+          if (priceInput) {
+            priceInput.disabled = !checkbox.checked;
+          }
+        }
+
+        togglePriceField(); // Set initial state
+        checkbox.addEventListener("change", togglePriceField);
       });
     </script>
   </body>

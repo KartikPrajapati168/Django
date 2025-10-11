@@ -288,7 +288,7 @@ class MenuCategory(models.Model):
     #related_name='menu_categories' → अब आप restaurant.menu_categories.all() लिखकर उस restaurant की categories पा सकते हो।
     image = models.ImageField(upload_to='category_icons/', blank=True, null=True)
     is_global = models.BooleanField(default=False)  # True = fixed system category
-
+    
     def __str__(self):
         if self.is_global:
             return f"{self.name} (Global)"

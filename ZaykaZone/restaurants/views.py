@@ -1574,21 +1574,132 @@ def users_view(request, slug):
     })
 
 
+# def profile_view(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+    
+#     if request.method == "POST":
+#         restaurant.name = request.POST.get("name", restaurant.name)
+#         restaurant.description = request.POST.get("description", restaurant.description)
+#         restaurant.address = request.POST.get("address", restaurant.address)
+#         restaurant.timings = request.POST.get("timings", restaurant.timings)
+#         if request.FILES.get("logo"):
+#             restaurant.logo = request.FILES["logo"]
+#         restaurant.save()
+        
+        
+#         return redirect("restaurants:profile", slug=restaurant.slug)
+
+#     return render(request, 'restaurants/admins/profile.html', {'restaurant': restaurant})
+
+
+# from django.shortcuts import render, redirect, get_object_or_404
+# from django.http import Http404
+# from .models import Restaurant, RestaurantOwnerProfile  # Assuming RestaurantOwnerProfile is imported from models
+
+# def profile_view(request, slug):
+#     restaurant = get_object_or_404(Restaurant, slug=slug)
+    
+#     # Authorization check: Ensure the logged-in user owns the restaurant
+#     if request.user != restaurant.owner:
+#         raise Http404("You do not have permission to edit this profile.")
+    
+#     # Get or create the owner's profile (assuming OneToOneField with User)
+#     profile, created = RestaurantOwnerProfile.objects.get_or_create(user=request.user)
+    
+#     if request.method == "POST":
+#         # Update User fields
+#         owner_name = request.POST.get("owner_name")
+#         if owner_name:
+#             parts = owner_name.split(" ", 1)
+#             request.user.first_name = parts[0]
+#             request.user.last_name = parts[1] if len(parts) > 1 else ""
+#         request.user.email = request.POST.get("owner_email", request.user.email)
+#         request.user.save()
+        
+#         # Update Restaurant fields
+#         restaurant.name = request.POST.get("name", restaurant.name)
+#         restaurant.description = request.POST.get("description", restaurant.description)
+#         restaurant.address = request.POST.get("address", restaurant.address)
+#         restaurant.timings = request.POST.get("timings", restaurant.timings)
+#         restaurant.dining_out = 'dining_out' in request.POST
+#         restaurant.per_person_booking_price = request.POST.get("per_person_booking_price", restaurant.per_person_booking_price)
+#         if request.FILES.get("logo"):
+#             restaurant.logo = request.FILES["logo"]
+#         restaurant.save()
+        
+#         # Update RestaurantOwnerProfile fields (assuming phone and gst_number are on this model)
+#         profile.phone = request.POST.get("owner_phone", profile.phone)
+#         profile.gst_number = request.POST.get("gst_number", profile.gst_number)
+#         profile.save()
+        
+#         return redirect("restaurants:profile", slug=restaurant.slug)
+
+#     return render(request, 'restaurants/admins/profile.html', {'restaurant': restaurant, 'profile': profile})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import Http404
+from django.contrib import messages  # Optional for feedback
+from .models import Restaurant, RestaurantOwnerProfile
+
 def profile_view(request, slug):
     restaurant = get_object_or_404(Restaurant, slug=slug)
     
+    # Authorization check: Ensure the logged-in user owns the restaurant
+    if request.user != restaurant.owner:
+        raise Http404("You do not have permission to edit this profile.")
+    
+    # Get or create the profile for this specific restaurant
+    profile, created = RestaurantOwnerProfile.objects.get_or_create(
+        restaurant=restaurant,
+        defaults={
+            'user': request.user,
+            'full_name': request.user.get_full_name(),
+            'email': request.user.email,
+            # Phone and GST can be set if available from user, but assuming user has no phone field
+            'phone': '',  # or pull from user if exists
+            'gst_number': '',
+        }
+    )
+    
+    # If not created and user mismatch (edge case), correct it
+    if profile.user != request.user:
+        profile.user = request.user
+        profile.save()
+    
     if request.method == "POST":
+        # Update Restaurant fields
         restaurant.name = request.POST.get("name", restaurant.name)
         restaurant.description = request.POST.get("description", restaurant.description)
         restaurant.address = request.POST.get("address", restaurant.address)
         restaurant.timings = request.POST.get("timings", restaurant.timings)
+        restaurant.dining_out_available = 'dining_out' in request.POST
+        restaurant.table_booking_price = request.POST.get("per_person_booking_price", restaurant.table_booking_price)
         if request.FILES.get("logo"):
             restaurant.logo = request.FILES["logo"]
         restaurant.save()
+        
+        # Update RestaurantOwnerProfile fields (specific to this restaurant)
+        profile.full_name = request.POST.get("owner_name", profile.full_name)
+        profile.email = request.POST.get("owner_email", profile.email)
+        profile.phone = request.POST.get("owner_phone", profile.phone)
+        profile.gst_number = request.POST.get("gst_number", profile.gst_number)
+        profile.save()
+        
+        # Optional: Sync back to user if desired, but since multiple restaurants, perhaps not for email/full_name
+        # If you want to update user:
+        # owner_name = profile.full_name
+        # if owner_name:
+        #     parts = owner_name.split(" ", 1)
+        #     request.user.first_name = parts[0]
+        #     request.user.last_name = parts[1] if len(parts) > 1 else ""
+        # request.user.email = profile.email
+        # request.user.save()
+        
+        messages.success(request, "Profile updated successfully!")
         return redirect("restaurants:profile", slug=restaurant.slug)
 
-    return render(request, 'restaurants/admins/profile.html', {'restaurant': restaurant})
-
+    return render(request, 'restaurants/admins/profile.html', {'restaurant': restaurant, 'profile': profile})
 
 @login_required
 def profile_settings_view(request):
