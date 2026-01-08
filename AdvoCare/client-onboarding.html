@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Onboarding | Advocate Legal Case Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2c5282;
+            --accent-color: #e6af2e;
+            --light-color: #f7fafc;
+            --success-color: #38a169;
+            --warning-color: #dd6b20;
+            --danger-color: #e53e3e;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Main Content */
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin: 2rem 0 1rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+        }
+
+        .section-title i {
+            color: var(--accent-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .required:after {
+            content: ' *';
+            color: var(--danger-color);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(44, 82, 130, 0.1);
+        }
+
+        .auto-filled {
+            background-color: #f7fafc;
+            color: #718096;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Radio & Checkbox Groups */
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .radio-option input, .checkbox-option input {
+            width: auto;
+        }
+
+        .urgency-high {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .urgency-normal {
+            color: var(--success-color);
+            font-weight: 600;
+        }
+
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--secondary-color);
+            background-color: rgba(44, 82, 130, 0.02);
+        }
+
+        .file-upload-area i {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area p {
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload-area span {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f7fafc;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-item i {
+            color: var(--secondary-color);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-remove {
+            color: #a0aec0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .file-remove:hover {
+            color: var(--danger-color);
+        }
+
+        /* Submit Button */
+        .submit-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .submit-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Status Modal */
+        .status-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            animation: modalFade 0.3s ease-out;
+        }
+
+        @keyframes modalFade {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #e6fffa;
+            color: var(--success-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .modal-text {
+            color: #718096;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .modal-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Form Validation */
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .error {
+            border-color: var(--danger-color);
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .progress-indicator:before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--border-color);
+            z-index: 1;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #a0aec0;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .step-circle.active {
+            border-color: var(--secondary-color);
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .step-circle.completed {
+            border-color: var(--success-color);
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            font-weight: 500;
+        }
+
+        .step-label.active {
+            color: var(--secondary-color);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #718096;
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="logo-text">Advocate</div>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">JS</div>
+                <div>
+                    <div>John Smith</div>
+                    <div style="font-size: 0.8rem; opacity: 0.8;">Client</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="page-title">Client Onboarding</h1>
+        <p class="page-subtitle">Please provide your case details to get started with our legal services</p>
+        
+        <!-- Progress Indicator -->
+        <div class="progress-indicator">
+            <div class="progress-step">
+                <div class="step-circle completed">1</div>
+                <div class="step-label">Personal Info</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle active">2</div>
+                <div class="step-label active">Case Details</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Documents</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-circle">4</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+        
+        <!-- Form Container -->
+        <form id="onboardingForm" class="form-container">
+            <!-- Section 1: Personal Info -->
+            <section class="form-section">
+                <h2 class="section-title"><i class="fas fa-user"></i> Personal Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName" class="required">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        <div class="error-message" id="nameError">Please enter your full name</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="john.smith@example.com" class="auto-filled" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone" class="required">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                        <div class="error-message" id="phoneError">Please enter a valid phone number</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cityState" class="required">City / State</label>
+                        <input type="text" id="cityState" name="cityState" placeholder="e.g., New York, NY" required>
+                        <div class="error-message" id="cityError">Please enter your city and state</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 2: Case Details -->
+            <section class="form-section">
+                <h2 class="section-title"><i class="fas fa-gavel"></i> Case Details</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="caseType" class="required">Case Type</label>
+                        <select id="caseType" name="caseType" required>
+                            <option value="" disabled selected>Select case type</option>
+                            <option value="criminal">Criminal</option>
+                            <option value="civil">Civil</option>
+                            <option value="family">Family</option>
+                            <option value="corporate">Corporate</option>
+                            <option value="property">Property</option>
+                        </select>
+                        <div class="error-message" id="caseTypeError">Please select a case type</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="caseTitle" class="required">Short Case Title</label>
+                        <input type="text" id="caseTitle" name="caseTitle" placeholder="Brief title for your case" required>
+                        <div class="error-message" id="titleError">Please enter a case title</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="caseDescription" class="required">Case Description</label>
+                    <textarea id="caseDescription" name="caseDescription" placeholder="Describe your case in detail..." required></textarea>
+                    <div class="error-message" id="descriptionError">Please describe your case</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Case Urgency</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="urgency" value="normal" checked>
+                                <span class="urgency-normal">Normal</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="urgency" value="urgent">
+                                <span class="urgency-high">Urgent</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lawyerType">Preferred Lawyer Type (Optional)</label>
+                        <select id="lawyerType" name="lawyerType">
+                            <option value="" selected>Any available lawyer</option>
+                            <option value="senior">Senior Advocate</option>
+                            <option value="specialist">Case Specialist</option>
+                            <option value="local">Local Expert</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 3: Documents Upload -->
+            <section class="form-section">
+                <h2 class="section-title"><i class="fas fa-file-upload"></i> Documents Upload</h2>
+                <div class="form-group">
+                    <label>FIR / Notice / Agreement (PDF/Image)</label>
+                    <div class="file-upload-area" id="mainDocUpload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload or drag and drop</p>
+                        <span>PDF, JPG, PNG up to 10MB</span>
+                        <input type="file" id="mainDocument" name="mainDocument" accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                    </div>
+                    <div class="error-message" id="docError">Please upload at least the main document (FIR/Notice/Agreement)</div>
+                </div>
+                <div class="form-group">
+                    <label>Any Supporting Documents (Optional)</label>
+                    <div class="file-upload-area" id="supportDocUpload">
+                        <i class="fas fa-folder-plus"></i>
+                        <p>Click to upload additional documents</p>
+                        <span>Multiple files allowed (PDF, JPG, PNG)</span>
+                        <input type="file" id="supportingDocuments" name="supportingDocuments" multiple accept=".pdf,.jpg,.jpeg,.png" style="display: none;">
+                    </div>
+                </div>
+                <div class="file-list" id="fileList">
+                    <!-- Uploaded files will appear here -->
+                </div>
+            </section>
+            
+            <!-- Submit Section -->
+            <div class="submit-section">
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> Submit Case for Review
+                </button>
+                <p style="margin-top: 1rem; color: #718096; font-size: 0.9rem;">
+                    Your case will be reviewed by our admin team before you can contact law firms
+                </p>
+            </div>
+        </form>
+        
+        <!-- Footer -->
+        <footer>
+            <p>© 2023 Advocate Legal Case Management System. All rights reserved.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.85rem;">This information is confidential and protected by attorney-client privilege.</p>
+        </footer>
+    </div>
+    
+    <!-- Status Modal -->
+    <div class="status-modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h2 class="modal-title">Case Submitted Successfully</h2>
+            <p class="modal-text">
+                Your case details have been submitted for admin review. 
+                You will receive a confirmation email shortly. 
+                Until your case is approved, you will have limited access to your dashboard.
+            </p>
+            <p class="modal-text" style="font-weight: 600; color: var(--primary-color);">
+                Status: <span style="color: var(--warning-color);">Pending Admin Review</span>
+            </p>
+            <button class="modal-btn" id="modalBtn">Go to Dashboard</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const form = document.getElementById('onboardingForm');
+        const mainDocUpload = document.getElementById('mainDocUpload');
+        const supportDocUpload = document.getElementById('supportDocUpload');
+        const mainDocumentInput = document.getElementById('mainDocument');
+        const supportingDocumentsInput = document.getElementById('supportingDocuments');
+        const fileList = document.getElementById('fileList');
+        const statusModal = document.getElementById('statusModal');
+        const submitBtn = document.getElementById('submitBtn');
+        const modalBtn = document.getElementById('modalBtn');
+        
+        // File upload handling
+        let uploadedFiles = [];
+        
+        // Main document upload
+        mainDocUpload.addEventListener('click', () => {
+            mainDocumentInput.click();
+        });
+        
+        mainDocumentInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                uploadedFiles.push({name: file.name, type: 'Main Document', size: formatFileSize(file.size)});
+                updateFileList();
+                mainDocUpload.innerHTML = `
+                    <i class="fas fa-file-check" style="color: var(--success-color);"></i>
+                    <p>Main document uploaded</p>
+                    <span>${file.name} (${formatFileSize(file.size)})</span>
+                `;
+            }
+        });
+        
+        // Supporting documents upload
+        supportDocUpload.addEventListener('click', () => {
+            supportingDocumentsInput.click();
+        });
+        
+        supportingDocumentsInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                for (let i = 0; i < e.target.files.length; i++) {
+                    const file = e.target.files[i];
+                    uploadedFiles.push({name: file.name, type: 'Supporting Document', size: formatFileSize(file.size)});
+                }
+                updateFileList();
+                supportDocUpload.innerHTML = `
+                    <i class="fas fa-file-check" style="color: var(--success-color);"></i>
+                    <p>${e.target.files.length} supporting document(s) uploaded</p>
+                    <span>Click to add more</span>
+                `;
+            }
+        });
+        
+        // Update file list display
+        function updateFileList() {
+            if (uploadedFiles.length > 0) {
+                fileList.style.display = 'block';
+                fileList.innerHTML = '<h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--text-color);">Uploaded Files:</h3>';
+                
+                uploadedFiles.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <div>
+                                <div style="font-weight: 500;">${file.name}</div>
+                                <div style="font-size: 0.85rem; color: #718096;">${file.type} • ${file.size}</div>
+                            </div>
+                        </div>
+                        <div class="file-remove" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+                
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.file-remove').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        uploadedFiles.splice(index, 1);
+                        updateFileList();
+                        
+                        // Reset upload areas if no files left
+                        if (uploadedFiles.length === 0) {
+                            mainDocUpload.innerHTML = `
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Click to upload or drag and drop</p>
+                                <span>PDF, JPG, PNG up to 10MB</span>
+                            `;
+                            supportDocUpload.innerHTML = `
+                                <i class="fas fa-folder-plus"></i>
+                                <p>Click to upload additional documents</p>
+                                <span>Multiple files allowed (PDF, JPG, PNG)</span>
+                            `;
+                        }
+                    });
+                });
+            } else {
+                fileList.style.display = 'none';
+            }
+        }
+        
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            
+            // Reset error states
+            document.querySelectorAll('.error-message').forEach(msg => {
+                msg.style.display = 'none';
+            });
+            document.querySelectorAll('input, select, textarea').forEach(field => {
+                field.classList.remove('error');
+            });
+            
+            // Validate required fields
+            const requiredFields = [
+                {id: 'fullName', errorId: 'nameError', message: 'Please enter your full name'},
+                {id: 'phone', errorId: 'phoneError', message: 'Please enter a valid phone number'},
+                {id: 'cityState', errorId: 'cityError', message: 'Please enter your city and state'},
+                {id: 'caseType', errorId: 'caseTypeError', message: 'Please select a case type'},
+                {id: 'caseTitle', errorId: 'titleError', message: 'Please enter a case title'},
+                {id: 'caseDescription', errorId: 'descriptionError', message: 'Please describe your case'}
+            ];
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field.id);
+                const errorElement = document.getElementById(field.errorId);
+                
+                if (!element.value.trim()) {
+                    element.classList.add('error');
+                    errorElement.textContent = field.message;
+                    errorElement.style.display = 'block';
+                    isValid = false;
+                }
+            });
+            
+            // Validate phone number format
+            const phone = document.getElementById('phone').value;
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            if (phone && !phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))) {
+                document.getElementById('phone').classList.add('error');
+                document.getElementById('phoneError').textContent = 'Please enter a valid phone number';
+                document.getElementById('phoneError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // Validate document upload
+            if (uploadedFiles.filter(file => file.type === 'Main Document').length === 0) {
+                document.getElementById('docError').style.display = 'block';
+                mainDocUpload.style.borderColor = 'var(--danger-color)';
+                isValid = false;
+            } else {
+                mainDocUpload.style.borderColor = '';
+            }
+            
+            return isValid;
+        }
+        
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                
+                // Simulate API call delay
+                setTimeout(() => {
+                    // Show success modal
+                    statusModal.style.display = 'flex';
+                    
+                    // Reset form after 3 seconds (simulating successful submission)
+                    setTimeout(() => {
+                        // In a real app, you would redirect to dashboard
+                        console.log('Form submitted successfully!');
+                    }, 3000);
+                }, 1500);
+            }
+        });
+        
+        // Modal button event
+        modalBtn.addEventListener('click', function() {
+            statusModal.style.display = 'none';
+            alert('In a real application, you would be redirected to your dashboard with limited access until admin approval.');
+            // Reset form for demo purposes
+            form.reset();
+            uploadedFiles = [];
+            updateFileList();
+            mainDocUpload.innerHTML = `
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Click to upload or drag and drop</p>
+                <span>PDF, JPG, PNG up to 10MB</span>
+            `;
+            supportDocUpload.innerHTML = `
+                <i class="fas fa-folder-plus"></i>
+                <p>Click to upload additional documents</p>
+                <span>Multiple files allowed (PDF, JPG, PNG)</span>
+            `;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Case for Review';
+        });
+        
+        // Real-time validation for fields
+        document.querySelectorAll('input, textarea, select').forEach(field => {
+            field.addEventListener('blur', function() {
+                if (this.hasAttribute('required') && !this.value.trim()) {
+                    this.classList.add('error');
+                } else {
+                    this.classList.remove('error');
+                }
+            });
+            
+            field.addEventListener('input', function() {
+                this.classList.remove('error');
+                const errorId = this.id + 'Error';
+                const errorElement = document.getElementById(errorId);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

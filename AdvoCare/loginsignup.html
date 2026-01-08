@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advocare - Smart Legal Case Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2d4a8c;
+            --secondary: #c99c33;
+            --secondary-light: #e6b450;
+            --client-color: #2e7d32;
+            --lawyer-color: #1565c0;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --text-dark: #343a40;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(26, 54, 93, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(201, 156, 51, 0.05) 0%, transparent 20%);
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* Branding Section */
+        .branding-section {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .branding-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+        }
+
+        .branding-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(201, 156, 51, 0.08);
+            border-radius: 50%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 3rem;
+            z-index: 1;
+        }
+
+        .logo-icon {
+            background-color: var(--secondary);
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-icon i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .branding-content {
+            max-width: 500px;
+            z-index: 1;
+        }
+
+        .branding-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .branding-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .features-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list i {
+            color: var(--secondary);
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        /* Auth Section */
+        .auth-section {
+            flex: 1;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-width: 550px;
+            width: 100%;
+            background-color: white;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            color: var(--dark-gray);
+            font-size: 1rem;
+        }
+
+        /* Tabs */
+        .auth-tabs {
+            display: flex;
+            background-color: var(--light-gray);
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-tab.active {
+            background-color: white;
+            color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Role Selector */
+        .role-selector-container {
+            margin-bottom: 2rem;
+        }
+
+        .role-selector-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-dark);
+        }
+
+        .role-selector {
+            display: flex;
+            background-color: var(--light-gray);
+            border-radius: 10px;
+            padding: 5px;
+            box-shadow: var(--shadow);
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 14px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-btn i {
+            margin-right: 8px;
+            font-size: 1.1rem;
+        }
+
+        .role-btn.client {
+            color: var(--client-color);
+        }
+
+        .role-btn.lawyer {
+            color: var(--lawyer-color);
+        }
+
+        .role-btn.active {
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-btn.client.active {
+            background-color: rgba(46, 125, 50, 0.1);
+        }
+
+        .role-btn.lawyer.active {
+            background-color: rgba(21, 101, 192, 0.1);
+        }
+
+        /* Form */
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background-color: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--dark-gray);
+            cursor: pointer;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-container input {
+            margin-top: 5px;
+            margin-right: 10px;
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        .checkbox-label a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .checkbox-label a:hover {
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(to right, var(--primary-light), var(--primary));
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Bottom Links */
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        .auth-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: var(--transition);
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+            color: var(--primary-light);
+        }
+
+        /* Specialization Select */
+        .specialization-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+            color: var(--text-dark);
+            transition: var(--transition);
+        }
+
+        .specialization-select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(26, 54, 93, 0.1);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--primary);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--secondary-light);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .branding-section {
+                padding: 2rem;
+            }
+            
+            .auth-section {
+                padding: 2rem;
+                max-width: 100%;
+            }
+            
+            .branding-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .auth-tabs, .role-selector {
+                flex-direction: column;
+            }
+            
+            .auth-tab, .role-btn {
+                margin-bottom: 5px;
+            }
+            
+            .branding-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* Form validation styling */
+        .form-control.error {
+            border-color: #e74c3c;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .form-control.error + .error-message {
+            display: block;
+        }
+
+        /* Success message */
+        .success-message {
+            background-color: rgba(46, 125, 50, 0.1);
+            border-left: 4px solid var(--client-color);
+            padding: 12px 16px;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Branding Section -->
+        <div class="branding-section">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="logo-text">Advocare</div>
+            </div>
+            
+            <div class="branding-content">
+                <h1 class="branding-title">Smart Legal Case Management System</h1>
+                <p class="branding-subtitle">Streamline your legal practice with our comprehensive platform designed for modern law firms and their clients.</p>
+                
+                <ul class="features-list">
+                    <li><i class="fas fa-check-circle"></i> Secure client-lawyer communication</li>
+                    <li><i class="fas fa-check-circle"></i> Case tracking and deadline management</li>
+                    <li><i class="fas fa-check-circle"></i> Document storage and collaboration</li>
+                    <li><i class="fas fa-check-circle"></i> Billing and payment processing</li>
+                    <li><i class="fas fa-check-circle"></i> Compliance and regulatory tools</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h2 class="auth-title">Welcome to Advocare</h2>
+                    <p class="auth-subtitle">Sign in to your account or create a new one</p>
+                </div>
+                
+                <!-- Tabs for Login/Signup -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">Sign In</button>
+                    <button class="auth-tab" data-tab="signup">Sign Up</button>
+                </div>
+                
+                <!-- Role Selector -->
+                <div class="role-selector-container">
+                    <div class="role-selector-title">I am a</div>
+                    <div class="role-selector">
+                        <button class="role-btn client active" data-role="client">
+                            <i class="fas fa-user"></i> Client
+                        </button>
+                        <button class="role-btn lawyer" data-role="lawyer">
+                            <i class="fas fa-gavel"></i> Law Firm / Lawyer
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Success Message (for demo) -->
+                <div class="success-message" id="successMessage">
+                    Account created successfully! Redirecting to onboarding...
+                </div>
+                
+                <!-- Login Form -->
+                <form class="auth-form active" id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail">Email or Phone</label>
+                        <input type="text" class="form-control" id="loginEmail" placeholder="Enter your email or phone number" required>
+                        <div class="error-message">Please enter a valid email or phone number</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <div class="password-container">
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required>
+                            <button type="button" class="toggle-password" data-target="loginPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="error-message">Password must be at least 8 characters</div>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="rememberMe">
+                        <label class="checkbox-label" for="rememberMe">Remember me on this device</label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Sign In</button>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="auth-link">Forgot Password?</a>
+                        <a href="#" class="auth-link">Need Help?</a>
+                    </div>
+                </form>
+                
+                <!-- Signup Form (Client) -->
+                <form class="auth-form" id="signupClientForm">
+                    <div class="form-group">
+                        <label class="form-label" for="clientName">Full Name</label>
+                        <input type="text" class="form-control" id="clientName" placeholder="Enter your full name" required>
+                        <div class="error-message">Please enter your full name</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="clientEmail">Email Address</label>
+                            <input type="email" class="form-control" id="clientEmail" placeholder="Enter your email" required>
+                            <div class="error-message">Please enter a valid email address</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="clientPhone">Phone Number</label>
+                            <input type="tel" class="form-control" id="clientPhone" placeholder="Enter your phone number" required>
+                            <div class="error-message">Please enter a valid phone number</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="clientPassword">Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="clientPassword" placeholder="Create a password" required>
+                                <button type="button" class="toggle-password" data-target="clientPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="error-message">Password must be at least 8 characters</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="clientConfirmPassword">Confirm Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="clientConfirmPassword" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" data-target="clientConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="error-message">Passwords do not match</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="clientCity">City</label>
+                        <input type="text" class="form-control" id="clientCity" placeholder="Enter your city" required>
+                        <div class="error-message">Please enter your city</div>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="clientTerms" required>
+                        <label class="checkbox-label" for="clientTerms">
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Create Account</button>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="auth-link">Already have an account? Sign In</a>
+                    </div>
+                </form>
+                
+                <!-- Signup Form (Lawyer) -->
+                <form class="auth-form" id="signupLawyerForm">
+                    <div class="form-group">
+                        <label class="form-label" for="lawyerName">Full Name</label>
+                        <input type="text" class="form-control" id="lawyerName" placeholder="Enter your full name" required>
+                        <div class="error-message">Please enter your full name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="firmName">Law Firm Name</label>
+                        <input type="text" class="form-control" id="firmName" placeholder="Enter your law firm name" required>
+                        <div class="error-message">Please enter your law firm name</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="lawyerEmail">Email Address</label>
+                            <input type="email" class="form-control" id="lawyerEmail" placeholder="Enter your email" required>
+                            <div class="error-message">Please enter a valid email address</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lawyerPhone">Phone Number</label>
+                            <input type="tel" class="form-control" id="lawyerPhone" placeholder="Enter your phone number" required>
+                            <div class="error-message">Please enter a valid phone number</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="lawyerPassword">Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="lawyerPassword" placeholder="Create a password" required>
+                                <button type="button" class="toggle-password" data-target="lawyerPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="error-message">Password must be at least 8 characters</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="lawyerConfirmPassword">Confirm Password</label>
+                            <div class="password-container">
+                                <input type="password" class="form-control" id="lawyerConfirmPassword" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" data-target="lawyerConfirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="error-message">Passwords do not match</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="registrationNo">Registration Number</label>
+                            <input type="text" class="form-control" id="registrationNo" placeholder="Enter your bar registration number" required>
+                            <div class="error-message">Please enter your registration number</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="experience">Experience (Years)</label>
+                            <input type="number" class="form-control" id="experience" placeholder="Years of experience" min="0" max="50" required>
+                            <div class="error-message">Please enter valid years of experience</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="specialization">Specialization</label>
+                        <select class="specialization-select" id="specialization" required>
+                            <option value="" disabled selected>Select your specialization</option>
+                            <option value="corporate">Corporate Law</option>
+                            <option value="criminal">Criminal Law</option>
+                            <option value="family">Family Law</option>
+                            <option value="intellectual">Intellectual Property</option>
+                            <option value="real_estate">Real Estate Law</option>
+                            <option value="tax">Tax Law</option>
+                            <option value="immigration">Immigration Law</option>
+                            <option value="employment">Employment Law</option>
+                        </select>
+                        <div class="error-message">Please select your specialization</div>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="lawyerTerms" required>
+                        <label class="checkbox-label" for="lawyerTerms">
+                            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">Create Law Firm Account</button>
+                    
+                    <div class="auth-links">
+                        <a href="#" class="auth-link">Already have an account? Sign In</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2023 Advocare - Smart Legal Case Management System. All rights reserved.</p>
+        <p><a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a> | <a href="#">Contact Support</a></p>
+        <p class="admin-note">Admin login: <a href="/admin-login">/admin-login</a> (separate secure URL)</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const authTabs = document.querySelectorAll('.auth-tab');
+            const roleBtns = document.querySelectorAll('.role-btn');
+            const authForms = document.querySelectorAll('.auth-form');
+            const togglePasswordBtns = document.querySelectorAll('.toggle-password');
+            const loginForm = document.getElementById('loginForm');
+            const signupClientForm = document.getElementById('signupClientForm');
+            const signupLawyerForm = document.getElementById('signupLawyerForm');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Current state
+            let currentTab = 'login';
+            let currentRole = 'client';
+            
+            // Initialize the form display
+            updateFormDisplay();
+            
+            // Tab switching functionality
+            authTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabType = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    authTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current tab
+                    currentTab = tabType;
+                    
+                    // Update form display
+                    updateFormDisplay();
+                });
+            });
+            
+            // Role switching functionality
+            roleBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const role = this.getAttribute('data-role');
+                    
+                    // Update active role button
+                    roleBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update current role
+                    currentRole = role;
+                    
+                    // If we're on signup, update form display
+                    if (currentTab === 'signup') {
+                        updateFormDisplay();
+                    }
+                });
+            });
+            
+            // Toggle password visibility
+            togglePasswordBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const passwordInput = document.getElementById(targetId);
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+            
+            // Form validation and submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                if (validateLoginForm(email, password)) {
+                    // Simulate login process
+                    console.log(`Login attempt: Email/Phone: ${email}, Role: ${currentRole}`);
+                    
+                    // Show loading state
+                    const submitBtn = this.querySelector('.submit-btn');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Signing In...';
+                    submitBtn.disabled = true;
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        // Reset button
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        
+                        // For demo purposes, show a message
+                        if (email && password) {
+                            alert(`Login successful! Redirecting to ${currentRole} dashboard...`);
+                            // In real app, would redirect to dashboard
+                        }
+                    }, 1500);
+                }
+            });
+            
+            signupClientForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('clientName').value;
+                const email = document.getElementById('clientEmail').value;
+                const phone = document.getElementById('clientPhone').value;
+                const password = document.getElementById('clientPassword').value;
+                const confirmPassword = document.getElementById('clientConfirmPassword').value;
+                const city = document.getElementById('clientCity').value;
+                const terms = document.getElementById('clientTerms').checked;
+                
+                if (validateClientSignup(name, email, phone, password, confirmPassword, city, terms)) {
+                    submitSignupForm('client', {name, email, phone, password, city});
+                }
+            });
+            
+            signupLawyerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('lawyerName').value;
+                const firmName = document.getElementById('firmName').value;
+                const email = document.getElementById('lawyerEmail').value;
+                const phone = document.getElementById('lawyerPhone').value;
+                const password = document.getElementById('lawyerPassword').value;
+                const confirmPassword = document.getElementById('lawyerConfirmPassword').value;
+                const registrationNo = document.getElementById('registrationNo').value;
+                const experience = document.getElementById('experience').value;
+                const specialization = document.getElementById('specialization').value;
+                const terms = document.getElementById('lawyerTerms').checked;
+                
+                if (validateLawyerSignup(name, firmName, email, phone, password, confirmPassword, registrationNo, experience, specialization, terms)) {
+                    submitSignupForm('lawyer', {name, firmName, email, phone, password, registrationNo, experience, specialization});
+                }
+            });
+            
+            // Helper Functions
+            function updateFormDisplay() {
+                // Hide all forms
+                authForms.forEach(form => form.classList.remove('active'));
+                
+                // Show the appropriate form based on current tab and role
+                if (currentTab === 'login') {
+                    loginForm.classList.add('active');
+                } else if (currentTab === 'signup') {
+                    if (currentRole === 'client') {
+                        signupClientForm.classList.add('active');
+                    } else {
+                        signupLawyerForm.classList.add('active');
+                    }
+                }
+            }
+            
+            function validateLoginForm(email, password) {
+                let isValid = true;
+                
+                // Simple validation for demo
+                if (!email.trim()) {
+                    markInvalid('loginEmail');
+                    isValid = false;
+                } else {
+                    markValid('loginEmail');
+                }
+                
+                if (!password || password.length < 8) {
+                    markInvalid('loginPassword');
+                    isValid = false;
+                } else {
+                    markValid('loginPassword');
+                }
+                
+                return isValid;
+            }
+            
+            function validateClientSignup(name, email, phone, password, confirmPassword, city, terms) {
+                let isValid = true;
+                
+                if (!name.trim()) {
+                    markInvalid('clientName');
+                    isValid = false;
+                } else {
+                    markValid('clientName');
+                }
+                
+                if (!validateEmail(email)) {
+                    markInvalid('clientEmail');
+                    isValid = false;
+                } else {
+                    markValid('clientEmail');
+                }
+                
+                if (!phone.trim() || phone.length < 10) {
+                    markInvalid('clientPhone');
+                    isValid = false;
+                } else {
+                    markValid('clientPhone');
+                }
+                
+                if (!password || password.length < 8) {
+                    markInvalid('clientPassword');
+                    isValid = false;
+                } else {
+                    markValid('clientPassword');
+                }
+                
+                if (password !== confirmPassword) {
+                    markInvalid('clientConfirmPassword');
+                    isValid = false;
+                } else {
+                    markValid('clientConfirmPassword');
+                }
+                
+                if (!city.trim()) {
+                    markInvalid('clientCity');
+                    isValid = false;
+                } else {
+                    markValid('clientCity');
+                }
+                
+                if (!terms) {
+                    alert('Please agree to the Terms of Service and Privacy Policy');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            function validateLawyerSignup(name, firmName, email, phone, password, confirmPassword, registrationNo, experience, specialization, terms) {
+                let isValid = true;
+                
+                if (!name.trim()) {
+                    markInvalid('lawyerName');
+                    isValid = false;
+                } else {
+                    markValid('lawyerName');
+                }
+                
+                if (!firmName.trim()) {
+                    markInvalid('firmName');
+                    isValid = false;
+                } else {
+                    markValid('firmName');
+                }
+                
+                if (!validateEmail(email)) {
+                    markInvalid('lawyerEmail');
+                    isValid = false;
+                } else {
+                    markValid('lawyerEmail');
+                }
+                
+                if (!phone.trim() || phone.length < 10) {
+                    markInvalid('lawyerPhone');
+                    isValid = false;
+                } else {
+                    markValid('lawyerPhone');
+                }
+                
+                if (!password || password.length < 8) {
+                    markInvalid('lawyerPassword');
+                    isValid = false;
+                } else {
+                    markValid('lawyerPassword');
+                }
+                
+                if (password !== confirmPassword) {
+                    markInvalid('lawyerConfirmPassword');
+                    isValid = false;
+                } else {
+                    markValid('lawyerConfirmPassword');
+                }
+                
+                if (!registrationNo.trim()) {
+                    markInvalid('registrationNo');
+                    isValid = false;
+                } else {
+                    markValid('registrationNo');
+                }
+                
+                if (!experience || experience < 0 || experience > 50) {
+                    markInvalid('experience');
+                    isValid = false;
+                } else {
+                    markValid('experience');
+                }
+                
+                if (!specialization) {
+                    markInvalid('specialization');
+                    isValid = false;
+                } else {
+                    markValid('specialization');
+                }
+                
+                if (!terms) {
+                    alert('Please agree to the Terms of Service and Privacy Policy');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            function validateEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(email);
+            }
+            
+            function markInvalid(elementId) {
+                const element = document.getElementById(elementId);
+                element.classList.add('error');
+            }
+            
+            function markValid(elementId) {
+                const element = document.getElementById(elementId);
+                element.classList.remove('error');
+            }
+            
+            function submitSignupForm(role, formData) {
+                // Simulate form submission
+                console.log(`Signup attempt for ${role}:`, formData);
+                
+                // Show loading state
+                let submitBtn;
+                if (role === 'client') {
+                    submitBtn = signupClientForm.querySelector('.submit-btn');
+                } else {
+                    submitBtn = signupLawyerForm.querySelector('.submit-btn');
+                }
+                
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Creating Account...';
+                submitBtn.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Show success message
+                    successMessage.style.display = 'block';
+                    
+                    // Reset button
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    
+                    // Simulate redirect to onboarding after 2 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                        alert(`Account created successfully! Redirecting to ${role} onboarding...`);
+                        // In real app, would redirect to onboarding page
+                    }, 2000);
+                }, 1500);
+            }
+            
+            // Demo: Fill forms with sample data for testing
+            function fillDemoData() {
+                // For demo/testing purposes
+                console.log('Demo mode active - forms can be prefilled for testing');
+            }
+            
+            // Call demo function
+            fillDemoData();
+        });
+    </script>
+</body>
+</html>

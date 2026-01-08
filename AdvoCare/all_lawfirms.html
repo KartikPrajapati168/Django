@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Law Firms - Advocare Legal Directory</title>
+    <style>
+        /* Color Scheme: Trust (Navy Blue #001F3F), Faith (Light Blue #7FDBFF), Truth (White #FFFFFF), Accent (Gold #FFDC00) */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #001F3F;
+            line-height: 1.6;
+        }
+
+        /* Header Styles (Same as homepage) */
+        header {
+            background-color: #001F3F;
+            color: #FFFFFF;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        header.scrolled {
+            background-color: rgba(0, 31, 63, 0.98);
+            padding: 0.7rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFDC00;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            position: relative;
+        }
+        nav ul li a {
+            color: #FFFFFF;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            padding: 0.5rem 0;
+            font-weight: 500;
+            position: relative;
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FFDC00;
+            transition: width 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFDC00;
+        }
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #001F3F;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            border-top: 3px solid #FFDC00;
+            padding: 0.5rem 0;
+        }
+        nav ul li:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+        .dropdown ul li a {
+            color: #FFFFFF;
+            padding: 0.8rem 1.5rem;
+            border-bottom: 1px solid rgba(127,219,255,0.1);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        .dropdown ul li:last-child a {
+            border-bottom: none;
+        }
+        .dropdown ul li a:hover {
+            background-color: rgba(127,219,255,0.1);
+            color: #FFDC00;
+            padding-left: 2rem;
+        }
+        .sub-dropdown {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            background-color: #001F3F;
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .dropdown ul li:hover .sub-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+        .login {
+            padding: 10px 25px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #FFDC00;
+            background: grey;
+            margin: 5px 0px;
+            cursor: pointer;
+            outline: none;
+            border: none;
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1200px;
+            margin: 100px auto 40px;
+            padding: 0 2rem;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #7FDBFF;
+            width: 100%;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #001F3F;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Left Filters Panel (30%) */
+        filters-panel {
+    flex: 0 0 30%;
+    max-width: 266px;
+    background: #f8fbff;
+    border-radius: 15px;
+    padding: 15px;
+    height: fit-content;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(127, 219, 255, 0.3);
+}
+
+        .filter-section {
+            margin-bottom: 25px;
+        }
+
+        .filter-section h3 {
+            color: #001F3F;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-section h3::before {
+            content: '';
+            display: block;
+            width: 5px;
+            height: 20px;
+            background: #7FDBFF;
+            border-radius: 2px;
+        }
+
+        .filter-options {
+            list-style: none;
+        }
+
+        .filter-options li {
+            margin-bottom: 12px;
+        }
+
+        .filter-options label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #001F3F;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .filter-options label:hover {
+            color: #7FDBFF;
+        }
+
+        .filter-options input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: #7FDBFF;
+            cursor: pointer;
+        }
+
+        .rating-filter {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rating-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stars {
+            color: #FFDC00;
+            font-size: 1.2rem;
+        }
+
+        .location-input {
+            width: 100%;
+            padding: 12px 2px;
+            border: 2px solid #eef5ff;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #001F3F;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .location-input:focus {
+            outline: none;
+            border-color: #7FDBFF;
+            box-shadow: 0 0 0 3px rgba(127,219,255,0.2);
+        }
+
+        .apply-filters {
+            background: #7FDBFF;
+            color: #001F3F;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .apply-filters:hover {
+            background: #5BB5FF;
+            transform: translateY(-2px);
+        }
+
+        .reset-filters {
+            background: transparent;
+            color: #666;
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #eef5ff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .reset-filters:hover {
+            background: #f1f1f1;
+        }
+
+        .toggle-ai {
+            background: linear-gradient(135deg, #FFDC00 0%, #FFD700 100%);
+            color: #001F3F;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .toggle-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 220, 0, 0.3);
+        }
+
+        .toggle-ai.active {
+            background: linear-gradient(135deg, #001F3F 0%, #00264d 100%);
+            color: #FFFFFF;
+        }
+
+        /* Right Content Area (70%) */
+        .content-area {
+            flex: 1;
+        }
+
+        /* Search Bar */
+        .search-section {
+            background: #FFFFFF;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #eef5ff;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #001F3F;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #7FDBFF;
+            box-shadow: 0 0 0 3px rgba(127,219,255,0.2);
+        }
+
+        .search-btn {
+            background: #FFDC00;
+            color: #001F3F;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        /* Results Header */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eef5ff;
+        }
+
+        .results-count {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .sort-options select {
+            padding: 10px 15px;
+            border: 2px solid #eef5ff;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #001F3F;
+            background: #FFFFFF;
+            cursor: pointer;
+        }
+
+        /* Law Firms Grid */
+        .lawfirm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .lawfirm-card {
+            background: #FFFFFF;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+
+        .lawfirm-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #7FDBFF;
+        }
+
+        .lawfirm-card.ai-recommended {
+            position: relative;
+            border: 2px solid #FFDC00;
+        }
+
+        .ai-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #FFDC00;
+            color: #001F3F;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .lawfirm-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .lawfirm-content {
+            padding: 25px;
+        }
+
+        .lawfirm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .lawfirm-name {
+            font-size: 1.4rem;
+            color: #001F3F;
+            margin-bottom: 5px;
+        }
+
+        .lawfirm-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #FFDC00;
+            font-weight: bold;
+        }
+
+        .lawfirm-specialization {
+            color: #7FDBFF;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: inline-block;
+            background: rgba(127,219,255,0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .lawfirm-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .lawfirm-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #eef5ff;
+            border-bottom: 1px solid #eef5ff;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            display: block;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            display: block;
+            color: #001F3F;
+            font-weight: bold;
+        }
+
+        .lawyers-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .lawyers-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .lawyers-list li:last-child {
+            border-bottom: none;
+        }
+
+        .lawyer-name {
+            font-weight: 600;
+            color: #001F3F;
+        }
+
+        .lawyer-experience {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .lawfirm-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .view-btn, .assign-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .view-btn {
+            background: transparent;
+            color: #001F3F;
+            border: 2px solid #7FDBFF;
+        }
+
+        .view-btn:hover {
+            background: rgba(127,219,255,0.1);
+        }
+
+        .assign-btn {
+            background: #FFDC00;
+            color: #001F3F;
+            border: 2px solid #FFDC00;
+        }
+
+        .assign-btn:hover {
+            background: #FFD700;
+            transform: translateY(-2px);
+        }
+
+        /* No Results Message */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: #f8fbff;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+
+        .no-results h3 {
+            color: #001F3F;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        .no-results p {
+            color: #666;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #001F3F 0%, #00264d 100%);
+            color: #FFFFFF;
+            padding: 4rem 2rem 2rem;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            color: #FFDC00;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .footer-section p, .footer-section ul li {
+            color: rgba(255,255,255,0.8);
+            line-height: 1.7;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section ul li a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: #FFDC00;
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid rgba(127,219,255,0.2);
+            padding-top: 2rem;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: flex-start;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-icons a {
+            color: #FFFFFF;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-icons a:hover {
+            color: #001F3F;
+            background: #FFDC00;
+            transform: translateY(-3px);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .filters-panel {
+                flex: none;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .lawfirm-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin-top: 80px;
+                padding: 0 1.5rem;
+            }
+            
+            .lawfirm-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            nav ul {
+                display: none;
+            }
+            
+            .dropdown, .sub-dropdown {
+                display: none;
+            }
+            
+            .search-section {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+            }
+            
+            .lawfirm-actions {
+                flex-direction: column;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header (Same as homepage) -->
+    <header>
+        <nav>
+            <div class="logo">Advocare</div>
+            <ul>
+                <li><a href="homepage.html">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#features">Features</a></li>
+                <li>
+                    <a href="all_lawfirms.html" style="color: #FFDC00;">All Law Firms</a>
+                    <div class="dropdown">
+                        <ul>
+                            <li><a href="#criminal">Criminal Law Firms</a></li>
+                            <li><a href="#civil">Civil Law Firms</a></li>
+                            <li><a href="#family">Family Law Firms</a></li>
+                            <li><a href="#corporate">Corporate Law Firms</a></li>
+                            <li><a href="#miscellaneous">Miscellaneous Legal Firms</a></li>
+                            <li><a href="#famous-lawfirms">Famous Law Firms</a>
+                                <div class="sub-dropdown">
+                                    <ul>
+                                        <li><a href="#">Hale & Associates - Global Criminal Defense</a></li>
+                                        <li><a href="#">Vasquez Litigation Partners - Civil Experts</a></li>
+                                        <li><a href="#">Reed Family Law Group - Authority in Matrimonial</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li><a href="#contact">Contact</a></li>
+                <a href=""><button class="login">Login</button></a>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Left Filters Panel (30%) -->
+        <aside class="filters-panel">
+            <div class="filter-section">
+                <h3>Search</h3>
+                <input type="text" class="location-input" placeholder="City, State, or ZIP">
+            </div>
+
+            <div class="filter-section">
+                <h3>Law Firm Categories</h3>
+                <ul class="filter-options">
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="criminal" checked>
+                            Criminal Defense
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="civil" checked>
+                            Civil Litigation
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="family" checked>
+                            Family Law
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="corporate">
+                            Corporate Law
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="intellectual">
+                            Intellectual Property
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="immigration">
+                            Immigration Law
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="real-estate">
+                            Real Estate Law
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="category" value="employment">
+                            Employment Law
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="filter-section">
+                <h3>Minimum Rating</h3>
+                <div class="rating-filter">
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="4.5" checked>
+                            4.5+ Stars
+                        </label>
+                        <div class="stars">★★★★★</div>
+                    </div>
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="4.0">
+                            4.0+ Stars
+                        </label>
+                        <div class="stars">★★★★☆</div>
+                    </div>
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="3.5">
+                            3.5+ Stars
+                        </label>
+                        <div class="stars">★★★☆☆</div>
+                    </div>
+                    <div class="rating-option">
+                        <label>
+                            <input type="radio" name="rating" value="any">
+                            Any Rating
+                        </label>
+                        <div class="stars">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Experience Level</h3>
+                <ul class="filter-options">
+                    <li>
+                        <label>
+                            <input type="checkbox" name="experience" value="10plus" checked>
+                            10+ Years Experience
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="experience" value="5-10">
+                            5-10 Years Experience
+                        </label>
+                    </li>
+                    <li>
+                        <label>
+                            <input type="checkbox" name="experience" value="1-5">
+                            1-5 Years Experience
+                        </label>
+                    </li>
+                </ul>
+            </div>
+
+            <button class="toggle-ai" id="toggleAI">
+                <span>🤖</span> AI Recommended Firms
+            </button>
+
+            <button class="apply-filters" id="applyFilters">Apply Filters</button>
+            <button class="reset-filters" id="resetFilters">Reset All Filters</button>
+        </aside>
+
+        <!-- Right Content Area (70%) -->
+        <div class="content-area">
+            <!-- Search Bar -->
+            <div class="search-section">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search by law firm name, lawyer name, or case type...">
+                <button class="search-btn" id="searchBtn">Search</button>
+            </div>
+
+            <!-- Results Header -->
+            <div class="results-header">
+                <div class="results-count" id="resultsCount">Showing 12 of 45 law firms</div>
+                <div class="sort-options">
+                    <select id="sortSelect">
+                        <option value="rating-desc">Highest Rated</option>
+                        <option value="experience-desc">Most Experienced</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Law Firms Grid -->
+            <div class="lawfirm-grid" id="lawfirmGrid">
+                <!-- Law Firm Cards will be dynamically generated here -->
+            </div>
+
+            <!-- No Results Message (Hidden by default) -->
+            <div class="no-results" id="noResults" style="display: none;">
+                <h3>No Law Firms Found</h3>
+                <p>Try adjusting your filters or search terms to find what you're looking for.</p>
+                <button class="apply-filters" id="resetFilters2">Reset All Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample Law Firm Data
+        const lawFirms = [
+            {
+                id: 1,
+                name: "Hale & Associates - Global Criminal Defense",
+                specialization: "Criminal Defense",
+                description: "Leading firm specializing in high-profile criminal cases, with a track record of defending clients in international courts. Focus on evidence analysis and plea bargaining.",
+                rating: 4.8,
+                experience: "25+ years",
+                location: "New York, NY",
+                lawyers: [
+                    { name: "John Hale", experience: "20+ years in criminal law, expert in fraud and white-collar crimes" },
+                    { name: "Sarah Mitchell", experience: "15+ years, specializes in juvenile justice" }
+                ],
+                cases: 245,
+                successRate: "92%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: true
+            },
+            {
+                id: 2,
+                name: "Vasquez Litigation Partners - Civil Experts",
+                specialization: "Civil Litigation",
+                description: "Renowned for civil litigation, contract disputes, and property law. They provide comprehensive strategies for dispute resolution and mediation.",
+                rating: 4.6,
+                experience: "20+ years",
+                location: "Los Angeles, CA",
+                lawyers: [
+                    { name: "Maria Vasquez", experience: "15 years experience in civil suits, known for innovative settlement tactics" },
+                    { name: "David Chen", experience: "10+ years, focuses on intellectual property and commercial disputes" }
+                ],
+                cases: 189,
+                successRate: "88%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: true
+            },
+            {
+                id: 3,
+                name: "Reed Family Law Group - Authority in Matrimonial",
+                specialization: "Family Law",
+                description: "Experts in family law, including divorce, custody, and adoption. Committed to compassionate representation and child welfare.",
+                rating: 4.7,
+                experience: "18+ years",
+                location: "Chicago, IL",
+                lawyers: [
+                    { name: "Emily Reed", experience: "18 years in family matters, mediator certified by international bodies" },
+                    { name: "Robert Kline", experience: "12+ years, specializes in domestic violence and asset division" }
+                ],
+                cases: 312,
+                successRate: "90%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: true
+            },
+            {
+                id: 4,
+                name: "Morgan & Partners Corporate Law",
+                specialization: "Corporate Law",
+                description: "Specializing in corporate governance, mergers & acquisitions, and business litigation. Serving Fortune 500 companies and startups alike.",
+                rating: 4.9,
+                experience: "30+ years",
+                location: "San Francisco, CA",
+                lawyers: [
+                    { name: "James Morgan", experience: "25+ years in corporate law, IPO expert" },
+                    { name: "Lisa Rodriguez", experience: "18+ years, mergers & acquisitions specialist" }
+                ],
+                cases: 156,
+                successRate: "95%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: false
+            },
+            {
+                id: 5,
+                name: "Patel Intellectual Property Group",
+                specialization: "Intellectual Property",
+                description: "Leaders in patent law, trademarks, and copyright protection. Helping innovators protect their intellectual property globally.",
+                rating: 4.5,
+                experience: "15+ years",
+                location: "Austin, TX",
+                lawyers: [
+                    { name: "Raj Patel", experience: "15+ years in IP law, patent filing expert" },
+                    { name: "Sophia Williams", experience: "10+ years, trademark and copyright specialist" }
+                ],
+                cases: 278,
+                successRate: "87%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: false
+            },
+            {
+                id: 6,
+                name: "Global Immigration Advocates",
+                specialization: "Immigration Law",
+                description: "Comprehensive immigration services including visas, green cards, citizenship, and deportation defense. Multilingual staff available.",
+                rating: 4.4,
+                experience: "12+ years",
+                location: "Miami, FL",
+                lawyers: [
+                    { name: "Carlos Mendez", experience: "12+ years in immigration law, deportation defense expert" },
+                    { name: "Aisha Khan", experience: "8+ years, family-based immigration specialist" }
+                ],
+                cases: 421,
+                successRate: "85%",
+                image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                aiRecommended: false
+            }
+        ];
+
+        // DOM Elements
+        const lawfirmGrid = document.getElementById('lawfirmGrid');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const resetFiltersBtn2 = document.getElementById('resetFilters2');
+        const toggleAI = document.getElementById('toggleAI');
+        const sortSelect = document.getElementById('sortSelect');
+        const resultsCount = document.getElementById('resultsCount');
+        const noResults = document.getElementById('noResults');
+
+        // State
+        let filters = {
+            categories: ['criminal', 'civil', 'family'],
+            rating: '4.5',
+            experience: ['10plus'],
+            location: '',
+            searchQuery: '',
+            aiRecommended: false,
+            sortBy: 'rating-desc'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLawFirms();
+            setupEventListeners();
+            setupScrollEffects();
+        });
+
+        // Setup Event Listeners
+        function setupEventListeners() {
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') performSearch();
+            });
+            
+            applyFiltersBtn.addEventListener('click', applyFilters);
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            resetFiltersBtn2.addEventListener('click', resetFilters);
+            
+            toggleAI.addEventListener('click', () => {
+                filters.aiRecommended = !filters.aiRecommended;
+                toggleAI.classList.toggle('active', filters.aiRecommended);
+                renderLawFirms();
+            });
+            
+            sortSelect.addEventListener('change', (e) => {
+                filters.sortBy = e.target.value;
+                renderLawFirms();
+            });
+        }
+
+        // Setup Scroll Effects (Same as homepage)
+        function setupScrollEffects() {
+            window.addEventListener('scroll', () => {
+                const header = document.querySelector('header');
+                if (window.scrollY > 50) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    if(targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Perform Search
+        function performSearch() {
+            filters.searchQuery = searchInput.value.trim();
+            renderLawFirms();
+        }
+
+        // Apply Filters
+        function applyFilters() {
+            // Get selected categories
+            const categoryCheckboxes = document.querySelectorAll('input[name="category"]:checked');
+            filters.categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+            
+            // Get selected rating
+            const ratingRadio = document.querySelector('input[name="rating"]:checked');
+            filters.rating = ratingRadio ? ratingRadio.value : 'any';
+            
+            // Get selected experience
+            const experienceCheckboxes = document.querySelectorAll('input[name="experience"]:checked');
+            filters.experience = Array.from(experienceCheckboxes).map(cb => cb.value);
+            
+            // Get location
+            const locationInput = document.querySelector('.location-input');
+            filters.location = locationInput ? locationInput.value.trim() : '';
+            
+            renderLawFirms();
+        }
+
+        // Reset Filters
+        function resetFilters() {
+            // Reset checkboxes
+            document.querySelectorAll('input[name="category"]').forEach(cb => {
+                if (['criminal', 'civil', 'family'].includes(cb.value)) {
+                    cb.checked = true;
+                } else {
+                    cb.checked = false;
+                }
+            });
+            
+            document.querySelector('input[name="rating"][value="4.5"]').checked = true;
+            
+            document.querySelectorAll('input[name="experience"]').forEach(cb => {
+                cb.checked = cb.value === '10plus';
+            });
+            
+            document.querySelector('.location-input').value = '';
+            searchInput.value = '';
+            
+            filters = {
+                categories: ['criminal', 'civil', 'family'],
+                rating: '4.5',
+                experience: ['10plus'],
+                location: '',
+                searchQuery: '',
+                aiRecommended: false,
+                sortBy: 'rating-desc'
+            };
+            
+            toggleAI.classList.remove('active');
+            sortSelect.value = 'rating-desc';
+            
+            renderLawFirms();
+        }
+
+        // Render Law Firms
+        function renderLawFirms() {
+            // Filter law firms
+            let filteredFirms = lawFirms.filter(firm => {
+                // Category filter
+                const firmCategory = firm.specialization.toLowerCase().replace(/\s+/g, '-');
+                const categoryMatch = filters.categories.some(cat => {
+                    if (cat === 'criminal') return firm.specialization === 'Criminal Defense';
+                    if (cat === 'civil') return firm.specialization === 'Civil Litigation';
+                    if (cat === 'family') return firm.specialization === 'Family Law';
+                    if (cat === 'corporate') return firm.specialization === 'Corporate Law';
+                    if (cat === 'intellectual') return firm.specialization === 'Intellectual Property';
+                    if (cat === 'immigration') return firm.specialization === 'Immigration Law';
+                    if (cat === 'real-estate') return firm.specialization === 'Real Estate Law';
+                    if (cat === 'employment') return firm.specialization === 'Employment Law';
+                    return false;
+                });
+                
+                if (!categoryMatch) return false;
+                
+                // Rating filter
+                if (filters.rating !== 'any') {
+                    const minRating = parseFloat(filters.rating);
+                    if (firm.rating < minRating) return false;
+                }
+                
+                // Experience filter
+                let experienceMatch = false;
+                if (filters.experience.includes('10plus')) {
+                    const expYears = parseInt(firm.experience);
+                    if (expYears >= 10) experienceMatch = true;
+                }
+                if (filters.experience.includes('5-10')) {
+                    const expYears = parseInt(firm.experience);
+                    if (expYears >= 5 && expYears <= 10) experienceMatch = true;
+                }
+                if (filters.experience.includes('1-5')) {
+                    const expYears = parseInt(firm.experience);
+                    if (expYears >= 1 && expYears <= 5) experienceMatch = true;
+                }
+                
+                if (!experienceMatch && filters.experience.length > 0) return false;
+                
+                // Location filter
+                if (filters.location && !firm.location.toLowerCase().includes(filters.location.toLowerCase())) {
+                    return false;
+                }
+                
+                // Search query filter
+                if (filters.searchQuery) {
+                    const query = filters.searchQuery.toLowerCase();
+                    const searchIn = `${firm.name} ${firm.specialization} ${firm.description} ${firm.lawyers.map(l => l.name).join(' ')}`.toLowerCase();
+                    if (!searchIn.includes(query)) return false;
+                }
+                
+                // AI Recommended filter
+                if (filters.aiRecommended && !firm.aiRecommended) return false;
+                
+                return true;
+            });
+            
+            // Sort law firms
+            filteredFirms.sort((a, b) => {
+                switch(filters.sortBy) {
+                    case 'rating-desc':
+                        return b.rating - a.rating;
+                    case 'experience-desc':
+                        const expA = parseInt(a.experience);
+                        const expB = parseInt(b.experience);
+                        return expB - expA;
+                    case 'name-asc':
+                        return a.name.localeCompare(b.name);
+                    case 'name-desc':
+                        return b.name.localeCompare(a.name);
+                    default:
+                        return b.rating - a.rating;
+                }
+            });
+            
+            // Update results count
+            resultsCount.textContent = `Showing ${filteredFirms.length} of ${lawFirms.length} law firms`;
+            
+            // Show/hide no results message
+            if (filteredFirms.length === 0) {
+                noResults.style.display = 'block';
+                lawfirmGrid.style.display = 'none';
+            } else {
+                noResults.style.display = 'none';
+                lawfirmGrid.style.display = 'grid';
+            }
+            
+            // Clear grid
+            lawfirmGrid.innerHTML = '';
+            
+            // Render law firm cards
+            filteredFirms.forEach(firm => {
+                const card = document.createElement('div');
+                card.className = `lawfirm-card ${firm.aiRecommended ? 'ai-recommended' : ''}`;
+                
+                // Generate stars HTML
+                const stars = '★'.repeat(Math.floor(firm.rating)) + '☆'.repeat(5 - Math.floor(firm.rating));
+                
+                // Generate lawyers list HTML
+                const lawyersList = firm.lawyers.map(lawyer => `
+                    <li>
+                        <span class="lawyer-name">${lawyer.name}</span>
+                        <span class="lawyer-experience">${lawyer.experience}</span>
+                    </li>
+                `).join('');
+                
+                card.innerHTML = `
+                    ${firm.aiRecommended ? '<div class="ai-badge">🤖 AI Recommended</div>' : ''}
+                    <img src="${firm.image}" alt="${firm.name}" class="lawfirm-image">
+                    <div class="lawfirm-content">
+                        <div class="lawfirm-header">
+                            <div>
+                                <h3 class="lawfirm-name">${firm.name}</h3>
+                                <div class="lawfirm-rating">
+                                    <span class="stars">${stars}</span>
+                                    <span>${firm.rating}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lawfirm-specialization">${firm.specialization}</div>
+                        <p class="lawfirm-description">${firm.description}</p>
+                        
+                        <div class="lawfirm-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Experience</span>
+                                <span class="detail-value">${firm.experience}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Location</span>
+                                <span class="detail-value">${firm.location}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Success Rate</span>
+                                <span class="detail-value">${firm.successRate}</span>
+                            </div>
+                        </div>
+                        
+                        <h4>Key Lawyers:</h4>
+                        <ul class="lawyers-list">
+                            ${lawyersList}
+                        </ul>
+                        
+                        <div class="lawfirm-actions">
+                            <a href="lawfirm_detail.html?id=${firm.id}" class="view-btn">View Full Profile</a>
+                            <a href="#" class="assign-btn">Assign My Case</a>
+                        </div>
+                    </div>
+                `;
+                
+                lawfirmGrid.appendChild(card);
+            });
+        }
+
+        // Initial render
+        renderLawFirms();
+    </script>
+</body>
+</html>

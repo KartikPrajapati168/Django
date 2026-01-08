@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advocare - Smart Legal Case Management System</title>
+    <style>
+        /* Color Scheme: Trust (Navy Blue #001F3F), Faith (Light Blue #7FDBFF), Truth (White #FFFFFF), Accent (Gold #FFDC00) */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #001F3F;
+            line-height: 1.6;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="gavel" patternUnits="userSpaceOnUse" width="100" height="100"><image href="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Gavel.svg/512px-Gavel.svg.png" width="50" height="50" opacity="0.03" x="25" y="25"/></pattern></defs><rect width="100" height="100" fill="url(%23gavel)"/></svg>');
+            background-attachment: fixed;
+            background-size: 100px 100px;
+        }
+        header {
+            background-color: #001F3F;
+            color: #FFFFFF;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        header.scrolled {
+            background-color: rgba(0, 31, 63, 0.98);
+            padding: 0.7rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #FFDC00;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2.5rem;
+            margin: 0;
+            padding: 0;
+        }
+        nav ul li {
+            position: relative;
+        }
+        nav ul li a {
+            color: #FFFFFF;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            padding: 0.5rem 0;
+            font-weight: 500;
+            position: relative;
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #FFDC00;
+            transition: width 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #FFDC00;
+        }
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #001F3F;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            border-top: 3px solid #FFDC00;
+            padding: 0.5rem 0;
+        }
+        nav ul li:hover .dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .dropdown ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: block;
+        }
+        .dropdown ul li a {
+            color: #FFFFFF;
+            padding: 0.8rem 1.5rem;
+            border-bottom: 1px solid rgba(127,219,255,0.1);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        .dropdown ul li:last-child a {
+            border-bottom: none;
+        }
+        .dropdown ul li a:hover {
+            background-color: rgba(127,219,255,0.1);
+            color: #FFDC00;
+            padding-left: 2rem;
+        }
+        .sub-dropdown {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            background-color: #001F3F;
+            min-width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            z-index: 2;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .dropdown ul li:hover .sub-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+        .hero {
+            background: linear-gradient(135deg, rgba(0,31,63,0.9) 0%, rgba(0,31,63,0.7) 100%), url('https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 180px 2rem 120px;
+            margin-top: 80px;
+            position: relative;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.2;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0.9;
+        }
+        .cta-button {
+            background: linear-gradient(135deg, #FFDC00 0%, #FFD700 100%);
+            color: #001F3F;
+            padding: 1rem 2.5rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(255, 220, 0, 0.3);
+        }
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 220, 0, 0.4);
+        }
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Search Section */
+        .search-section {
+            position: relative;
+            margin-top: -80px;
+            padding: 0 2rem 4rem;
+            z-index: 100;
+        }
+        .search-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 1.1rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #eef5ff;
+            border-radius: 10px;
+            background: #f8fbff;
+            color: #001F3F;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #7FDBFF;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(127,219,255,0.2);
+        }
+        .search-input::placeholder {
+            color: #7FDBFF;
+        }
+        .search-btn, .ai-btn {
+            padding: 1.1rem 2rem;
+            background-color: #FFDC00;
+            color: #001F3F;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        .search-btn:hover, .ai-btn:hover {
+            background-color: #FFD700;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 220, 0, 0.3);
+        }
+        .ai-btn {
+            background-color: #7FDBFF;
+            color: #001F3F;
+        }
+        .ai-btn:hover {
+            background-color: #5BB5FF;
+            box-shadow: 0 5px 15px rgba(127,219,255,0.3);
+        }
+        .about {
+            background-color: #FFFFFF;
+            text-align: center;
+            padding-top: 2rem;
+        }
+        .about h2 {
+            color: #001F3F;
+            margin-bottom: 3rem;
+            font-size: 2.8rem;
+            position: relative;
+            display: inline-block;
+        }
+        .about h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #7FDBFF, #FFDC00);
+            border-radius: 2px;
+        }
+        .about-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        .about-card {
+            background: #FFFFFF;
+            padding: 2.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid rgba(127,219,255,0.2);
+        }
+        .about-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #7FDBFF;
+        }
+        .about-card h3 {
+            color: #001F3F;
+            margin-bottom: 1.2rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        .about-card p {
+            color: #001F3F;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+        .about-card img {
+            width: 90px;
+            height: 90px;
+            margin-bottom: 1.5rem;
+            border-radius: 50%;
+            border: 3px solid #7FDBFF;
+            padding: 5px;
+            background: white;
+        }
+        .features {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+        }
+        .features h2 {
+            text-align: center;
+            color: #001F3F;
+            margin-bottom: 4rem;
+            font-size: 2.8rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .features h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #7FDBFF, #FFDC00);
+            border-radius: 2px;
+        }
+        .feature-hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 5rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .feature-hero.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .feature-hero-text {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #001F3F;
+        }
+        .feature-hero-text h3 {
+            color: #001F3F;
+            font-size: 2.3rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        .feature-hero-image {
+            text-align: right;
+            position: relative;
+        }
+        .feature-hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 8px solid white;
+        }
+        .feature-hero-image::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100%;
+            height: 100%;
+            border: 3px solid #7FDBFF;
+            border-radius: 20px;
+            z-index: -1;
+        }
+        /* Feature Slider */
+        .feature-slider-container {
+            position: relative;
+            overflow: hidden;
+            padding: 2rem 0 4rem;
+        }
+        .feature-slider {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .feature-slide {
+            min-width: 97%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        .feature-card {
+            background: #FFFFFF;
+            padding: 2.2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+            border: 1px solid rgba(127,219,255,0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #7FDBFF;
+        }
+        .feature-card img {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 1.5rem;
+            border-radius: 50%;
+            border: 2px solid #7FDBFF;
+            padding: 10px;
+            background: rgba(127,219,255,0.1);
+        }
+        .feature-card h3 {
+            color: #001F3F;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        .feature-card p {
+            color: #001F3F;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        /* Slider Dots */
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-top: 3rem;
+        }
+        .slider-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .slider-dot:hover {
+            background-color: #7FDBFF;
+            transform: scale(1.2);
+        }
+        .slider-dot.active {
+            background-color: #FFDC00;
+            transform: scale(1.2);
+            box-shadow: 0 0 0 3px rgba(255, 220, 0, 0.2);
+        }
+        .lawfirms {
+            background-color: #f8fbff;
+            padding: 5rem 2rem;
+            position: relative;
+        }
+        .lawfirms h2 {
+            text-align: center;
+            color: #001F3F;
+            margin-bottom: 1rem;
+            font-size: 2.8rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .lawfirms h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #7FDBFF, #FFDC00);
+            border-radius: 2px;
+        }
+        .lawfirms > p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .lawfirm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+        .lawfirm-card {
+            background: #FFFFFF;
+            padding: 2.2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+        .lawfirm-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #7FDBFF;
+        }
+        .lawfirm-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            border: 3px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .lawfirm-card h3 {
+            color: #001F3F;
+            margin-bottom: 1.2rem;
+            font-size: 1.6rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        .lawfirm-card p {
+            color: #001F3F;
+            margin-bottom: 1.8rem;
+            line-height: 1.7;
+            font-size: 1.05rem;
+            opacity: 0.9;
+        }
+        .lawyers-list {
+            list-style: none;
+            padding: 0;
+        }
+        .lawyers-list li {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: rgba(127,219,255,0.08);
+            border-radius: 8px;
+            border-left: 4px solid #7FDBFF;
+        }
+        .lawyers-list li strong {
+            color: #001F3F;
+            font-weight: 600;
+        }
+        .lawyers-list li span {
+            color: #666;
+            font-size: 0.95rem;
+            display: block;
+            margin-top: 0.3rem;
+        }
+        .hidden {
+            display: none;
+        }
+        /* How It Works Section - All steps in one row */
+        .how-it-works {
+            background-color: #FFFFFF;
+            padding: 5rem 2rem;
+            position: relative;
+        }
+        .how-it-works h2 {
+            text-align: center;
+            color: #001F3F;
+            margin-bottom: 4rem;
+            font-size: 2.8rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .how-it-works h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #7FDBFF, #FFDC00);
+            border-radius: 2px;
+        }
+        .steps-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            min-width: 1000px;
+            position: relative;
+            gap: 1.5rem;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            background: #FFFFFF;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.4s ease;
+            position: relative;
+            border: 1px solid rgba(127,219,255,0.3);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .step:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            border-color: #7FDBFF;
+        }
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237FDBFF"><path d="M8 5l8 7-8 7"/></svg>') no-repeat center;
+            background-size: contain;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        .step img {
+            width: 70px;
+            height: 70px;
+            margin-bottom: 1.5rem;
+            border-radius: 50%;
+            border: 2px solid #7FDBFF;
+            padding: 12px;
+            background: rgba(127,219,255,0.1);
+        }
+        .step-number {
+            background: linear-gradient(135deg, #7FDBFF 0%, #5BB5FF 100%);
+            color: #FFFFFF;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-weight: bold;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(127,219,255,0.3);
+        }
+        .step h3 {
+            color: #001F3F;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        .step p {
+            color: #001F3F;
+            font-size: 1rem;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+        /* Contact Section */
+        .contact {
+            background-color: #f8fbff;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+        .contact h2 {
+            color: #001F3F;
+            margin-bottom: 4rem;
+            font-size: 2.8rem;
+            position: relative;
+            display: inline-block;
+        }
+        .contact h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, #7FDBFF, #FFDC00);
+            border-radius: 2px;
+        }
+        .contact-form {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #FFFFFF;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+        .form-group {
+            margin-bottom: 1.8rem;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            color: #001F3F;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #eef5ff;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #001F3F;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background: #f8fbff;
+        }
+        .form-group textarea {
+            height: 140px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #7FDBFF;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(127,219,255,0.2);
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, #FFDC00 0%, #FFD700 100%);
+            color: #001F3F;
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(255, 220, 0, 0.3);
+        }
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 220, 0, 0.4);
+        }
+        footer {
+            background: linear-gradient(135deg, #001F3F 0%, #00264d 100%);
+            color: #FFFFFF;
+            padding: 4rem 2rem 2rem;
+            margin-top: 0;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        .footer-section h4 {
+            color: #FFDC00;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .footer-section p, .footer-section ul li {
+            color: rgba(255,255,255,0.8);
+            line-height: 1.7;
+        }
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+        }
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+        .footer-section ul li a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .footer-section ul li a:hover {
+            color: #FFDC00;
+            padding-left: 5px;
+        }
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid rgba(127,219,255,0.2);
+            padding-top: 2rem;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .social-icons {
+            display: flex;
+            justify-content: flex-start;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+        .social-icons a {
+            color: #FFFFFF;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.1);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .social-icons a:hover {
+            color: #001F3F;
+            background: #FFDC00;
+            transform: translateY(-3px);
+        }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #FFFFFF;
+            margin: 10% auto;
+            padding: 3rem;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            border: 1px solid rgba(127,219,255,0.3);
+        }
+        .close {
+            color: #001F3F;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .close:hover {
+            color: #FFDC00;
+            transform: scale(1.1);
+        }
+        .ai-input {
+            width: 100%;
+            padding: 1.2rem;
+            margin: 1.5rem 0;
+            border: 2px solid #eef5ff;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: #f8fbff;
+            transition: all 0.3s ease;
+        }
+        .ai-input:focus {
+            outline: none;
+            border-color: #7FDBFF;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(127,219,255,0.2);
+        }
+        .ai-suggestion {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(127,219,255,0.1);
+            border-radius: 10px;
+            text-align: left;
+            display: none;
+            border-left: 4px solid #7FDBFF;
+        }
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            .hero p {
+                font-size: 1.2rem;
+            }
+            .feature-hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 3rem;
+            }
+            .feature-hero-image {
+                text-align: center;
+            }
+            .feature-hero-image::before {
+                display: none;
+            }
+        }
+        @media (max-width: 768px) {
+            .hero {
+                padding: 150px 1.5rem 100px;
+                background-attachment: scroll;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
+            }
+            nav ul {
+                display: none;
+            }
+            .dropdown, .sub-dropdown {
+                display: none;
+            }
+            .search-section {
+                margin-top: -50px;
+                padding: 0 1.5rem 3rem;
+            }
+            .search-container {
+                padding: 1.5rem;
+            }
+            .search-input {
+                min-width: 100%;
+            }
+            .about-content, .lawfirm-grid, .feature-slide {
+                grid-template-columns: 1fr;
+            }
+            .steps {
+                min-width: auto;
+                flex-direction: column;
+                gap: 2rem;
+            }
+            .step:not(:last-child)::after {
+                display: none;
+            }
+            .contact-form {
+                padding: 2rem;
+            }
+            .feature-card, .lawfirm-card, .step {
+                padding: 2rem;
+            }
+            .section {
+                padding: 4rem 1.5rem;
+            }
+        }
+        .login{
+        padding: 10px 25px;
+        border-radius: 5px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        color: #FFDC00;
+        background: grey;
+        margin: 5px 0px;
+        cursor: pointer;
+        outline: none;
+        border:none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Advocare</div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#features">Features</a></li>
+                <li>
+                    <a href="#lawfirms">Law Firms</a>
+                    <div class="dropdown">
+                        <ul>
+                            <li><a href="#criminal">Criminal Law Firms</a></li>
+                            <li><a href="#civil">Civil Law Firms</a></li>
+                            <li><a href="#family">Family Law Firms</a></li>
+                            <li><a href="#corporate">Corporate Law Firms</a></li>
+                            <li><a href="#miscellaneous">Miscellaneous Legal Firms</a></li>
+                            <li><a href="#famous-lawfirms">Famous Law Firms</a>
+                                <div class="sub-dropdown">
+                                    <ul>
+                                        <li><a href="#">Hale & Associates - Global Criminal Defense</a></li>
+                                        <li><a href="#">Vasquez Litigation Partners - Civil Experts</a></li>
+                                        <li><a href="#">Reed Family Law Group - Authority in Matrimonial</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                <li><a href="#contact">Contact</a></li>
+                <a href=""><button class="login"href="#contact">Login</button></a>
+            </ul>
+        </nav>
+    </header>
+    
+    <section id="home" class="hero">
+        <h1>Advocare: Your Smart Legal Case Management System</h1>
+        <p>Powered by modern technology, where your case automatically connects with qualified law firms. Our platform, based on trust, faith, and truth, simplifies justice for firms and clients alike.</p>
+        <a href="#about" class="cta-button">Get Started Now</a>
+    </section>
+
+    <section class="search-section">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for Law Firms, Advocates, or Lawyers...">
+            <button class="search-btn">Search</button>
+            <button class="ai-btn">AI Case Suggestions</button>
+        </div>
+    </section>
+
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Get AI-Generated Law Firm Recommendations</h3>
+            <p>Describe your case briefly:</p>
+            <textarea class="ai-input" rows="3" placeholder="e.g., Criminal defense for theft case..."></textarea>
+            <button class="generate-btn cta-button">Generate Suggestion</button>
+            <div class="ai-suggestion"></div>
+        </div>
+    </div>
+
+    <section id="about" class="section about">
+        <h2>What Our Law Firm Management System Does</h2>
+        <div class="about-content">
+            <div class="about-card">
+                <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Firm Innovation Icon">
+                <h3>Innovate Firm Operations</h3>
+                <p>Advocare revolutionizes law firm workflows with AI-driven tools that streamline case handling, client intake, and resource allocation for maximum efficiency.</p>
+            </div>
+            <div class="about-card">
+                <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Secure Collaboration Icon">
+                <h3>Secure Firm Collaboration</h3>
+                <p>Enable seamless collaboration across your law firm with encrypted document sharing, real-time updates, and integrated communication channels tailored for legal teams.</p>
+            </div>
+            <div class="about-card">
+                <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="AI-Powered Insights Icon">
+                <h3>AI-Powered Firm Insights</h3>
+                <p>Leverage predictive analytics to forecast case outcomes, optimize billing, and gain actionable insights that drive your law firm's growth and success.</p>
+            </div>
+        </div>
+    </section>
+    
+    <section id="features" class="features section">
+        <h2>Key Features</h2>
+        <div class="feature-hero">
+            <div class="feature-hero-text">
+                <h3>Intelligent Case Management</h3>
+                <p>Create, manage, track, organize, and assign cases with the highest level of access rights and data security. Convenient access and efficient firm management from anywhere, at any time.</p>
+                <a href="#how-it-works" class="cta-button">Learn More</a>
+            </div>
+            <div class="feature-hero-image">
+                <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Intelligent Case Management">
+            </div>
+        </div>
+        
+        <div class="feature-slider-container">
+            <div class="feature-slider">
+                <div class="feature-slide">
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1560253021-9b875e2e1e92?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Case Matching Icon">
+                        <h3>Case Matching</h3>
+                        <p>AI suggestions for multiple law firms based on your case. Advanced algorithms match your specific legal needs with the most qualified firms.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Law Firm Onboarding Icon">
+                        <h3>Law Firm Onboarding</h3>
+                        <p>Law firms can easily register, create profiles, and find cases. Streamlined process with verification and approval systems.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Document Management Icon">
+                        <h3>Document Management</h3>
+                        <p>Upload and share case files with secure cloud storage. Organized filing system with version control and access permissions.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-slide">
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Law Firm Selection Icon">
+                        <h3>Select Desired Law Firms</h3>
+                        <p>Users can browse and select preferred law firms based on expertise, ratings, and location for personalized case matching.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Firm Data Management Icon">
+                        <h3>Centralized Data Management</h3>
+                        <p>Law firms manage all their data in one secure dashboard, including cases, clients, and analytics across multiple practices.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1541701494587-cb58502866ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="AI Assistance Icon">
+                        <h3>AI Assistance System</h3>
+                        <p>Intelligent AI chatbots and predictive analytics provide real-time legal advice, case predictions, and workflow automation.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-slide">
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Access Control Icon">
+                        <h3>Rights Management</h3>
+                        <p>Granular role-based permissions ensure data privacy with advanced encryption, audit trails, and multi-factor authentication.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Analytics Icon">
+                        <h3>Advanced Analytics</h3>
+                        <p>Comprehensive reporting and analytics tools to track case progress, firm performance, and client satisfaction metrics.</p>
+                    </div>
+                    <div class="feature-card">
+                        <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Mobile Access Icon">
+                        <h3>Mobile Access</h3>
+                        <p>Access your case management system on-the-go with our mobile-responsive design and dedicated mobile applications.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="slider-dots" id="sliderDots"></div>
+        </div>
+    </section>
+
+    <section id="lawfirms" class="section lawfirms">
+        <h2>Our Partner Law Firms</h2>
+        <p>Browse our verified law firms, complete with images, descriptions, and details on key lawyers and advocates.</p>
+        <div class="lawfirm-grid">
+            <div class="lawfirm-card">
+                <img class="lawfirm-image" src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hale & Associates">
+                <h3>Hale & Associates - Global Criminal Defense</h3>
+                <p>Leading firm specializing in high-profile criminal cases, with a track record of defending clients in international courts. Focus on evidence analysis and plea bargaining.</p>
+                <ul class="lawyers-list">
+                    <li><strong>John Hale</strong> <span>Senior Advocate, 20+ years in criminal law, expert in fraud and white-collar crimes.</span></li>
+                    <li><strong>Sarah Mitchell</strong> <span>Junior Lawyer, specializes in juvenile justice and rehabilitation programs.</span></li>
+                </ul>
+            </div>
+            <div class="lawfirm-card">
+                <img class="lawfirm-image" src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Vasquez Litigation Partners">
+                <h3>Vasquez Litigation Partners - Civil Experts</h3>
+                <p>Renowned for civil litigation, contract disputes, and property law. They provide comprehensive strategies for dispute resolution and mediation.</p>
+                <ul class="lawyers-list">
+                    <li><strong>Maria Vasquez</strong> <span>Lead Advocate, 15 years experience in civil suits, known for innovative settlement tactics.</span></li>
+                    <li><strong>David Chen</strong> <span>Associate Lawyer, focuses on intellectual property and commercial disputes.</span></li>
+                </ul>
+            </div>
+            <div class="lawfirm-card">
+                <img class="lawfirm-image" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Reed Family Law Group">
+                <h3>Reed Family Law Group - Authority in Matrimonial</h3>
+                <p>Experts in family law, including divorce, custody, and adoption. Committed to compassionate representation and child welfare.</p>
+                <ul class="lawyers-list">
+                    <li><strong>Emily Reed</strong> <span>Principal Advocate, 18 years in family matters, mediator certified by international bodies.</span></li>
+                    <li><strong>Robert Kline</strong> <span>Family Lawyer, specializes in domestic violence and asset division.</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="section how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <img src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Register Icon">
+                    <h3>Register Your Case</h3>
+                    <p>Upload your case details and documents through our secure portal. Provide necessary information for accurate matching.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Matching Icon">
+                    <h3>AI Matching</h3>
+                    <p>Our AI system matches your case with qualified law firms based on expertise, location, and success rates.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Choose Icon">
+                    <h3>Choose and Start</h3>
+                    <p>Select the best law firm from recommendations and begin your case management with secure communication.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <img src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Track Icon">
+                    <h3>Track Progress</h3>
+                    <p>Monitor case progress in real-time, receive updates, and access documents through your personal dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section contact">
+        <h2>Get in Touch</h2>
+        <form class="contact-form" action="#" method="post">
+            <div class="form-group">
+                <label for="fullName">Full Name <span style="color: #FFDC00;">*</span></label>
+                <input type="text" id="fullName" name="fullName" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address <span style="color: #FFDC00;">*</span></label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number <span style="color: #666;">(optional but recommended)</span></label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            <div class="form-group">
+                <label for="subject">Subject <span style="color: #FFDC00;">*</span></label>
+                <select id="subject" name="subject" required>
+                    <option value="">Select Subject</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="case">Case Related Question</option>
+                    <option value="technical">Technical Issue</option>
+                    <option value="partnership">Partnership Inquiry</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="message">Message <span style="color: #FFDC00;">*</span></label>
+                <textarea id="message" name="message" required placeholder="Please describe your query or message here..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Submit Message</button>
+        </form>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Advocare</h4>
+                <p>Smart Legal Case Management System. Empowering law firms with AI-driven tools for efficient case handling, secure collaboration, and insightful analytics.</p>
+                <div class="social-icons">
+                    <a href="#">&#128279;</a>
+                    <a href="#">&#128289;</a>
+                    <a href="#">&#128241;</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#lawfirms">Law Firms</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li>Email: info@advocare.com</li>
+                    <li>Phone: +91-9876543210</li>
+                    <li>Address: 123 Legal Street, Justice City, India 400001</li>
+                    <li>Support: Mon-Fri, 9AM-6PM IST</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Legal</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="#">GDPR Compliance</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Advocare. All rights reserved. | Smart Legal Case Management System</p>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            const sections = document.querySelectorAll('.section, .feature-hero, .search-section, .lawfirms');
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) {
+                    section.classList.add('visible');
+                }
+            });
+        });
+        
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if(targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Feature Slider with Dots Only
+        let currentSlide = 0;
+        const slider = document.querySelector('.feature-slider');
+        const slides = document.querySelectorAll('.feature-slide');
+        const totalSlides = slides.length;
+        const dotsContainer = document.getElementById('sliderDots');
+        
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.classList.add('slider-dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+        }
+        
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+            document.querySelectorAll('.slider-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        function goToSlide(n) {
+            currentSlide = n;
+            updateSlider();
+        }
+        
+        // Auto slide every 5 seconds
+        let slideInterval = setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+        }, 5000);
+        
+        // Pause auto-slide on hover
+        const sliderContainer = document.querySelector('.feature-slider-container');
+        sliderContainer.addEventListener('mouseenter', () => {
+            clearInterval(slideInterval);
+        });
+        
+        sliderContainer.addEventListener('mouseleave', () => {
+            slideInterval = setInterval(() => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+            }, 5000);
+        });
+        
+        // Search Functionality
+        const searchInput = document.querySelector('.search-input');
+        const searchBtn = document.querySelector('.search-btn');
+        const lawfirmCards = document.querySelectorAll('.lawfirm-card');
+        
+        function filterLawFirms(query) {
+            let hasResults = false;
+            lawfirmCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                const matches = text.includes(query.toLowerCase());
+                card.classList.toggle('hidden', !matches);
+                if (matches) hasResults = true;
+            });
+            
+            if (query && hasResults) {
+                document.getElementById('lawfirms').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput.value.trim();
+            if (query) {
+                filterLawFirms(query);
+            }
+        });
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = searchInput.value.trim();
+                if (query) {
+                    filterLawFirms(query);
+                }
+            }
+        });
+        
+        // AI Modal
+        const aiBtn = document.querySelector('.ai-btn');
+        const modal = document.getElementById('aiModal');
+        const aiInput = document.querySelector('.ai-input');
+        const aiSuggestion = document.querySelector('.ai-suggestion');
+        const closeBtn = document.querySelector('.close');
+        const generateBtn = document.querySelector('.generate-btn');
+        
+        aiBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+            aiInput.focus();
+        });
+        
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            aiSuggestion.style.display = 'none';
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                aiSuggestion.style.display = 'none';
+            }
+        });
+        
+        generateBtn.addEventListener('click', () => {
+            const caseDesc = aiInput.value.trim();
+            if (caseDesc) {
+                let suggestion = "Based on your case description, we recommend approaching ";
+                if (caseDesc.toLowerCase().includes('criminal') || caseDesc.toLowerCase().includes('theft') || caseDesc.toLowerCase().includes('assault')) {
+                    suggestion += "<strong>Hale & Associates</strong> - Experts in criminal defense with a 95% success rate. They specialize in evidence analysis and plea bargaining.";
+                } else if (caseDesc.toLowerCase().includes('family') || caseDesc.toLowerCase().includes('divorce') || caseDesc.toLowerCase().includes('custody')) {
+                    suggestion += "<strong>Reed Family Law Group</strong> - Specializing in matrimonial and family disputes. They offer compassionate representation and mediation services.";
+                } else if (caseDesc.toLowerCase().includes('civil') || caseDesc.toLowerCase().includes('contract') || caseDesc.toLowerCase().includes('property')) {
+                    suggestion += "<strong>Vasquez Litigation Partners</strong> - Leaders in civil litigation and contract disputes. Known for innovative settlement strategies.";
+                } else {
+                    suggestion += "one of our top partner firms for comprehensive legal support. Our AI will match you with the most suitable firm based on your specific needs.";
+                }
+                aiSuggestion.innerHTML = suggestion;
+                aiSuggestion.style.display = 'block';
+            }
+        });
+        
+        // Initialize animations on load
+        window.dispatchEvent(new Event('scroll'));
+    </script>
+</body>
+</html>
