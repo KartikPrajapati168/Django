@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advocare - Law Firm Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1a3c8b;
+            --primary-light: #2d5bb5;
+            --secondary: #d4af37;
+            --accent: #e63946;
+            --light: #f8f9fa;
+            --dark: #1e2a47;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, var(--primary) 0%, #0d2b6e 100%);
+            color: white;
+            padding: 25px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 25px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .logo-icon {
+            background-color: var(--secondary);
+            color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-right: 12px;
+            font-weight: 700;
+        }
+
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 0 15px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .nav-text {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .notification-badge {
+            background-color: var(--accent);
+            color: white;
+            font-size: 12px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+        }
+
+        .user-profile {
+            padding: 20px 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-right: 15px;
+        }
+
+        .user-info h4 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 25px;
+            width: calc(100% - 260px);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title i {
+            margin-right: 12px;
+            color: var(--primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border-radius: 30px;
+            border: 1px solid var(--light-gray);
+            background-color: white;
+            font-size: 15px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 18px;
+            top: 13px;
+            color: var(--gray);
+        }
+
+        .notification-btn {
+            background-color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--accent);
+        }
+
+        /* Dashboard Content */
+        .kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 22px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 18px;
+            font-size: 26px;
+        }
+
+        .kpi-card:nth-child(1) .kpi-icon {
+            background-color: rgba(26, 60, 139, 0.1);
+            color: var(--primary);
+        }
+
+        .kpi-card:nth-child(2) .kpi-icon {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .kpi-card:nth-child(3) .kpi-icon {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        .kpi-card:nth-child(4) .kpi-icon {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--secondary);
+        }
+
+        .kpi-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .kpi-info p {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container, .recent-activity {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-wrapper {
+            height: 300px;
+            position: relative;
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            padding: 18px 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .activity-details h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        .activity-details p {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 6px;
+        }
+
+        .activity-date {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--dark);
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        .action-btn i {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        /* Case Requests */
+        .case-requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .case-request-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary);
+        }
+
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .case-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .case-type {
+            display: inline-block;
+            background-color: rgba(26, 60, 139, 0.1);
+            color: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .case-location {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: var(--gray);
+            margin-top: 10px;
+        }
+
+        .case-location i {
+            margin-right: 8px;
+        }
+
+        .case-description {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--dark);
+        }
+
+        .client-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-top: 15px;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .client-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 15px;
+            color: var(--primary);
+        }
+
+        .client-details h4 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .client-details p {
+            font-size: 13px;
+            color: var(--gray);
+        }
+
+        .case-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-accept {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-accept:hover {
+            background-color: #218838;
+        }
+
+        .btn-reject {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background-color: #c82333;
+        }
+
+        .btn-view {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Table Styles */
+        .table-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 15px;
+            background-color: var(--light);
+            color: var(--dark);
+            font-weight: 600;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-new {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .status-in-court {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+
+        .status-filed {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+
+        /* Form Styles */
+        .form-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--light-gray);
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light-gray);
+            margin-bottom: 25px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+            }
+            
+            .logo-text, .nav-text, .user-info {
+                display: none;
+            }
+            
+            .logo {
+                justify-content: center;
+                padding: 0 10px 30px;
+            }
+            
+            .logo-icon {
+                margin-right: 0;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 14px;
+            }
+            
+            .nav-item i {
+                margin-right: 0;
+            }
+            
+            .notification-badge {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+            }
+            
+            .user-profile {
+                justify-content: center;
+                padding: 20px 10px;
+            }
+            
+            .user-avatar {
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .case-requests-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            .kpi-cards, .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                margin-top: 15px;
+                width: 100%;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div class="logo-text">Advocare</div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="nav-text">Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="case-requests">
+                    <i class="fas fa-file-contract"></i>
+                    <span class="nav-text">Case Requests</span>
+                    <div class="notification-badge">5</div>
+                </div>
+                <div class="nav-item" data-page="assigned-cases">
+                    <i class="fas fa-briefcase"></i>
+                    <span class="nav-text">Assigned Cases</span>
+                </div>
+                <div class="nav-item" data-page="lawyers">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="nav-text">Lawyers</span>
+                </div>
+                <div class="nav-item" data-page="court-updates">
+                    <i class="fas fa-gavel"></i>
+                    <span class="nav-text">Court Updates</span>
+                </div>
+                <div class="nav-item" data-page="messages">
+                    <i class="fas fa-comments"></i>
+                    <span class="nav-text">Messages</span>
+                    <div class="notification-badge">3</div>
+                </div>
+                <div class="nav-item" data-page="profile">
+                    <i class="fas fa-building"></i>
+                    <span class="nav-text">Firm Profile</span>
+                </div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Settings</span>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <div class="user-avatar">SR</div>
+                <div class="user-info">
+                    <h4>Sharma & Associates</h4>
+                    <p>Law Firm Admin</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Law Firm Dashboard</span>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search cases, lawyers, clients...">
+                    </div>
+                    
+                    <div class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-dot"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page-content active">
+                <!-- KPI Cards -->
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>24</h3>
+                            <p>Total Cases</p>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>12</h3>
+                            <p>Active Cases</p>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>5</h3>
+                            <p>Pending Requests</p>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="kpi-info">
+                            <h3>68%</h3>
+                            <p>Success Rate</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts & Recent Activity -->
+                <div class="dashboard-content">
+                    <div class="chart-container">
+                        <div class="section-title">
+                            <span>Case Statistics</span>
+                            <select class="form-control" style="width: auto; padding: 5px 10px; font-size: 14px;">
+                                <option>Last 30 Days</option>
+                                <option>Last 3 Months</option>
+                                <option>Last Year</option>
+                            </select>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="caseChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-activity">
+                        <div class="section-title">
+                            <span>Recent Case Activity</span>
+                            <a href="#" style="font-size: 14px; color: var(--primary);">View All</a>
+                        </div>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--primary);">
+                                    <i class="fas fa-landmark"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Property Dispute - Rahul</h4>
+                                    <p>Hearing scheduled for 18 Jan</p>
+                                    <div class="activity-date">Today, 10:30 AM</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--success);">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Divorce Case - Anita</h4>
+                                    <p>New case assigned to Adv. Sharma</p>
+                                    <div class="activity-date">Yesterday, 3:45 PM</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--warning);">
+                                    <i class="fas fa-user-clock"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Contract Review - TechCorp</h4>
+                                    <p>Awaiting client documents</p>
+                                    <div class="activity-date">2 days ago</div>
+                                </div>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--secondary);">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Civil Suit - Won</h4>
+                                    <p>Case closed successfully</p>
+                                    <div class="activity-date">5 days ago</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <a href="#" class="action-btn" data-page="case-requests">
+                        <i class="fas fa-file-contract"></i>
+                        <span>View Case Requests</span>
+                    </a>
+                    <a href="#" class="action-btn" data-page="lawyers">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add Lawyer</span>
+                    </a>
+                    <a href="#" class="action-btn" data-page="court-updates">
+                        <i class="fas fa-upload"></i>
+                        <span>Upload Court Update</span>
+                    </a>
+                    <a href="#" class="action-btn" data-page="messages">
+                        <i class="fas fa-comment-medical"></i>
+                        <span>New Message</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Case Requests Page -->
+            <div id="case-requests" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Case Requests (5)</span>
+                    </div>
+                </div>
+                
+                <div class="case-requests-grid">
+                    <!-- Request 1 -->
+                    <div class="case-request-card">
+                        <div class="case-header">
+                            <div>
+                                <div class="case-title">Property Dispute - Inheritance</div>
+                                <div class="case-type">Civil Law</div>
+                                <div class="case-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Delhi District Court</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="case-description">Client is involved in a property dispute with relatives over inheritance of ancestral property. Documents include will, property papers, and family tree.</p>
+                        
+                        <div class="client-info">
+                            <div class="client-avatar">RS</div>
+                            <div class="client-details">
+                                <h4>Rajesh Sharma</h4>
+                                <p>Businessman, 45 years</p>
+                            </div>
+                        </div>
+                        
+                        <div class="case-actions">
+                            <button class="btn btn-accept"><i class="fas fa-check"></i> Accept</button>
+                            <button class="btn btn-reject"><i class="fas fa-times"></i> Reject</button>
+                            <button class="btn btn-view"><i class="fas fa-eye"></i> View Details</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Request 2 -->
+                    <div class="case-request-card">
+                        <div class="case-header">
+                            <div>
+                                <div class="case-title">Corporate Merger Consultation</div>
+                                <div class="case-type">Corporate Law</div>
+                                <div class="case-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>High Court, Mumbai</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="case-description">Tech startup seeking legal consultation for merger with larger corporation. Need review of merger agreement, due diligence, and regulatory compliance.</p>
+                        
+                        <div class="client-info">
+                            <div class="client-avatar">TC</div>
+                            <div class="client-details">
+                                <h4>TechCorp India</h4>
+                                <p>Technology Company</p>
+                            </div>
+                        </div>
+                        
+                        <div class="case-actions">
+                            <button class="btn btn-accept"><i class="fas fa-check"></i> Accept</button>
+                            <button class="btn btn-reject"><i class="fas fa-times"></i> Reject</button>
+                            <button class="btn btn-view"><i class="fas fa-eye"></i> View Details</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Request 3 -->
+                    <div class="case-request-card">
+                        <div class="case-header">
+                            <div>
+                                <div class="case-title">Medical Negligence Claim</div>
+                                <div class="case-type">Medical Law</div>
+                                <div class="case-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Consumer Court, Bangalore</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="case-description">Patient seeking compensation for surgical negligence resulting in permanent disability. Medical records and expert opinions available.</p>
+                        
+                        <div class="client-info">
+                            <div class="client-avatar">PG</div>
+                            <div class="client-details">
+                                <h4>Priya Gupta</h4>
+                                <p>Teacher, 38 years</p>
+                            </div>
+                        </div>
+                        
+                        <div class="case-actions">
+                            <button class="btn btn-accept"><i class="fas fa-check"></i> Accept</button>
+                            <button class="btn btn-reject"><i class="fas fa-times"></i> Reject</button>
+                            <button class="btn btn-view"><i class="fas fa-eye"></i> View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Assigned Cases Page -->
+            <div id="assigned-cases" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-briefcase"></i>
+                        <span>Assigned Cases (12)</span>
+                    </div>
+                    <button class="btn btn-view" style="padding: 12px 25px;">
+                        <i class="fas fa-plus"></i> New Case
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Case</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th>Court</th>
+                                <th>Next Hearing</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Property Dispute</td>
+                                <td>Rahul Verma</td>
+                                <td><span class="status-badge status-in-court">In Court</span></td>
+                                <td>District Court</td>
+                                <td>18 Jan 2024</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Divorce Case</td>
+                                <td>Anita Desai</td>
+                                <td><span class="status-badge status-new">New</span></td>
+                                <td>Family Court</td>
+                                <td>—</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Criminal Defense</td>
+                                <td>Sanjay Mehta</td>
+                                <td><span class="status-badge status-filed">Filed</span></td>
+                                <td>Sessions Court</td>
+                                <td>25 Jan 2024</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Contract Breach</td>
+                                <td>Global Tech Inc.</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>Commercial Court</td>
+                                <td>12 Feb 2024</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Lawyers Management Page -->
+            <div id="lawyers" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-user-tie"></i>
+                        <span>Lawyers Management</span>
+                    </div>
+                    <button class="btn btn-view" id="addLawyerBtn" style="padding: 12px 25px;">
+                        <i class="fas fa-plus"></i> Add Lawyer
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Practice Area</th>
+                                <th>Experience</th>
+                                <th>Active Cases</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="client-avatar" style="width: 36px; height: 36px; margin-right: 10px;">AS</div>
+                                        Adv. Anil Sharma
+                                    </div>
+                                </td>
+                                <td>Civil, Property</td>
+                                <td>12 years</td>
+                                <td>5</td>
+                                <td>anil@advocare.com</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-accept" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-briefcase"></i> Assign
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="client-avatar" style="width: 36px; height: 36px; margin-right: 10px;">PK</div>
+                                        Adv. Priya Khanna
+                                    </div>
+                                </td>
+                                <td>Corporate, M&A</td>
+                                <td>8 years</td>
+                                <td>3</td>
+                                <td>priya@advocare.com</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-accept" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-briefcase"></i> Assign
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="client-avatar" style="width: 36px; height: 36px; margin-right: 10px;">RM</div>
+                                        Adv. Rohan Mehta
+                                    </div>
+                                </td>
+                                <td>Criminal, Bail</td>
+                                <td>15 years</td>
+                                <td>4</td>
+                                <td>rohan@advocare.com</td>
+                                <td>
+                                    <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-accept" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-briefcase"></i> Assign
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Add Lawyer Form (Hidden by default) -->
+                <div id="addLawyerForm" class="form-container" style="display: none; margin-top: 30px;">
+                    <h2 style="margin-bottom: 25px; color: var(--primary);">Add New Lawyer</h2>
+                    <form id="lawyerForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lawyerName">Full Name</label>
+                                <input type="text" id="lawyerName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lawyerEmail">Email Address</label>
+                                <input type="email" id="lawyerEmail" class="form-control" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lawyerPhone">Phone Number</label>
+                                <input type="tel" id="lawyerPhone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lawyerExperience">Years of Experience</label>
+                                <input type="number" id="lawyerExperience" class="form-control" min="0" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="lawyerExpertise">Expertise / Practice Area</label>
+                            <select id="lawyerExpertise" class="form-control" multiple style="height: 100px;">
+                                <option value="civil">Civil Law</option>
+                                <option value="criminal">Criminal Law</option>
+                                <option value="corporate">Corporate Law</option>
+                                <option value="family">Family Law</option>
+                                <option value="property">Property Law</option>
+                                <option value="tax">Tax Law</option>
+                                <option value="ip">Intellectual Property</option>
+                                <option value="labor">Labor Law</option>
+                            </select>
+                            <small style="color: var(--gray); font-size: 13px;">Hold Ctrl/Cmd to select multiple</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="barNumber">Bar Registration Number</label>
+                            <input type="text" id="barNumber" class="form-control" required>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px;">
+                            <button type="button" class="btn btn-reject" id="cancelLawyerBtn">Cancel</button>
+                            <button type="submit" class="btn btn-accept">Add Lawyer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Court Updates Page -->
+            <div id="court-updates" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-gavel"></i>
+                        <span>Court & Hearing Updates</span>
+                    </div>
+                    <button class="btn btn-view" style="padding: 12px 25px;">
+                        <i class="fas fa-plus"></i> Add Update
+                    </button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="chart-container">
+                        <div class="section-title">
+                            <span>Upcoming Hearings</span>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--primary);">
+                                    <i class="fas fa-landmark"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Property Dispute - Rahul Verma</h4>
+                                    <p>District Court, Room 12</p>
+                                    <div class="activity-date">18 Jan 2024, 10:30 AM</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--warning);">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Criminal Defense - Sanjay Mehta</h4>
+                                    <p>Sessions Court, Judge Sharma</p>
+                                    <div class="activity-date">25 Jan 2024, 2:00 PM</div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background-color: var(--success);">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="activity-details">
+                                    <h4>Contract Breach - Global Tech Inc.</h4>
+                                    <p>Commercial Court</p>
+                                    <div class="activity-date">12 Feb 2024, 11:15 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-activity">
+                        <div class="section-title">
+                            <span>Recent Court Orders</span>
+                        </div>
+                        <div style="padding: 15px;">
+                            <div class="activity-item">
+                                <div class="activity-details">
+                                    <h4>Bail Granted - State vs. Kumar</h4>
+                                    <p>Bail granted with conditions</p>
+                                    <div class="activity-date">10 Jan 2024</div>
+                                </div>
+                                <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-details">
+                                    <h4>Injunction Order - Property Case</h4>
+                                    <p>Temporary injunction granted</p>
+                                    <div class="activity-date">5 Jan 2024</div>
+                                </div>
+                                <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-details">
+                                    <h4>Divorce Decree - Sharma vs. Sharma</h4>
+                                    <p>Mutual consent divorce finalized</p>
+                                    <div class="activity-date">28 Dec 2023</div>
+                                </div>
+                                <button class="btn btn-view" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages Page -->
+            <div id="messages" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-comments"></i>
+                        <span>Messages (3)</span>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="client-chats">Client Chats</div>
+                    <div class="tab" data-tab="admin-messages">Admin Messages</div>
+                </div>
+                
+                <div class="tab-content active" id="client-chats">
+                    <div class="dashboard-content">
+                        <div class="recent-activity" style="flex: 1;">
+                            <div class="section-title">
+                                <span>Recent Conversations</span>
+                            </div>
+                            <div style="padding: 15px;">
+                                <div class="activity-item" style="cursor: pointer;">
+                                    <div class="client-avatar" style="width: 42px; height: 42px;">RV</div>
+                                    <div class="activity-details">
+                                        <h4>Rahul Verma</h4>
+                                        <p>Property Dispute Case</p>
+                                        <div class="activity-date">Just now</div>
+                                    </div>
+                                    <div class="notification-badge">2</div>
+                                </div>
+                                <div class="activity-item" style="cursor: pointer;">
+                                    <div class="client-avatar" style="width: 42px; height: 42px;">AD</div>
+                                    <div class="activity-details">
+                                        <h4>Anita Desai</h4>
+                                        <p>Divorce Case</p>
+                                        <div class="activity-date">2 hours ago</div>
+                                    </div>
+                                </div>
+                                <div class="activity-item" style="cursor: pointer;">
+                                    <div class="client-avatar" style="width: 42px; height: 42px;">SM</div>
+                                    <div class="activity-details">
+                                        <h4>Sanjay Mehta</h4>
+                                        <p>Criminal Defense</p>
+                                        <div class="activity-date">Yesterday</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container" style="flex: 2;">
+                            <div class="section-title">
+                                <span>Chat with Rahul Verma</span>
+                            </div>
+                            <div style="height: 350px; overflow-y: auto; padding: 15px; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                                <div style="display: flex; margin-bottom: 15px; justify-content: flex-start;">
+                                    <div style="max-width: 70%; background-color: white; padding: 12px 15px; border-radius: 15px 15px 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                                        <p>Hello, I wanted to check if there are any updates on my property case hearing?</p>
+                                        <div style="font-size: 11px; color: var(--gray); margin-top: 5px;">10:15 AM</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; margin-bottom: 15px; justify-content: flex-end;">
+                                    <div style="max-width: 70%; background-color: var(--primary); color: white; padding: 12px 15px; border-radius: 15px 15px 0 15px;">
+                                        <p>Yes, the hearing is scheduled for 18th Jan at 10:30 AM. We've filed all necessary documents.</p>
+                                        <div style="font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 5px;">10:18 AM</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex;">
+                                <input type="text" class="form-control" placeholder="Type your message..." style="border-radius: 30px 0 0 30px; padding-left: 20px;">
+                                <button class="btn btn-view" style="border-radius: 0 30px 30px 0; padding: 12px 25px;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="admin-messages">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>From</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>System Admin</td>
+                                    <td>New Platform Features Released</td>
+                                    <td>10 Jan 2024</td>
+                                    <td>
+                                        <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Billing Department</td>
+                                    <td>Invoice #INV-2024-001 Due</td>
+                                    <td>8 Jan 2024</td>
+                                    <td>
+                                        <button class="btn btn-view" style="padding: 8px 15px; font-size: 13px;">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Firm Profile Page -->
+            <div id="profile" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-building"></i>
+                        <span>Firm Profile</span>
+                    </div>
+                    <button class="btn btn-view" id="editProfileBtn" style="padding: 12px 25px;">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                </div>
+                
+                <div class="dashboard-content">
+                    <div class="chart-container">
+                        <div class="section-title">
+                            <span>Public Profile</span>
+                            <span class="status-badge status-filed" style="font-size: 12px;">Visible on Homepage</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; margin-bottom: 25px;">
+                            <div class="user-avatar" style="width: 80px; height: 80px; font-size: 32px; background-color: var(--primary); color: white;">S&A</div>
+                            <div style="margin-left: 20px;">
+                                <h2 style="font-size: 28px; margin-bottom: 5px;">Sharma & Associates</h2>
+                                <p style="color: var(--gray); font-size: 16px;">Established 2005</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--primary);">Description</h3>
+                            <p>Sharma & Associates is a premier law firm with over 18 years of experience in civil, corporate, and criminal law. We have successfully handled more than 500 cases with a 68% success rate. Our team of 12 experienced lawyers provides personalized legal solutions.</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--primary);">Practice Areas</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <span class="case-type">Civil Law</span>
+                                <span class="case-type">Corporate Law</span>
+                                <span class="case-type">Criminal Law</span>
+                                <span class="case-type">Family Law</span>
+                                <span class="case-type">Property Law</span>
+                                <span class="case-type">Tax Law</span>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 30px; margin-top: 25px;">
+                            <div>
+                                <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--primary);">Success Rate</h3>
+                                <div style="font-size: 36px; font-weight: 700; color: var(--success);">68%</div>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--primary);">Client Rating</h3>
+                                <div style="font-size: 36px; font-weight: 700; color: var(--secondary);">4.7</div>
+                                <div style="color: var(--gray); font-size: 14px;">Based on 124 reviews</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-activity">
+                        <div class="section-title">
+                            <span>Private Information</span>
+                        </div>
+                        
+                        <div style="padding: 15px;">
+                            <div class="form-group">
+                                <label>Firm Address</label>
+                                <p style="padding: 12px; background-color: var(--light); border-radius: 6px;">#24, Legal Street, Connaught Place, New Delhi - 110001</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Contact Details</label>
+                                <p style="padding: 12px; background-color: var(--light); border-radius: 6px;">
+                                    <strong>Phone:</strong> +91-11-12345678<br>
+                                    <strong>Email:</strong> contact@sharmaassociates.in<br>
+                                    <strong>Website:</strong> www.sharmaassociates.in
+                                </p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Bank Information</label>
+                                <p style="padding: 12px; background-color: var(--light); border-radius: 6px;">
+                                    <strong>Account Name:</strong> Sharma & Associates<br>
+                                    <strong>Bank:</strong> State Bank of India<br>
+                                    <strong>Account No:</strong> XXXX-XXXX-1234<br>
+                                    <strong>IFSC:</strong> SBIN0001234
+                                </p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Availability</label>
+                                <p style="padding: 12px; background-color: var(--light); border-radius: 6px;">
+                                    <strong>Working Hours:</strong> Mon-Fri, 9:00 AM - 7:00 PM<br>
+                                    <strong>Emergency Contact:</strong> Available 24/7 for existing clients<br>
+                                    <strong>Consultation:</strong> By appointment only
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Page -->
+            <div id="settings" class="page-content">
+                <div class="header">
+                    <div class="page-title">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings & Access Control</span>
+                    </div>
+                </div>
+                
+                <div class="form-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="account">Account Settings</div>
+                        <div class="tab" data-tab="roles">Manage Roles</div>
+                        <div class="tab" data-tab="notifications">Notifications</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="account">
+                        <h3 style="margin-bottom: 20px; color: var(--primary);">Change Password</h3>
+                        
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" id="currentPassword" class="form-control" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmPassword" class="form-control" required>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end; margin-top: 30px;">
+                                <button type="submit" class="btn btn-accept">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="tab-content" id="roles">
+                        <h3 style="margin-bottom: 20px; color: var(--primary);">Manage User Roles</h3>
+                        
+                        <div class="table-container" style="padding: 0; margin-bottom: 30px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Current Role</th>
+                                        <th>Change Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center;">
+                                                <div class="client-avatar" style="width: 36px; height: 36px; margin-right: 10px;">AS</div>
+                                                Adv. Anil Sharma
+                                            </div>
+                                        </td>
+                                        <td><span class="status-badge status-filed">Senior Lawyer</span></td>
+                                        <td>
+                                            <select class="form-control" style="width: auto; padding: 5px 10px; font-size: 14px;">
+                                                <option>Senior Lawyer</option>
+                                                <option>Junior Lawyer</option>
+                                                <option>Firm Admin</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center;">
+                                                <div class="client-avatar" style="width: 36px; height: 36px; margin-right: 10px;">PK</div>
+                                                Adv. Priya Khanna
+                                            </div>
+                                        </td>
+                                        <td><span class="status-badge status-new">Junior Lawyer</span></td>
+                                        <td>
+                                            <select class="form-control" style="width: auto; padding: 5px 10px; font-size: 14px;">
+                                                <option>Junior Lawyer</option>
+                                                <option>Senior Lawyer</option>
+                                                <option>Firm Admin</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-accept">Save Changes</button>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="notifications">
+                        <h3 style="margin-bottom: 20px; color: var(--primary);">Notification Preferences</h3>
+                        
+                        <div style="margin-bottom: 25px;">
+                            <h4 style="margin-bottom: 15px;">Email Notifications</h4>
+                            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--light-gray);">
+                                <div>
+                                    <strong>New Case Requests</strong>
+                                    <p style="font-size: 14px; color: var(--gray);">Receive email when a new case request is submitted</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid var(--light-gray);">
+                                <div>
+                                    <strong>Court Updates</strong>
+                                    <p style="font-size: 14px; color: var(--gray);">Receive email when court hearing is scheduled</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 15px 0;">
+                                <div>
+                                    <strong>Monthly Reports</strong>
+                                    <p style="font-size: 14px; color: var(--gray);">Receive monthly performance reports</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-accept">Save Preferences</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            // Case Statistics Chart
+            const ctx = document.getElementById('caseChart').getContext('2d');
+            const caseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'New Cases',
+                        data: [12, 19, 8, 15, 12, 17, 10, 14, 16, 12, 10, 15],
+                        backgroundColor: 'rgba(26, 60, 139, 0.7)',
+                        borderColor: 'rgba(26, 60, 139, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Closed Cases',
+                        data: [8, 12, 6, 10, 9, 13, 7, 11, 12, 9, 8, 11],
+                        backgroundColor: 'rgba(212, 175, 55, 0.7)',
+                        borderColor: 'rgba(212, 175, 55, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Navigation functionality
+            const navItems = document.querySelectorAll('.nav-item');
+            const pageContents = document.querySelectorAll('.page-content');
+            const actionBtns = document.querySelectorAll('.action-btn[data-page]');
+            
+            function showPage(pageId) {
+                // Hide all pages
+                pageContents.forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Show selected page
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+                
+                // Update active nav item
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-page') === pageId) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // Update page title
+                const pageTitle = document.querySelector('.page-title span');
+                if (pageTitle) {
+                    const pageNames = {
+                        'dashboard': 'Law Firm Dashboard',
+                        'case-requests': 'Case Requests',
+                        'assigned-cases': 'Assigned Cases',
+                        'lawyers': 'Lawyers Management',
+                        'court-updates': 'Court & Hearing Updates',
+                        'messages': 'Messages',
+                        'profile': 'Firm Profile',
+                        'settings': 'Settings & Access Control'
+                    };
+                    
+                    if (pageNames[pageId]) {
+                        pageTitle.textContent = pageNames[pageId];
+                    }
+                }
+            }
+            
+            // Add click event to nav items
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+            
+            // Add click event to action buttons
+            actionBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageId = this.getAttribute('data-page');
+                    showPage(pageId);
+                });
+            });
+            
+            // Toggle Add Lawyer Form
+            const addLawyerBtn = document.getElementById('addLawyerBtn');
+            const addLawyerForm = document.getElementById('addLawyerForm');
+            const cancelLawyerBtn = document.getElementById('cancelLawyerBtn');
+            
+            if (addLawyerBtn && addLawyerForm) {
+                addLawyerBtn.addEventListener('click', function() {
+                    addLawyerForm.style.display = 'block';
+                    this.style.display = 'none';
+                });
+                
+                cancelLawyerBtn.addEventListener('click', function() {
+                    addLawyerForm.style.display = 'none';
+                    addLawyerBtn.style.display = 'inline-block';
+                });
+                
+                // Handle form submission
+                const lawyerForm = document.getElementById('lawyerForm');
+                if (lawyerForm) {
+                    lawyerForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        alert('Lawyer added successfully!');
+                        this.reset();
+                        addLawyerForm.style.display = 'none';
+                        addLawyerBtn.style.display = 'inline-block';
+                    });
+                }
+            }
+            
+            // Toggle Edit Profile Button
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            if (editProfileBtn) {
+                editProfileBtn.addEventListener('click', function() {
+                    alert('Edit profile functionality would open a form in a real application.');
+                });
+            }
+            
+            // Tab functionality for messages and settings
+            const messageTabs = document.querySelectorAll('.tab[data-tab]');
+            messageTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    messageTabs.forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    const parentContainer = this.closest('.page-content');
+                    const tabContents = parentContainer.querySelectorAll('.tab-content');
+                    
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === tabId) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Handle case acceptance/rejection
+            const acceptButtons = document.querySelectorAll('.btn-accept');
+            const rejectButtons = document.querySelectorAll('.btn-reject');
+            
+            acceptButtons.forEach(button => {
+                if (!button.closest('#lawyerForm') && !button.closest('#passwordForm')) {
+                    button.addEventListener('click', function() {
+                        const caseCard = this.closest('.case-request-card');
+                        const caseTitle = caseCard.querySelector('.case-title').textContent;
+                        alert(`Case "${caseTitle}" has been accepted and moved to Assigned Cases.`);
+                        caseCard.remove();
+                        
+                        // Update pending requests count
+                        updatePendingRequestsCount();
+                    });
+                }
+            });
+            
+            rejectButtons.forEach(button => {
+                if (!button.closest('#lawyerForm') && !button.closest('#passwordForm')) {
+                    button.addEventListener('click', function() {
+                        const caseCard = this.closest('.case-request-card');
+                        const caseTitle = caseCard.querySelector('.case-title').textContent;
+                        alert(`Case "${caseTitle}" has been rejected. Client will be notified.`);
+                        caseCard.remove();
+                        
+                        // Update pending requests count
+                        updatePendingRequestsCount();
+                    });
+                }
+            });
+            
+            function updatePendingRequestsCount() {
+                const pendingRequests = document.querySelectorAll('.case-request-card').length;
+                const kpiCard = document.querySelector('.kpi-card:nth-child(3) h3');
+                const navBadge = document.querySelector('.nav-item[data-page="case-requests"] .notification-badge');
+                
+                if (kpiCard) kpiCard.textContent = pendingRequests;
+                if (navBadge) navBadge.textContent = pendingRequests;
+            }
+            
+            // Password form submission
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Password updated successfully!');
+                    this.reset();
+                });
+            }
+            
+            // Switch styling for notification toggles
+            const style = document.createElement('style');
+            style.textContent = `
+                .switch {
+                    position: relative;
+                    display: inline-block;
+                    width: 50px;
+                    height: 24px;
+                }
+                
+                .switch input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+                
+                .slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #ccc;
+                    transition: .4s;
+                    border-radius: 34px;
+                }
+                
+                .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 16px;
+                    width: 16px;
+                    left: 4px;
+                    bottom: 4px;
+                    background-color: white;
+                    transition: .4s;
+                    border-radius: 50%;
+                }
+                
+                input:checked + .slider {
+                    background-color: var(--primary);
+                }
+                
+                input:checked + .slider:before {
+                    transform: translateX(26px);
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

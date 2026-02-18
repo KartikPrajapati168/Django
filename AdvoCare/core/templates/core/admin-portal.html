@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advocare - Admin Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2d74da;
+            --accent-color: #38b2ac;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --danger-color: #f56565;
+            --light-bg: #f7fafc;
+            --dark-text: #2d3748;
+            --light-text: #718096;
+            --sidebar-width: 250px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: #f1f5f9;
+            color: var(--dark-text);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--primary-color);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            transition: all 0.3s;
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .logo-container {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: var(--accent-color);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .nav-item i {
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item span {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s;
+        }
+
+        /* Header Styles */
+        header {
+            height: var(--header-height);
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left h2 {
+            color: var(--primary-color);
+            font-size: 22px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .admin-info h4 {
+            font-size: 16px;
+        }
+
+        .admin-info p {
+            font-size: 13px;
+            color: var(--light-text);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 30px;
+        }
+
+        /* KPI Cards */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .kpi-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-top: 4px solid var(--primary-color);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-card:nth-child(2) {
+            border-top-color: var(--secondary-color);
+        }
+
+        .kpi-card:nth-child(3) {
+            border-top-color: var(--warning-color);
+        }
+
+        .kpi-card:nth-child(4) {
+            border-top-color: var(--success-color);
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        .kpi-label {
+            color: var(--light-text);
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-trend {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            color: var(--danger-color);
+        }
+
+        /* Charts Section */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .chart-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Recent Activity */
+        .activity-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .activity-header h3 {
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .activity-list {
+            list-style-type: none;
+        }
+
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .icon-client {
+            background-color: var(--secondary-color);
+        }
+
+        .icon-case {
+            background-color: var(--accent-color);
+        }
+
+        .icon-firm {
+            background-color: var(--warning-color);
+        }
+
+        .icon-win {
+            background-color: var(--success-color);
+        }
+
+        .activity-details h5 {
+            font-size: 15px;
+            margin-bottom: 3px;
+        }
+
+        .activity-details p {
+            font-size: 13px;
+            color: var(--light-text);
+        }
+
+        .activity-time {
+            margin-left: auto;
+            font-size: 13px;
+            color: var(--light-text);
+        }
+
+        /* Module Pages (Hidden by Default) */
+        .module-page {
+            display: none;
+        }
+
+        .module-page.active {
+            display: block;
+        }
+
+        /* Table Styles */
+        .table-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background-color: #f8fafc;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            color: var(--dark-text);
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-pending {
+            background-color: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-verified {
+            background-color: #bee3f8;
+            color: #2a4365;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--light-text);
+            color: var(--light-text);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--light-text);
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .logo h1, .nav-item span {
+                display: none;
+            }
+            
+            .logo {
+                justify-content: center;
+            }
+            
+            .nav-item {
+                justify-content: center;
+                padding: 18px 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .kpi-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-left h2 {
+                font-size: 18px;
+            }
+            
+            .admin-info {
+                display: none;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .kpi-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-area {
+                padding: 20px 15px;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+        }
+
+        /* Toggle for Mobile */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-balance-scale"></i>
+                <h1>Advocare</h1>
+            </div>
+        </div>
+        
+        <div class="nav-menu">
+            <div class="nav-item active" data-module="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-module="clients">
+                <i class="fas fa-users"></i>
+                <span>Client Management</span>
+            </div>
+            <div class="nav-item" data-module="cases">
+                <i class="fas fa-folder-open"></i>
+                <span>Case Moderation</span>
+            </div>
+            <div class="nav-item" data-module="lawfirms">
+                <i class="fas fa-landmark"></i>
+                <span>Law Firm Verification</span>
+            </div>
+            <div class="nav-item" data-module="lawyers">
+                <i class="fas fa-user-tie"></i>
+                <span>Lawyer Verification</span>
+            </div>
+            <div class="nav-item" data-module="court">
+                <i class="fas fa-gavel"></i>
+                <span>Court Simulation</span>
+            </div>
+            <div class="nav-item" data-module="reports">
+                <i class="fas fa-flag"></i>
+                <span>Disputes & Reports</span>
+            </div>
+            <div class="nav-item" data-module="analytics">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics & Logs</span>
+            </div>
+            <div class="nav-item" data-module="settings">
+                <i class="fas fa-cog"></i>
+                <span>System Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 id="pageTitle">Admin Dashboard</h2>
+            </div>
+            
+            <div class="header-right">
+                <div class="admin-profile">
+                    <div class="admin-avatar">AD</div>
+                    <div class="admin-info">
+                        <h4>Admin User</h4>
+                        <p>System Administrator</p>
+                    </div>
+                </div>
+                <button class="btn btn-outline">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Module (Default) -->
+            <div id="dashboard" class="module-page active">
+                <div class="kpi-container">
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <span>Total Clients</span>
+                            <span class="kpi-trend trend-up">+12%</span>
+                        </div>
+                        <div class="kpi-value">1,240</div>
+                        <div class="kpi-label">
+                            <span>Active this month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <span>Active Cases</span>
+                            <span class="kpi-trend trend-up">+5%</span>
+                        </div>
+                        <div class="kpi-value">386</div>
+                        <div class="kpi-label">
+                            <span>24 pending approval</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <span>Pending Approvals</span>
+                            <span class="kpi-trend trend-down">-3%</span>
+                        </div>
+                        <div class="kpi-value">42</div>
+                        <div class="kpi-label">
+                            <span>18 law firms, 24 lawyers</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kpi-card">
+                        <div class="kpi-label">
+                            <span>Verified Law Firms</span>
+                            <span class="kpi-trend trend-up">+8%</span>
+                        </div>
+                        <div class="kpi-value">128</div>
+                        <div class="kpi-label">
+                            <span>12 pending verification</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Monthly Case Growth</h3>
+                            <select class="btn btn-outline btn-sm">
+                                <option>Last 6 Months</option>
+                                <option>Last Year</option>
+                                <option>Last 3 Years</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="caseGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Case Types Distribution</h3>
+                            <select class="btn btn-outline btn-sm">
+                                <option>Current Month</option>
+                                <option>Last Month</option>
+                                <option>Quarter</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="caseTypesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <h3>Recent Activity Feed</h3>
+                        <button class="btn btn-outline btn-sm">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    
+                    <ul class="activity-list">
+                        <li class="activity-item">
+                            <div class="activity-icon icon-client">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h5>New client registered</h5>
+                                <p>Rohit Sharma registered with Advocare</p>
+                            </div>
+                            <div class="activity-time">10 min ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon icon-case">
+                                <i class="fas fa-file-upload"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h5>New case submitted</h5>
+                                <p>Property dispute case #C-2456 submitted</p>
+                            </div>
+                            <div class="activity-time">45 min ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon icon-firm">
+                                <i class="fas fa-landmark"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h5>Law firm approved</h5>
+                                <p>Justice Legal Associates verified successfully</p>
+                            </div>
+                            <div class="activity-time">2 hours ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon icon-win">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h5>Case closed (Win)</h5>
+                                <p>Case #C-2301 resolved in client's favor</p>
+                            </div>
+                            <div class="activity-time">5 hours ago</div>
+                        </li>
+                        
+                        <li class="activity-item">
+                            <div class="activity-icon icon-case">
+                                <i class="fas fa-comment-alt"></i>
+                            </div>
+                            <div class="activity-details">
+                                <h5>Clarification requested</h5>
+                                <p>Additional docs needed for case #C-2450</p>
+                            </div>
+                            <div class="activity-time">1 day ago</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Client Management Module -->
+            <div id="clients" class="module-page">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Client Management</h3>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Client
+                        </button>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Email</th>
+                                <th>Cases</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600;">Rahul Sharma</div>
+                                            <div style="font-size: 13px; color: var(--light-text);">ID: CL-00123</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>r.sharma@gmail.com</td>
+                                <td>2</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="fas fa-ban"></i> Disable
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600;">Priya Patel</div>
+                                            <div style="font-size: 13px; color: var(--light-text);">ID: CL-00124</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>priya.patel@yahoo.com</td>
+                                <td>5</td>
+                                <td><span class="status-badge status-active">Active</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="fas fa-ban"></i> Disable
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 36px; height: 36px; border-radius: 50%; background-color: #e2e8f0; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600;">Amit Verma</div>
+                                            <div style="font-size: 13px; color: var(--light-text);">ID: CL-00125</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>amit.v@outlook.com</td>
+                                <td>1</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Enable
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Case Moderation Module -->
+            <div id="cases" class="module-page">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Case Moderation - Pending Approval</h3>
+                        <div>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <button class="btn btn-primary">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Case ID</th>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Client</th>
+                                <th>Submitted</th>
+                                <th>AI Risk Flag</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#C-2456</td>
+                                <td>Property Dispute - Plot 45, Sector 22</td>
+                                <td>Property Law</td>
+                                <td>Rahul Sharma</td>
+                                <td>2 days ago</td>
+                                <td><span class="status-badge" style="background-color: #fed7d7; color: #742a2a;">High Risk</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="fas fa-comment-alt"></i> Clarify
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>#C-2455</td>
+                                <td>Employment Contract Breach</td>
+                                <td>Labor Law</td>
+                                <td>Neha Gupta</td>
+                                <td>3 days ago</td>
+                                <td><span class="status-badge" style="background-color: #fefcbf; color: #744210;">Medium Risk</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="fas fa-comment-alt"></i> Clarify
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>#C-2454</td>
+                                <td>Divorce with Child Custody</td>
+                                <td>Family Law</td>
+                                <td>Anjali Mehta</td>
+                                <td>4 days ago</td>
+                                <td><span class="status-badge" style="background-color: #c6f6d5; color: #22543d;">Low Risk</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button class="btn btn-warning btn-sm">
+                                            <i class="fas fa-comment-alt"></i> Clarify
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Law Firm Verification Module -->
+            <div id="lawfirms" class="module-page">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Law Firm Verification - Pending</h3>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Firm
+                        </button>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Firm Name</th>
+                                <th>Registration No.</th>
+                                <th>Owner</th>
+                                <th>Practice Areas</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Justice Legal Associates</td>
+                                <td>F-2023-0456</td>
+                                <td>Mr. Sanjay Kapoor</td>
+                                <td>Corporate, IPR</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Lex Solutions LLP</td>
+                                <td>F-2023-0457</td>
+                                <td>Ms. Radhika Singh</td>
+                                <td>Civil, Criminal</td>
+                                <td><span class="status-badge status-pending">Pending</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>Legal Edge Partners</td>
+                                <td>F-2023-0458</td>
+                                <td>Mr. Vikram Joshi</td>
+                                <td>Property, Family</td>
+                                <td><span class="status-badge status-verified">Verified</span></td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-danger btn-sm">
+                                            <i class="fas fa-times"></i> Revoke
+                                        </button>
+                                        <button class="btn btn-outline btn-sm">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Other Modules Placeholder -->
+            <div id="lawyers" class="module-page">
+                <div class="kpi-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Lawyer Verification Module</h3>
+                    <p>This module allows administrators to verify lawyer credentials including bar registration number, ID proof, and association with law firms.</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-user-check"></i> Go to Lawyer Verification
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="court" class="module-page">
+                <div class="kpi-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Court Simulation Control</h3>
+                    <p>This module allows administrators to create court entities, generate hearing dates, upload fake court orders, and change case stages for demo, testing, and academic purposes.</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-gavel"></i> Open Court Simulation Panel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="reports" class="module-page">
+                <div class="kpi-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Disputes & Reports Module</h3>
+                    <p>This module handles client complaints, law firm misconduct reports, case misuse issues, and allows actions like warning, suspension, or resolution of disputes.</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-flag"></i> View Active Disputes
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="analytics" class="module-page">
+                <div class="kpi-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Analytics & Logs Module</h3>
+                    <p>This module provides charts for case success rate, top law firms, most active cities, monthly case growth, and logs for user actions, status changes, and security events.</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i> View Detailed Analytics
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="settings" class="module-page">
+                <div class="kpi-card" style="max-width: 800px; margin: 0 auto;">
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">System Settings Module</h3>
+                    <p>This module controls case types, cities/locations, notification templates, AI recommendation weights, and role permissions.</p>
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-primary">
+                            <i class="fas fa-cogs"></i> Configure System Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <footer>
+                <p>Advocare - Smart Legal Case Management System | Admin Portal v2.1 | © 2023 All Rights Reserved</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Case Growth Chart
+            const caseGrowthCtx = document.getElementById('caseGrowthChart').getContext('2d');
+            const caseGrowthChart = new Chart(caseGrowthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    datasets: [{
+                        label: 'New Cases',
+                        data: [65, 78, 66, 84, 105, 120, 98],
+                        borderColor: '#2d74da',
+                        backgroundColor: 'rgba(45, 116, 218, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Closed Cases',
+                        data: [45, 60, 50, 70, 85, 95, 80],
+                        borderColor: '#38b2ac',
+                        backgroundColor: 'rgba(56, 178, 172, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 20
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Case Types Chart
+            const caseTypesCtx = document.getElementById('caseTypesChart').getContext('2d');
+            const caseTypesChart = new Chart(caseTypesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Property Law', 'Criminal Law', 'Family Law', 'Corporate Law', 'Labor Law', 'Other'],
+                    datasets: [{
+                        data: [25, 20, 18, 15, 12, 10],
+                        backgroundColor: [
+                            '#2d74da',
+                            '#38b2ac',
+                            '#ed8936',
+                            '#48bb78',
+                            '#f56565',
+                            '#a0aec0'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+            
+            // Navigation Logic
+            const navItems = document.querySelectorAll('.nav-item');
+            const modulePages = document.querySelectorAll('.module-page');
+            const pageTitle = document.getElementById('pageTitle');
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            
+            // Module titles mapping
+            const moduleTitles = {
+                dashboard: 'Admin Dashboard',
+                clients: 'Client Management',
+                cases: 'Case Moderation',
+                lawfirms: 'Law Firm Verification',
+                lawyers: 'Lawyer Verification',
+                court: 'Court Simulation Control',
+                reports: 'Disputes & Reports',
+                analytics: 'Analytics & Logs',
+                settings: 'System Settings'
+            };
+            
+            // Handle navigation clicks
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const module = this.getAttribute('data-module');
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show selected module
+                    modulePages.forEach(page => page.classList.remove('active'));
+                    document.getElementById(module).classList.add('active');
+                    
+                    // Update page title
+                    pageTitle.textContent = moduleTitles[module];
+                    
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+            });
+            
+            // Toggle sidebar on mobile
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    const isClickInsideSidebar = sidebar.contains(event.target);
+                    const isClickOnToggle = menuToggle.contains(event.target);
+                    
+                    if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('active')) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Simulate real-time updates for KPI cards
+            setInterval(() => {
+                const kpiValues = document.querySelectorAll('.kpi-value');
+                const totalClients = kpiValues[0];
+                const activeCases = kpiValues[1];
+                const pendingApprovals = kpiValues[2];
+                const verifiedFirms = kpiValues[3];
+                
+                // Randomly increment values to simulate real-time updates
+                if (Math.random() > 0.7) {
+                    let current = parseInt(totalClients.textContent.replace(/,/g, ''));
+                    current += Math.floor(Math.random() * 3);
+                    totalClients.textContent = current.toLocaleString();
+                }
+                
+                if (Math.random() > 0.7) {
+                    let current = parseInt(activeCases.textContent.replace(/,/g, ''));
+                    current += Math.floor(Math.random() * 2);
+                    activeCases.textContent = current.toLocaleString();
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

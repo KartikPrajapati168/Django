@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law Firm Onboarding | AdvocateCare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap">
+    <style>
+        :root {
+            --primary-blue: #1a365d;
+            --secondary-blue: #2d5aa0;
+            --accent-gold: #d4af37;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --success-green: #28a745;
+            --warning-yellow: #ffc107;
+            --error-red: #dc3545;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 8px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7fb;
+            color: var(--primary-blue);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--medium-gray);
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            color: var(--accent-gold);
+            font-size: 28px;
+        }
+        
+        .logo-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+        
+        .logo-subtext {
+            font-size: 14px;
+            color: var(--dark-gray);
+            font-weight: 500;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--secondary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--primary-blue);
+        }
+        
+        .page-subtitle {
+            color: var(--dark-gray);
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+        
+        .onboarding-container {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .form-container {
+            flex: 3;
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .sidebar {
+            flex: 1;
+            position: sticky;
+            top: 30px;
+            height: fit-content;
+        }
+        
+        .progress-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .progress-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: var(--medium-gray);
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--secondary-blue);
+            width: 25%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-steps {
+            list-style: none;
+        }
+        
+        .progress-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+        }
+        
+        .progress-step.active {
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+        
+        .progress-step.completed {
+            color: var(--success-green);
+        }
+        
+        .step-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .active .step-icon {
+            background-color: var(--secondary-blue);
+            color: white;
+        }
+        
+        .completed .step-icon {
+            background-color: var(--success-green);
+            color: white;
+        }
+        
+        .status-card {
+            background-color: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .status-icon {
+            font-size: 48px;
+            color: var(--warning-yellow);
+            margin-bottom: 15px;
+        }
+        
+        .status-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            color: var(--dark-gray);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / span 2;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary-blue);
+        }
+        
+        .required::after {
+            content: " *";
+            color: var(--error-red);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: var(--radius);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 3px rgba(45, 90, 160, 0.1);
+        }
+        
+        .multi-select-container {
+            position: relative;
+        }
+        
+        .multi-select-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .multi-select-option {
+            padding: 8px 16px;
+            background-color: var(--light-gray);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .multi-select-option:hover {
+            background-color: var(--medium-gray);
+        }
+        
+        .multi-select-option.selected {
+            background-color: var(--secondary-blue);
+            color: white;
+        }
+        
+        .team-member {
+            background-color: var(--light-gray);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-blue);
+        }
+        
+        .team-member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .remove-member {
+            background-color: var(--error-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .add-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 25px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .add-button:hover {
+            background-color: var(--secondary-blue);
+        }
+        
+        .file-upload-container {
+            border: 2px dashed var(--medium-gray);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .file-upload-container:hover, .file-upload-container.dragover {
+            border-color: var(--secondary-blue);
+            background-color: rgba(45, 90, 160, 0.05);
+        }
+        
+        .file-upload-icon {
+            font-size: 48px;
+            color: var(--secondary-blue);
+            margin-bottom: 15px;
+        }
+        
+        .file-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-icon {
+            color: var(--secondary-blue);
+            font-size: 20px;
+        }
+        
+        .submit-button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background-color: var(--accent-gold);
+            color: var(--primary-blue);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+        
+        .submit-button:hover {
+            background-color: #e0b832;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(212, 175, 55, 0.2);
+        }
+        
+        .success-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-icon {
+            font-size: 64px;
+            color: var(--success-green);
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: var(--primary-blue);
+        }
+        
+        .modal-text {
+            color: var(--dark-gray);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-button {
+            padding: 12px 30px;
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-button:hover {
+            background-color: var(--secondary-blue);
+        }
+        
+        .validation-error {
+            color: var(--error-red);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        @media (max-width: 992px) {
+            .onboarding-container {
+                flex-direction: column;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-group.full-width {
+                grid-column: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .section-number {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <div>
+                    <div class="logo-text">AdvoCare</div>
+                    <div class="logo-subtext">Smart Legal Case Management System</div>
+                </div>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">JD</div>
+                <div>
+                    <div>John Doe</div>
+                    <div style="font-size: 12px; color: var(--dark-gray);">Law Firm Admin</div>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <h1 class="page-title">Law Firm Onboarding</h1>
+            <p class="page-subtitle">Complete your firm's profile to get verified and start accepting cases through AdvocateCare. All fields marked with * are required.</p>
+            
+            <div class="onboarding-container">
+                <div class="form-container">
+                    <form id="onboarding-form">
+                        <!-- Section 1: Firm Details -->
+                        <section class="section" id="section1">
+                            <div class="section-header">
+                                <div class="section-number">1</div>
+                                <h2 class="section-title">Firm Details</h2>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firm-name" class="required">Law Firm Name</label>
+                                    <input type="text" id="firm-name" name="firm-name" placeholder="Enter your law firm's name" required>
+                                    <div class="validation-error" id="firm-name-error">Please enter your law firm name</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="registration-number" class="required">Registration Number</label>
+                                    <input type="text" id="registration-number" name="registration-number" placeholder="Firm registration number" required>
+                                    <div class="validation-error" id="registration-number-error">Please enter your firm registration number</div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="address" class="required">Address</label>
+                                    <textarea id="address" name="address" rows="3" placeholder="Full address of your law firm" required></textarea>
+                                    <div class="validation-error" id="address-error">Please enter your firm address</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="city" class="required">City</label>
+                                    <input type="text" id="city" name="city" placeholder="City" required>
+                                    <div class="validation-error" id="city-error">Please enter your city</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="state" class="required">State</label>
+                                    <input type="text" id="state" name="state" placeholder="State" required>
+                                    <div class="validation-error" id="state-error">Please enter your state</div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="website">Website (Optional)</label>
+                                    <input type="url" id="website" name="website" placeholder="https://www.example.com">
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <!-- Section 2: Primary Lawyer Details -->
+                        <section class="section" id="section2">
+                            <div class="section-header">
+                                <div class="section-number">2</div>
+                                <h2 class="section-title">Primary Lawyer Details</h2>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="primary-name" class="required">Full Name</label>
+                                    <input type="text" id="primary-name" name="primary-name" placeholder="Primary lawyer's full name" required>
+                                    <div class="validation-error" id="primary-name-error">Please enter primary lawyer's name</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="bar-council-id" class="required">Bar Council ID</label>
+                                    <input type="text" id="bar-council-id" name="bar-council-id" placeholder="Bar council registration ID" required>
+                                    <div class="validation-error" id="bar-council-id-error">Please enter bar council ID</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="experience" class="required">Years of Experience</label>
+                                    <select id="experience" name="experience" required>
+                                        <option value="">Select years</option>
+                                        <option value="0-2">0-2 years</option>
+                                        <option value="3-5">3-5 years</option>
+                                        <option value="6-10">6-10 years</option>
+                                        <option value="11-15">11-15 years</option>
+                                        <option value="15+">15+ years</option>
+                                    </select>
+                                    <div class="validation-error" id="experience-error">Please select years of experience</div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="specialization" class="required">Specialization</label>
+                                    <div class="multi-select-container">
+                                        <div class="multi-select-options" id="specialization-options">
+                                            <div class="multi-select-option" data-value="corporate">Corporate Law</div>
+                                            <div class="multi-select-option" data-value="criminal">Criminal Law</div>
+                                            <div class="multi-select-option" data-value="family">Family Law</div>
+                                            <div class="multi-select-option" data-value="intellectual">Intellectual Property</div>
+                                            <div class="multi-select-option" data-value="immigration">Immigration Law</div>
+                                            <div class="multi-select-option" data-value="tax">Tax Law</div>
+                                            <div class="multi-select-option" data-value="labor">Labor Law</div>
+                                            <div class="multi-select-option" data-value="civil">Civil Litigation</div>
+                                        </div>
+                                        <input type="hidden" id="specialization" name="specialization" required>
+                                        <div class="validation-error" id="specialization-error">Please select at least one specialization</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <!-- Section 3: Team Members -->
+                        <section class="section" id="section3">
+                            <div class="section-header">
+                                <div class="section-number">3</div>
+                                <h2 class="section-title">Team Members</h2>
+                            </div>
+                            
+                            <div id="team-members-container">
+                                <!-- Team members will be added here dynamically -->
+                                <div class="team-member" id="team-member-1">
+                                    <div class="team-member-header">
+                                        <h3>Team Member #1</h3>
+                                    </div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label for="member-name-1" class="required">Name</label>
+                                            <input type="text" id="member-name-1" name="member-name[]" placeholder="Team member's full name" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="member-email-1" class="required">Email</label>
+                                            <input type="email" id="member-email-1" name="member-email[]" placeholder="Team member's email" required>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="member-role-1" class="required">Role</label>
+                                            <select id="member-role-1" name="member-role[]" required>
+                                                <option value="">Select role</option>
+                                                <option value="associate">Associate</option>
+                                                <option value="partner">Partner</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="member-exp-1" class="required">Experience (Years)</label>
+                                            <input type="number" id="member-exp-1" name="member-exp[]" min="0" max="50" placeholder="Years of experience" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="add-button" id="add-team-member">
+                                <i class="fas fa-plus"></i> Add Team Member
+                            </button>
+                        </section>
+                        
+                        <!-- Section 4: Documents -->
+                        <section class="section" id="section4">
+                            <div class="section-header">
+                                <div class="section-number">4</div>
+                                <h2 class="section-title">Documents Upload</h2>
+                            </div>
+                            
+                            <p style="margin-bottom: 20px; color: var(--dark-gray);">Upload the required documents for verification. All documents should be clear and legible.</p>
+                            
+                            <div class="file-upload-container" id="file-drop-area">
+                                <div class="file-upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h3 style="margin-bottom: 10px;">Drag & Drop Files Here</h3>
+                                <p style="color: var(--dark-gray); margin-bottom: 15px;">or click to browse files</p>
+                                <input type="file" id="file-input" multiple style="display: none;">
+                                <button type="button" class="add-button" id="browse-files" style="margin-top: 0;">
+                                    <i class="fas fa-folder-open"></i> Browse Files
+                                </button>
+                            </div>
+                            
+                            <div>
+                                <h3 style="margin-bottom: 15px;">Required Documents:</h3>
+                                <ul class="file-list" id="required-documents">
+                                    <li class="file-item">
+                                        <div class="file-info">
+                                            <div class="file-icon">
+                                                <i class="fas fa-file-certificate"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 500;">Bar Council Certificate</div>
+                                                <div style="font-size: 14px; color: var(--dark-gray);">Upload certificate of primary lawyer</div>
+                                            </div>
+                                        </div>
+                                        <div id="bar-cert-status" style="color: var(--error-red); font-size: 14px;">Not uploaded</div>
+                                    </li>
+                                    <li class="file-item">
+                                        <div class="file-info">
+                                            <div class="file-icon">
+                                                <i class="fas fa-file-contract"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 500;">Firm Registration Proof</div>
+                                                <div style="font-size: 14px; color: var(--dark-gray);">Upload firm registration document</div>
+                                            </div>
+                                        </div>
+                                        <div id="firm-reg-status" style="color: var(--error-red); font-size: 14px;">Not uploaded</div>
+                                    </li>
+                                    <li class="file-item">
+                                        <div class="file-info">
+                                            <div class="file-icon">
+                                                <i class="fas fa-id-card"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight: 500;">ID Proof</div>
+                                                <div style="font-size: 14px; color: var(--dark-gray);">Government-issued ID of primary lawyer</div>
+                                            </div>
+                                        </div>
+                                        <div id="id-proof-status" style="color: var(--error-red); font-size: 14px;">Not uploaded</div>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div id="uploaded-files-container" style="margin-top: 30px; display: none;">
+                                <h3 style="margin-bottom: 15px;">Uploaded Files:</h3>
+                                <ul class="file-list" id="uploaded-files-list">
+                                    <!-- Uploaded files will appear here -->
+                                </ul>
+                            </div>
+                        </section>
+                        
+                        <button type="submit" class="submit-button">
+                            <i class="fas fa-check-circle"></i> Submit for Verification
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="progress-card">
+                        <h3 class="progress-title">
+                            <i class="fas fa-tasks"></i> Onboarding Progress
+                        </h3>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <ul class="progress-steps">
+                            <li class="progress-step active" id="step1">
+                                <div class="step-icon">1</div>
+                                <div>Firm Details</div>
+                            </li>
+                            <li class="progress-step" id="step2">
+                                <div class="step-icon">2</div>
+                                <div>Primary Lawyer</div>
+                            </li>
+                            <li class="progress-step" id="step3">
+                                <div class="step-icon">3</div>
+                                <div>Team Members</div>
+                            </li>
+                            <li class="progress-step" id="step4">
+                                <div class="step-icon">4</div>
+                                <div>Documents</div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="status-card">
+                        <div class="status-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <h3 class="status-title">Pending Verification</h3>
+                        <p class="status-text">After submission, your firm details will be reviewed by our admin team. This process typically takes 2-3 business days.</p>
+                        <div style="background-color: var(--light-gray); padding: 15px; border-radius: var(--radius);">
+                            <div style="font-size: 14px; color: var(--dark-gray); margin-bottom: 5px;">Until approved:</div>
+                            <div style="font-weight: 600; color: var(--primary-blue);">
+                                <i class="fas fa-lock" style="margin-right: 8px;"></i>Dashboard will be read-only
+                            </div>
+                            <div style="font-weight: 600; color: var(--primary-blue); margin-top: 8px;">
+                                <i class="fas fa-ban" style="margin-right: 8px;"></i>Cannot accept new cases
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Success Modal -->
+    <div class="success-modal" id="success-modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="modal-title">Submission Successful!</h2>
+            <p class="modal-text">Your law firm onboarding details have been submitted successfully for verification. Our admin team will review your submission and you will be notified once the verification is complete.</p>
+            <p class="modal-text" style="font-weight: 600; color: var(--primary-blue);">
+                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                Status: Pending Admin Approval
+            </p>
+            <button class="modal-button" id="modal-close-button">Go to Dashboard</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let teamMemberCount = 1;
+            let uploadedFiles = [];
+            let selectedSpecializations = [];
+            
+            // Multi-select functionality for specializations
+            const specializationOptions = document.querySelectorAll('.multi-select-option');
+            const specializationInput = document.getElementById('specialization');
+            
+            specializationOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedSpecializations = selectedSpecializations.filter(item => item !== value);
+                    } else {
+                        this.classList.add('selected');
+                        selectedSpecializations.push(value);
+                    }
+                    
+                    specializationInput.value = selectedSpecializations.join(',');
+                    validateField(specializationInput);
+                });
+            });
+            
+            // Add team member functionality
+            document.getElementById('add-team-member').addEventListener('click', function() {
+                teamMemberCount++;
+                
+                const newMember = document.createElement('div');
+                newMember.className = 'team-member';
+                newMember.id = `team-member-${teamMemberCount}`;
+                
+                newMember.innerHTML = `
+                    <div class="team-member-header">
+                        <h3>Team Member #${teamMemberCount}</h3>
+                        <button type="button" class="remove-member" onclick="removeTeamMember(${teamMemberCount})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="member-name-${teamMemberCount}" class="required">Name</label>
+                            <input type="text" id="member-name-${teamMemberCount}" name="member-name[]" placeholder="Team member's full name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="member-email-${teamMemberCount}" class="required">Email</label>
+                            <input type="email" id="member-email-${teamMemberCount}" name="member-email[]" placeholder="Team member's email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="member-role-${teamMemberCount}" class="required">Role</label>
+                            <select id="member-role-${teamMemberCount}" name="member-role[]" required>
+                                <option value="">Select role</option>
+                                <option value="associate">Associate</option>
+                                <option value="partner">Partner</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="member-exp-${teamMemberCount}" class="required">Experience (Years)</label>
+                            <input type="number" id="member-exp-${teamMemberCount}" name="member-exp[]" min="0" max="50" placeholder="Years of experience" required>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('team-members-container').appendChild(newMember);
+                updateProgress();
+            });
+            
+            // File upload functionality
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const browseFilesBtn = document.getElementById('browse-files');
+            
+            browseFilesBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                fileDropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                fileDropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                fileDropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                fileDropArea.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                fileDropArea.classList.remove('dragover');
+            }
+            
+            fileDropArea.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }, false);
+            
+            function handleFiles(files) {
+                [...files].forEach(file => {
+                    uploadFile(file);
+                });
+            }
+            
+            function uploadFile(file) {
+                // In a real application, you would upload to a server here
+                // For demo purposes, we'll just simulate the upload
+                
+                const fileId = Date.now() + '-' + file.name;
+                uploadedFiles.push({
+                    id: fileId,
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    type: getFileType(file.name)
+                });
+                
+                // Update UI
+                updateUploadedFilesList();
+                updateDocumentStatus(file.name);
+                
+                // Show uploaded files container if not already visible
+                document.getElementById('uploaded-files-container').style.display = 'block';
+            }
+            
+            function updateUploadedFilesList() {
+                const uploadedFilesList = document.getElementById('uploaded-files-list');
+                uploadedFilesList.innerHTML = '';
+                
+                uploadedFiles.forEach(file => {
+                    const fileItem = document.createElement('li');
+                    fileItem.className = 'file-item';
+                    
+                    const fileIcon = getFileIcon(file.type);
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-icon">
+                                <i class="fas ${fileIcon}"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">${file.name}</div>
+                                <div style="font-size: 14px; color: var(--dark-gray);">${file.size}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="remove-member" onclick="removeUploadedFile('${file.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    uploadedFilesList.appendChild(fileItem);
+                });
+            }
+            
+            function updateDocumentStatus(fileName) {
+                const fileLower = fileName.toLowerCase();
+                
+                if (fileLower.includes('bar') || fileLower.includes('council') || fileLower.includes('certificate')) {
+                    document.getElementById('bar-cert-status').textContent = 'Uploaded';
+                    document.getElementById('bar-cert-status').style.color = 'var(--success-green)';
+                } else if (fileLower.includes('registration') || fileLower.includes('firm') || fileLower.includes('proof')) {
+                    document.getElementById('firm-reg-status').textContent = 'Uploaded';
+                    document.getElementById('firm-reg-status').style.color = 'var(--success-green)';
+                } else if (fileLower.includes('id') || fileLower.includes('proof') || fileLower.includes('passport') || fileLower.includes('license')) {
+                    document.getElementById('id-proof-status').textContent = 'Uploaded';
+                    document.getElementById('id-proof-status').style.color = 'var(--success-green)';
+                }
+            }
+            
+            function getFileType(fileName) {
+                const ext = fileName.split('.').pop().toLowerCase();
+                
+                if (['pdf'].includes(ext)) return 'pdf';
+                if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(ext)) return 'image';
+                if (['doc', 'docx'].includes(ext)) return 'word';
+                if (['xls', 'xlsx'].includes(ext)) return 'excel';
+                return 'file';
+            }
+            
+            function getFileIcon(fileType) {
+                switch(fileType) {
+                    case 'pdf': return 'fa-file-pdf';
+                    case 'image': return 'fa-file-image';
+                    case 'word': return 'fa-file-word';
+                    case 'excel': return 'fa-file-excel';
+                    default: return 'fa-file';
+                }
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Form validation and submission
+            const form = document.getElementById('onboarding-form');
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            requiredFields.forEach(field => {
+                field.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                field.addEventListener('input', function() {
+                    clearValidationError(this);
+                });
+            });
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                let isValid = true;
+                
+                // Validate all required fields
+                requiredFields.forEach(field => {
+                    if (!validateField(field)) {
+                        isValid = false;
+                    }
+                });
+                
+                // Validate specializations
+                if (selectedSpecializations.length === 0) {
+                    document.getElementById('specialization-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate that at least one team member is added
+                const teamMembers = document.querySelectorAll('.team-member');
+                if (teamMembers.length === 0) {
+                    alert('Please add at least one team member.');
+                    isValid = false;
+                }
+                
+                // Check if all required documents are uploaded (simulated)
+                const barCertStatus = document.getElementById('bar-cert-status').textContent;
+                const firmRegStatus = document.getElementById('firm-reg-status').textContent;
+                const idProofStatus = document.getElementById('id-proof-status').textContent;
+                
+                if (barCertStatus === 'Not uploaded' || firmRegStatus === 'Not uploaded' || idProofStatus === 'Not uploaded') {
+                    if (!confirm('Some required documents are not uploaded. Do you want to submit anyway?')) {
+                        isValid = false;
+                    }
+                }
+                
+                if (isValid) {
+                    // Show success modal
+                    document.getElementById('success-modal').style.display = 'flex';
+                    
+                    // Update progress to 100%
+                    document.getElementById('progress-fill').style.width = '100%';
+                    
+                    // Mark all steps as completed
+                    document.querySelectorAll('.progress-step').forEach(step => {
+                        step.classList.remove('active');
+                        step.classList.add('completed');
+                    });
+                }
+            });
+            
+            // Form validation helper functions
+            function validateField(field) {
+                let isValid = true;
+                const errorElement = document.getElementById(`${field.id}-error`);
+                
+                if (!errorElement) return true;
+                
+                if (field.value.trim() === '') {
+                    errorElement.style.display = 'block';
+                    field.style.borderColor = 'var(--error-red)';
+                    isValid = false;
+                } else {
+                    errorElement.style.display = 'none';
+                    field.style.borderColor = '#d1d5db';
+                    
+                    // Additional validation for email fields
+                    if (field.type === 'email') {
+                        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailPattern.test(field.value)) {
+                            errorElement.textContent = 'Please enter a valid email address';
+                            errorElement.style.display = 'block';
+                            field.style.borderColor = 'var(--error-red)';
+                            isValid = false;
+                        }
+                    }
+                    
+                    // Additional validation for URLs
+                    if (field.type === 'url' && field.value !== '') {
+                        const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+                        if (!urlPattern.test(field.value)) {
+                            errorElement.textContent = 'Please enter a valid URL';
+                            errorElement.style.display = 'block';
+                            field.style.borderColor = 'var(--error-red)';
+                            isValid = false;
+                        }
+                    }
+                }
+                
+                updateProgress();
+                return isValid;
+            }
+            
+            function clearValidationError(field) {
+                const errorElement = document.getElementById(`${field.id}-error`);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                    field.style.borderColor = '#d1d5db';
+                }
+            }
+            
+            // Update progress bar and steps
+            function updateProgress() {
+                let filledSections = 0;
+                
+                // Check each section for completion
+                const sections = document.querySelectorAll('.section');
+                sections.forEach(section => {
+                    const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+                    let sectionFilled = true;
+                    
+                    inputs.forEach(input => {
+                        if (input.id === 'specialization') {
+                            if (selectedSpecializations.length === 0) {
+                                sectionFilled = false;
+                            }
+                        } else if (input.value.trim() === '') {
+                            sectionFilled = false;
+                        }
+                    });
+                    
+                    if (sectionFilled) {
+                        filledSections++;
+                    }
+                });
+                
+                // Update progress bar
+                const progressPercentage = (filledSections / sections.length) * 100;
+                document.getElementById('progress-fill').style.width = `${progressPercentage}%`;
+                
+                // Update progress steps
+                document.querySelectorAll('.progress-step').forEach((step, index) => {
+                    step.classList.remove('active', 'completed');
+                    
+                    if (index < filledSections) {
+                        step.classList.add('completed');
+                    } else if (index === filledSections) {
+                        step.classList.add('active');
+                    }
+                });
+            }
+            
+            // Modal close button
+            document.getElementById('modal-close-button').addEventListener('click', function() {
+                document.getElementById('success-modal').style.display = 'none';
+                // In a real application, this would redirect to the dashboard
+                alert('Redirecting to dashboard... In the full application, this would take you to the read-only dashboard.');
+            });
+            
+            // Initialize progress
+            updateProgress();
+        });
+        
+        // Global function to remove team member
+        function removeTeamMember(id) {
+            const member = document.getElementById(`team-member-${id}`);
+            if (member) {
+                member.remove();
+                
+                // Update the remaining team member numbers
+                const remainingMembers = document.querySelectorAll('.team-member');
+                remainingMembers.forEach((member, index) => {
+                    const header = member.querySelector('h3');
+                    header.textContent = `Team Member #${index + 1}`;
+                });
+            }
+        }
+        
+        // Global function to remove uploaded file
+        function removeUploadedFile(id) {
+            // Remove from uploadedFiles array
+            window.uploadedFiles = window.uploadedFiles || [];
+            window.uploadedFiles = window.uploadedFiles.filter(file => file.id !== id);
+            
+            // Update UI
+            const uploadedFilesList = document.getElementById('uploaded-files-list');
+            const fileItems = uploadedFilesList.querySelectorAll('.file-item');
+            
+            fileItems.forEach(item => {
+                const removeBtn = item.querySelector('.remove-member');
+                if (removeBtn.getAttribute('onclick').includes(id)) {
+                    item.remove();
+                }
+            });
+            
+            // Hide uploaded files container if empty
+            if (window.uploadedFiles.length === 0) {
+                document.getElementById('uploaded-files-container').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
