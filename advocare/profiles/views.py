@@ -13,8 +13,8 @@ class ClientOnboardingView(APIView):
         user = request.user
         profile = user.clientprofile
 
-        profile.phone = request.data.get("phone")
-        profile.city = request.data.get("city")
+        profile.phone = request.data.get("phone",profile.phone)
+        profile.city = request.data.get("city",profile.city)
 
         profile.is_onboarded = True
         profile.status = "pending"
@@ -109,3 +109,20 @@ class LawfirmDashboardView(APIView):
         }
 
         return Response(data)
+    
+
+class AdminOnboardingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        profile = user.adminprofile
+        secret_key = request.data.get('secret_key')
+        # Check against a fixed secret (you can also store in a model)
+        if secret_key != 'advocare-admin-2024':   # change to your actual secret
+            return Response({'error': 'Invalid secret key'}, status=400)
+        profile.secret_key_verified = True
+        profile.phone = request.data.get('phone', '')
+        profile.save()
+        return Response({'message': 'Admin profile completed'})
+    
