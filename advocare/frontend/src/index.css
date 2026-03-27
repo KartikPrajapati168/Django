@@ -1,0 +1,42 @@
+/* ===== GLOBAL RESET & VARIABLES ===== */
+:root {
+    --primary: #1a365d;
+    --primary-light: #2d4a8c;
+    --secondary: #c99c33;
+    --secondary-light: #e6b450;
+    --client-color: #2e7d32;
+    --lawyer-color: #1565c0;
+    --admin-color: #7b1fa2;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #6c757d;
+    --text-dark: #343a40;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --transition: all 0.3s ease;
+    --success: #28a745;
+    --error: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f7fb;
+    color: var(--text-dark);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(26, 54, 93, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(201, 156, 51, 0.05) 0%, transparent 20%);
+}
