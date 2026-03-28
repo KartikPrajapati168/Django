@@ -67,35 +67,38 @@ function SignupAdmin() {
   return (
     <form onSubmit={handleSubmit} className="auth-form active">
       {error && <div className="alert alert-error">{error}</div>}
-      <div className="form-group">
-        <label className="form-label required-field">Full Name</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Full Name</label>
         <input
           type="text"
-          className="form-control"
+          className="auth-form-control"
           name="full_name"
           value={formData.full_name}
           onChange={handleChange}
           required
         />
       </div>
-      <div className="form-group">
-        <label className="form-label required-field">Email Address</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Email Address</label>
         <input
           type="email"
-          className="form-control"
+          className="auth-form-control"
           name="email"
           value={formData.email}
           onChange={handleChange}
           required
         />
       </div>
+      
       <div className="form-row">
-        <div className="form-group">
-          <label className="form-label required-field">Password</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label required-field">Password</label>
           <div className="password-container">
             <input
               type={showPassword ? "text" : "password"}
-              className="form-control"
+              className="auth-form-control"
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -106,12 +109,12 @@ function SignupAdmin() {
             </button>
           </div>
         </div>
-        <div className="form-group">
-          <label className="form-label required-field">Confirm Password</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label required-field">Confirm Password</label>
           <div className="password-container">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              className="form-control"
+              className="auth-form-control"
               name="confirm_password"
               value={formData.confirm_password}
               onChange={handleChange}
@@ -123,27 +126,30 @@ function SignupAdmin() {
           </div>
         </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">Phone Number (optional)</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label">Phone Number (optional)</label>
         <input
           type="tel"
-          className="form-control"
+          className="auth-form-control"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
         />
       </div>
-      <div className="form-group">
-        <label className="form-label required-field">Admin Secret Key</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Admin Secret Key</label>
         <input
           type="password"
-          className="form-control"
+          className="auth-form-control"
           name="secret_key"
           value={formData.secret_key}
           onChange={handleChange}
           required
         />
       </div>
+      
       <div className="checkbox-container">
         <input
           type="checkbox"
@@ -156,7 +162,9 @@ function SignupAdmin() {
           I agree to the Terms of Service and Privacy Policy
         </label>
       </div>
-      <button type="submit" className="submit-btn">Create Admin Account</button>
+      
+      <button type="submit" className="auth-submit-btn">Create Admin Account</button>
+      
       <div className="auth-links">
         <button className="auth-link" onClick={() => navigate("/")}>
           Already have an account? Sign In

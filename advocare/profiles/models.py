@@ -47,12 +47,27 @@ class LawfirmProfile(models.Model):
     def __str__(self):
         return f"{self.user.full_name} - Law Firm" 
 
+from django.contrib.auth.hashers import make_password, check_password
+
 class AdminProfile(models.Model):
-    user=models.OneToOneField(User,on_delete=models.CASCADE)
-    phone=models.CharField(max_length=20,blank=True,null=True)
-    secret_key_verified=models.BooleanField(default=False)
-    dashboard_theme=models.CharField(max_length=50,default="light")
-    created_at=models.DateTimeField(auto_now_add=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    secret_key_verified = models.BooleanField(default=False)
+    secret_key_hash = models.CharField(max_length=128, blank=True, null=True)   # new field
+    dashboard_theme = models.CharField(max_length=50, default="light")
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.user.username
+
+    def set_secret_key(self, raw_key):
+        """Hash and store the secret key."""
+        self.secret_key_hash = make_password(raw_key)
+        self.secret_key_verified = True
+        self.save()
+
+    def check_secret_key(self, raw_key):
+        """Verify the provided secret key against the stored hash."""
+        if not self.secret_key_hash:
+            return False
+        return check_password(raw_key, self.secret_key_hash)

@@ -7,7 +7,8 @@ from .views import (
     RejectClientView,
     ClientDashboardView,
     LawfirmDashboardView,
-    AdminOnboardingView,   # we'll create this
+    AdminOnboardingView,
+    ClientProfileView   # we'll create this
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path('reject-client/<int:id>/', RejectClientView.as_view(), name='reject-client'),
     path('client-dashboard/', ClientDashboardView.as_view(), name='client-dashboard'),
     path('lawfirm-dashboard/', LawfirmDashboardView.as_view(), name='lawfirm-dashboard'),
+    path('client-profile/', ClientProfileView.as_view(), name='client-profile'),
 ]

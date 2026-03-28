@@ -52,9 +52,17 @@ function SignupClient() {
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
       localStorage.setItem("role", "client");
-      // Show a pending approval message or redirect to a "waiting for approval" page
+
+      // Save the user details for later use
+      const userData = {
+        full_name: payload.full_name,
+        email: payload.email,
+        phone: payload.phone,
+        city: payload.city,
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
       alert("Account created successfully");
-      navigate("/client-onboarding");  // back to login or a pending page
+      navigate("/client-onboarding");
     } catch (err) {
       if (err.response) {
         const messages = Object.values(err.response.data).flat().join(" ");
@@ -68,35 +76,38 @@ function SignupClient() {
   return (
     <form onSubmit={handleSubmit} className="auth-form active">
       {error && <div className="alert alert-error">{error}</div>}
-      <div className="form-group">
-        <label className="form-label required-field">Full Name</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Full Name</label>
         <input
           type="text"
-          className="form-control"
+          className="auth-form-control"
           name="full_name"
           value={formData.full_name}
           onChange={handleChange}
           required
         />
       </div>
-      <div className="form-group">
-        <label className="form-label required-field">Email Address</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Email Address</label>
         <input
           type="email"
-          className="form-control"
+          className="auth-form-control"
           name="email"
           value={formData.email}
           onChange={handleChange}
           required
         />
       </div>
+      
       <div className="form-row">
-        <div className="form-group">
-          <label className="form-label required-field">Password</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label required-field">Password</label>
           <div className="password-container">
             <input
               type={showPassword ? "text" : "password"}
-              className="form-control"
+              className="auth-form-control"
               name="password"
               value={formData.password}
               onChange={handleChange}
@@ -107,12 +118,12 @@ function SignupClient() {
             </button>
           </div>
         </div>
-        <div className="form-group">
-          <label className="form-label required-field">Confirm Password</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label required-field">Confirm Password</label>
           <div className="password-container">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              className="form-control"
+              className="auth-form-control"
               name="confirm_password"
               value={formData.confirm_password}
               onChange={handleChange}
@@ -124,28 +135,31 @@ function SignupClient() {
           </div>
         </div>
       </div>
-      <div className="form-group">
-        <label className="form-label required-field">Phone Number</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">Phone Number</label>
         <input
           type="tel"
-          className="form-control"
+          className="auth-form-control"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
           required
         />
       </div>
-      <div className="form-group">
-        <label className="form-label required-field">City</label>
+      
+      <div className="auth-form-group">
+        <label className="auth-form-label required-field">City</label>
         <input
           type="text"
-          className="form-control"
+          className="auth-form-control"
           name="city"
           value={formData.city}
           onChange={handleChange}
           required
         />
       </div>
+      
       <div className="checkbox-container">
         <input
           type="checkbox"
@@ -158,7 +172,9 @@ function SignupClient() {
           I agree to the Terms of Service and Privacy Policy
         </label>
       </div>
-      <button type="submit" className="submit-btn">Create Account</button>
+      
+      <button type="submit" className="auth-submit-btn">Create Account</button>
+      
       <div className="auth-links">
         <button className="auth-link" onClick={() => navigate("/")}>
           Already have an account? Sign In

@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import styles from "../assets/styles/auth.module.css";
-
 import LoginForm from "../components/LoginForm";
 import SignupClient from "../components/SignupClient";
 import SignupLawfirm from "../components/SignupLawfirm";
@@ -11,23 +9,23 @@ function Auth() {
   const [role, setRole] = useState("client");
 
   return (
-    <div className={styles.container}>
+    <div className="auth-wrapper">
       {/* Branding Section */}
-      <div className={styles['branding-section']}>
-        <div className={styles.logo}>
-          <div className={styles['logo-icon']}>
+      <div className="auth-branding">
+        <div className="auth-logo">
+          <div className="auth-logo-icon">
             <i className="fas fa-balance-scale"></i>
           </div>
-          <div className={styles['logo-text']}>Advocare</div>
+          <div className="auth-logo-text">Advocare</div>
         </div>
 
-        <div className={styles['branding-content']}>
-          <h1 className={styles['branding-title']}>Smart Legal Case Management System</h1>
-          <p className={styles['branding-subtitle']}>
+        <div className="auth-branding-content">
+          <h1 className="auth-branding-title">Smart Legal Case Management System</h1>
+          <p className="auth-branding-subtitle">
             Streamline your legal practice with our comprehensive platform designed
             for modern law firms and their clients.
           </p>
-          <ul className={styles['features-list']}>
+          <ul className="auth-features-list">
             <li><i className="fas fa-check-circle"></i> Secure client‑lawyer communication</li>
             <li><i className="fas fa-check-circle"></i> Case tracking and deadline management</li>
             <li><i className="fas fa-check-circle"></i> Document storage and collaboration</li>
@@ -37,23 +35,23 @@ function Auth() {
       </div>
 
       {/* Auth Section */}
-      <div className={styles['auth-section']}>
-        <div className={styles['auth-container']}>
-          <div className={styles['auth-header']}>
-            <h2 className={styles['auth-title']}>Welcome to Advocare</h2>
-            <p className={styles['auth-subtitle']}>Sign in to your account or create a new one</p>
+      <div className="auth-section">
+        <div className="auth-container">
+          <div className="auth-header">
+            <h2 className="auth-title">Welcome to Advocare</h2>
+            <p className="auth-subtitle">Sign in to your account or create a new one</p>
           </div>
 
           {/* Tabs */}
-          <div className={styles['auth-tabs']}>
+          <div className="auth-tabs">
             <button
-              className={`${styles['auth-tab']} ${tab === "login" ? styles.active : ""}`}
+              className={`auth-tab ${tab === "login" ? "active" : ""}`}
               onClick={() => setTab("login")}
             >
               Sign In
             </button>
             <button
-              className={`${styles['auth-tab']} ${tab === "signup" ? styles.active : ""}`}
+              className={`auth-tab ${tab === "signup" ? "active" : ""}`}
               onClick={() => setTab("signup")}
             >
               Sign Up
@@ -62,23 +60,23 @@ function Auth() {
 
           {/* Role Selector (only for signup) */}
           {tab === "signup" && (
-            <div className={styles['role-selector-container']}>
-              <div className={styles['role-selector-title']}>I am a</div>
-              <div className={styles['role-selector']}>
+            <div className="auth-role-container">
+              <div className="auth-role-title">I am a</div>
+              <div className="auth-role-buttons">
                 <button
-                  className={`${styles['role-btn']} ${styles.client} ${role === "client" ? styles.active : ""}`}
+                  className={`auth-role-btn client ${role === "client" ? "active" : ""}`}
                   onClick={() => setRole("client")}
                 >
                   <i className="fas fa-user"></i> Client
                 </button>
                 <button
-                  className={`${styles['role-btn']} ${styles.lawyer} ${role === "lawfirm" ? styles.active : ""}`}
+                  className={`auth-role-btn lawyer ${role === "lawfirm" ? "active" : ""}`}
                   onClick={() => setRole("lawfirm")}
                 >
                   <i className="fas fa-gavel"></i> Law Firm / Lawyer
                 </button>
                 <button
-                  className={`${styles['role-btn']} ${styles.admin} ${role === "admin" ? styles.active : ""}`}
+                  className={`auth-role-btn admin ${role === "admin" ? "active" : ""}`}
                   onClick={() => setRole("admin")}
                 >
                   <i className="fas fa-user-shield"></i> Admin

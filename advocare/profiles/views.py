@@ -24,6 +24,26 @@ class ClientOnboardingView(APIView):
         return Response({"message": "Client onboarding submitted"})
     
 
+# profiles/views.py (add this at the end)
+
+class ClientProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            profile = user.clientprofile
+        except ClientProfile.DoesNotExist:
+            return Response({'error': 'Client profile not found'}, status=404)
+
+        data = {
+            'full_name': user.full_name,
+            'email': user.email,
+            'phone': profile.phone,
+            'city': profile.city,
+        }
+        return Response(data)
+
 class LawfirmOnboardingView(APIView):
     permission_classes = [IsAuthenticated]
 
