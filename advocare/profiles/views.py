@@ -260,20 +260,79 @@ class LawfirmProfileView(APIView):
 
 
 # ========== ADMIN PROFILE VIEW ==========
+# class AdminProfileView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         try:
+#             profile = request.user.adminprofile
+#             data = {
+#                 'email': request.user.email,
+#                 'full_name': request.user.full_name,
+#                 'phone': profile.phone,
+#                 'secret_key_verified': profile.secret_key_verified,
+#                 'dashboard_theme': profile.dashboard_theme
+#             }
+#             return Response(data, status=status.HTTP_200_OK)
+#         except AdminProfile.DoesNotExist:
+#             return Response({'error': 'Admin profile not found'}, status=404)
+#         except Exception as e:
+#             return Response({'error': str(e)}, status=500)
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from .models import AdminProfile
+
 class AdminProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if request.user.role != 'admin':
+            return Response({'error': 'Admin access required'}, status=403)
         try:
             profile = request.user.adminprofile
             data = {
+                'name': request.user.full_name,
                 'email': request.user.email,
-                'full_name': request.user.full_name,
                 'phone': profile.phone,
                 'secret_key_verified': profile.secret_key_verified,
-                'dashboard_theme': profile.dashboard_theme
+                'created_at': profile.created_at,
+                'twofa': False,  # optional, can be removed
             }
-            return Response(data, status=status.HTTP_200_OK)
+            return Response(data)
+        except AdminProfile.DoesNotExist:
+            return Response({'error': 'Admin profile not found'}, status=404)
+
+    def put(self, request):
+        if request.user.role != 'admin':
+            return Response({'error': 'Admin access required'}, status=403)
+        try:
+            profile = request.user.adminprofile
+            user = request.user
+
+            if 'name' in request.data:
+                user.full_name = request.data['name']
+            if 'email' in request.data:
+                user.email = request.data['email']
+            user.save()
+
+            if 'phone' in request.data:
+                profile.phone = request.data['phone']
+            
+            if 'secret_key' in request.data and request.data['secret_key']:
+                profile.set_secret_key(request.data['secret_key'])
+            
+            # Password change
+            if 'current_password' in request.data and 'new_password' in request.data:
+                if not user.check_password(request.data['current_password']):
+                    return Response({'error': 'Current password is incorrect'}, status=400)
+                user.set_password(request.data['new_password'])
+                user.save()
+            
+            profile.save()
+            return Response({'message': 'Profile updated successfully'})
         except AdminProfile.DoesNotExist:
             return Response({'error': 'Admin profile not found'}, status=404)
         except Exception as e:
@@ -891,24 +950,201 @@ def admin_all_lawfirms(request):
         })
     return Response(data)
 
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def admin_analytics(request):
+#     if request.user.role != 'admin':
+#         return Response({'error': 'Admin only'}, status=403)
+#     # You can replace with real analytics later
+#     data = {
+#         'totalLogins': '248',
+#         'apiRequests': '5,120',
+#         'avgCaseDuration': '42 days',
+#         'avgResolution': '28 days',
+#         'logs': [
+#             {'action': 'Client Approved', 'user': 'Admin', 'target': 'Rajesh Kumar', 'time': '2 min ago', 'type': 'success'},
+#             {'action': 'Law Firm Approved', 'user': 'Admin', 'target': 'Mehta & Associates', 'time': '15 min ago', 'type': 'success'},
+#             {'action': 'Case Assigned', 'user': 'System', 'target': 'Case #142 → Mehta & Assoc.', 'time': '1 hr ago', 'type': 'info'},
+#             {'action': 'Court Update Sent', 'user': 'Admin', 'target': 'Case #138 - Hearing on 25 Apr', 'time': '2 hrs ago', 'type': 'info'},
+#             {'action': 'Client Rejected', 'user': 'Admin', 'target': 'Priya Patel - Incomplete docs', 'time': '3 hrs ago', 'type': 'error'},
+#         ]
+#     }
+#     return Response(data)
+
+# from django.db.models import Avg, Count, Q, F, DurationField
+# from django.db.models.functions import ExtractDay, Now
+# from datetime import timedelta
+# from django.utils import timezone
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def admin_analytics(request):
+#     if request.user.role != 'admin':
+#         return Response({'error': 'Admin only'}, status=403)
+    
+#     # 1. Total logins in last 30 days (approximate from last_login of users)
+#     thirty_days_ago = timezone.now() - timedelta(days=30)
+#     total_logins = User.objects.filter(last_login__gte=thirty_days_ago).count()
+    
+#     # 2. API requests - not easily tracked without middleware, keep as placeholder
+#     api_requests = "N/A (tracking not implemented)"
+    
+#     # 3. Average case duration (from created to closed/resolved)
+#     closed_cases = Case.objects.filter(status__in=['closed', 'resolved'])
+#     avg_duration = closed_cases.annotate(
+#         duration=ExtractDay(F('updated_at') - F('created_at'))
+#     ).aggregate(avg=Avg('duration'))['avg']
+#     avg_case_duration = f"{int(avg_duration)} days" if avg_duration else "N/A"
+    
+#     # 4. Average resolution time (same as case duration for now)
+#     avg_resolution = avg_case_duration
+    
+#     # 5. Generate recent activity logs from real events
+#     logs = []
+    
+#     # Recently approved clients
+#     recently_approved_clients = ClientProfile.objects.filter(
+#         status='approved', 
+#         updated_at__gte=timezone.now() - timedelta(days=7)
+#     ).select_related('user')[:5]
+#     for c in recently_approved_clients:
+#         logs.append({
+#             'action': 'Client Approved',
+#             'user': 'Admin',
+#             'target': c.user.full_name,
+#             'time': timezone.localtime(c.updated_at).strftime('%d %b %Y, %I:%M %p'),
+#             'type': 'success'
+#         })
+    
+#     # Recently approved law firms
+#     recently_approved_firms = LawfirmProfile.objects.filter(
+#         status='approved',
+#         updated_at__gte=timezone.now() - timedelta(days=7)
+#     ).select_related('user')[:5]
+#     for f in recently_approved_firms:
+#         logs.append({
+#             'action': 'Law Firm Approved',
+#             'user': 'Admin',
+#             'target': f.firm_name,
+#             'time': timezone.localtime(f.updated_at).strftime('%d %b %Y, %I:%M %p'),
+#             'type': 'success'
+#         })
+    
+#     # Recently assigned cases
+#     recently_assigned = Case.objects.filter(
+#         law_firm__isnull=False,
+#         updated_at__gte=timezone.now() - timedelta(days=7)
+#     ).select_related('client', 'law_firm')[:5]
+#     for case in recently_assigned:
+#         logs.append({
+#             'action': 'Case Assigned',
+#             'user': 'System',
+#             'target': f"{case.title} → {case.law_firm.full_name}",
+#             'time': timezone.localtime(case.updated_at).strftime('%d %b %Y, %I:%M %p'),
+#             'type': 'info'
+#         })
+    
+#     # Sort logs by time (most recent first)
+#     logs.sort(key=lambda x: x['time'], reverse=True)
+    
+#     data = {
+#         'totalLogins': total_logins,
+#         'apiRequests': api_requests,
+#         'avgCaseDuration': avg_case_duration,
+#         'avgResolution': avg_resolution,
+#         'logs': logs[:10]  # show latest 10
+#     }
+#     return Response(data)
+
+
+from django.db.models import Avg, Count, Q, F, DurationField, ExpressionWrapper
+from django.db.models.functions import ExtractDay, Now
+from datetime import timedelta
+from django.utils import timezone
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_analytics(request):
     if request.user.role != 'admin':
         return Response({'error': 'Admin only'}, status=403)
-    # You can replace with real analytics later
+    
+    # 1. Total logins in last 30 days (from User.last_login)
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    total_logins = User.objects.filter(last_login__gte=thirty_days_ago).count()
+    
+    # 2. API requests – placeholder (can be implemented via middleware later)
+    api_requests = "Coming soon"   # ya "N/A"
+    
+    # 3. Average case duration (only for closed/resolved cases)
+    closed_cases = Case.objects.filter(status__in=['closed', 'resolved'])
+    if closed_cases.exists():
+        # Calculate duration in days
+        durations = []
+        for case in closed_cases:
+            delta = case.updated_at - case.created_at
+            durations.append(delta.days)
+        avg_days = sum(durations) / len(durations)
+        avg_case_duration = f"{int(avg_days)} days"
+    else:
+        avg_case_duration = "No closed cases yet"
+    
+    # 4. Average resolution time (same as case duration for now)
+    avg_resolution = avg_case_duration
+    
+    # 5. Generate recent activity logs from real events
+    logs = []
+    
+    # Recently approved clients (last 7 days)
+    recent_clients = ClientProfile.objects.filter(
+        status='approved',
+        updated_at__gte=timezone.now() - timedelta(days=7)
+    ).select_related('user')[:5]
+    for c in recent_clients:
+        logs.append({
+            'action': 'Client Approved',
+            'user': 'Admin',
+            'target': c.user.full_name,
+            'time': timezone.localtime(c.updated_at).strftime('%d %b %Y, %I:%M %p'),
+            'type': 'success'
+        })
+    
+    # Recently approved law firms
+    recent_firms = LawfirmProfile.objects.filter(
+        status='approved',
+        updated_at__gte=timezone.now() - timedelta(days=7)
+    ).select_related('user')[:5]
+    for f in recent_firms:
+        logs.append({
+            'action': 'Law Firm Approved',
+            'user': 'Admin',
+            'target': f.firm_name,
+            'time': timezone.localtime(f.updated_at).strftime('%d %b %Y, %I:%M %p'),
+            'type': 'success'
+        })
+    
+    # Recently assigned cases
+    recent_assigned = Case.objects.filter(
+        law_firm__isnull=False,
+        updated_at__gte=timezone.now() - timedelta(days=7)
+    ).select_related('client', 'law_firm')[:5]
+    for case in recent_assigned:
+        logs.append({
+            'action': 'Case Assigned',
+            'user': 'System',
+            'target': f"{case.title} → {case.law_firm.full_name}",
+            'time': timezone.localtime(case.updated_at).strftime('%d %b %Y, %I:%M %p'),
+            'type': 'info'
+        })
+    
+    # Sort logs by time (newest first)
+    logs.sort(key=lambda x: x['time'], reverse=True)
+    
     data = {
-        'totalLogins': '248',
-        'apiRequests': '5,120',
-        'avgCaseDuration': '42 days',
-        'avgResolution': '28 days',
-        'logs': [
-            {'action': 'Client Approved', 'user': 'Admin', 'target': 'Rajesh Kumar', 'time': '2 min ago', 'type': 'success'},
-            {'action': 'Law Firm Approved', 'user': 'Admin', 'target': 'Mehta & Associates', 'time': '15 min ago', 'type': 'success'},
-            {'action': 'Case Assigned', 'user': 'System', 'target': 'Case #142 → Mehta & Assoc.', 'time': '1 hr ago', 'type': 'info'},
-            {'action': 'Court Update Sent', 'user': 'Admin', 'target': 'Case #138 - Hearing on 25 Apr', 'time': '2 hrs ago', 'type': 'info'},
-            {'action': 'Client Rejected', 'user': 'Admin', 'target': 'Priya Patel - Incomplete docs', 'time': '3 hrs ago', 'type': 'error'},
-        ]
+        'totalLogins': total_logins,
+        'apiRequests': api_requests,
+        'avgCaseDuration': avg_case_duration,
+        'avgResolution': avg_resolution,
+        'logs': logs[:10]
     }
     return Response(data)
 
@@ -927,6 +1163,27 @@ def admin_dashboard_stats(request):
     }
     return Response(stats)
 
+
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    user = request.user
+    current = request.data.get('current_password')
+    new = request.data.get('new_password')
+    
+    if not user.check_password(current):
+        return Response({'error': 'Current password is incorrect'}, status=400)
+    if len(new) < 6:
+        return Response({'error': 'Password must be at least 6 characters'}, status=400)
+    
+    user.set_password(new)
+    user.save()
+    return Response({'message': 'Password changed successfully'})
 
 
 

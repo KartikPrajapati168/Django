@@ -601,7 +601,6 @@ def court_updates(request):
     serializer = CourtUpdateSerializer(updates, many=True)
     return Response(serializer.data)
 
-
 from datetime import datetime
 from django.db.models.functions import ExtractMonth
 
@@ -745,23 +744,142 @@ def admin_court_update(request):
 
 
 # ---------- ADMIN: disputes (already provided, but keep here for completeness) ----------
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def admin_disputes(request):
+#     if request.user.role != 'admin':
+#         return Response({'error': 'Admin only'}, status=403)
+#     try:
+#         disputes = Dispute.objects.all().order_by('-created_at')
+#         data = [{
+#             'id': d.id,
+#             'subject': d.subject,
+#             'description': d.description,
+#             'status': d.status,
+#             'category': d.category,
+#             'filed_by_name': d.filed_by.full_name if d.filed_by else '',
+#             'against_name': d.against.full_name if d.against else '',
+#             'created_at': d.created_at,
+#         } for d in disputes]
+#     except Exception:
+#         data = []
+#     return Response(data)
+
+from django.db.models import Q
+from .models import Dispute
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def admin_disputes(request):
     if request.user.role != 'admin':
         return Response({'error': 'Admin only'}, status=403)
-    try:
-        disputes = Dispute.objects.all().order_by('-created_at')
-        data = [{
-            'id': d.id,
-            'subject': d.subject,
-            'description': d.description,
-            'status': d.status,
-            'category': d.category,
-            'filed_by_name': d.filed_by.full_name if d.filed_by else '',
-            'against_name': d.against.full_name if d.against else '',
-            'created_at': d.created_at,
-        } for d in disputes]
-    except Exception:
-        data = []
+    disputes = Dispute.objects.all().order_by('-created_at')
+    data = [{
+        'id': d.id,
+        'subject': d.subject,
+        'description': d.description,
+        'status': d.status,
+        'category': d.category,
+        'filed_by_name': d.filed_by.full_name if d.filed_by else '',
+        'against_name': d.against.full_name if d.against else '',
+        'created_at': d.created_at,
+    } for d in disputes]
     return Response(data)
+
+
+
+# cases/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.core.cache import cache
+import spacy
+import re
+from .models import Case
+
+# Load spaCy model (small English)
+nlp = spacy.load("en_core_web_sm")
+
+class CaseAIAnalyzeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, case_id):
+        # Check cache first (analysis is same for same case data)
+        cache_key = f"case_ai_analysis_{case_id}"
+        cached = cache.get(cache_key)
+        if cached:
+            return Response(cached)
+
+        try:
+            case = Case.objects.get(id=case_id)
+        except Case.DoesNotExist:
+            return Response({"error": "Case not found"}, status=404)
+
+        # Combine title and description for analysis
+        text = f"{case.title}. {case.description or ''}"
+        doc = nlp(text[:5000])  # limit for performance
+
+        # ----- 1. Generate summary (extract top 2 most representative sentences) -----
+        sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.strip()) > 20]
+        if sentences:
+            # Simple scoring: longer sentences with important keywords
+            important_keywords = ["urgent", "important", "deadline", "breach", "fraud", "property", "criminal", "compensation"]
+            scores = []
+            for sent in sentences:
+                score = len(sent.split())
+                for kw in important_keywords:
+                    if kw in sent.lower():
+                        score += 20
+                scores.append(score)
+            # Pick top 2 sentences
+            sorted_idx = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+            summary_sentences = [sentences[i] for i in sorted_idx[:2]]
+            summary = " ".join(summary_sentences)
+        else:
+            summary = text[:250] + "..." if len(text) > 250 else text
+
+        # ----- 2. Determine risk level -----
+        risk = "Low"
+        text_lower = text.lower()
+        # High risk keywords
+        high_risk = ["criminal", "fraud", "urgent", "immediate", "life", "injunction", "emergency", "death", "cheating"]
+        # Medium risk keywords
+        medium_risk = ["property", "dispute", "compensation", "breach", "agreement", "delay", "harassment", "defamation"]
+
+        if any(kw in text_lower for kw in high_risk):
+            risk = "High"
+        elif any(kw in text_lower for kw in medium_risk):
+            risk = "Medium"
+        else:
+            risk = "Low"
+
+        # ----- 3. Generate recommendation based on case type + risk -----
+        case_type = case.case_type.lower() if case.case_type else ""
+        if risk == "High":
+            recommendation = "Immediate attention required. Assign to a senior lawyer with urgent case handling."
+            if "criminal" in case_type:
+                recommendation = "High risk criminal matter. Fast‑track investigation and legal proceedings."
+            elif "family" in case_type:
+                recommendation = "Sensitive family dispute. Mediation and psychological counselling recommended."
+        elif risk == "Medium":
+            recommendation = "Moderate priority. Review within 7 days and assign to a litigation expert."
+            if "property" in case_type:
+                recommendation = "Property dispute – schedule a site inspection and title verification."
+            elif "corporate" in case_type:
+                recommendation = "Commercial matter – involve a corporate law specialist."
+        else:
+            recommendation = "Routine case. Process as per standard procedure."
+
+        # Add custom touch for deadlines
+        if case.filing_deadline:
+            recommendation += f" Filing deadline: {case.filing_deadline.strftime('%d %b %Y')}."
+
+        result = {
+            "summary": summary,
+            "risk": risk,
+            "recommendation": recommendation
+        }
+
+        # Cache for 1 hour (or until case is updated)
+        cache.set(cache_key, result, 3600)
+        return Response(result)

@@ -17,7 +17,7 @@
 from django.urls import path
 from . import views
 from .views import (
-    PendingCaseRequestsView,AcceptCaseRequestView,RejectCaseRequestView
+    PendingCaseRequestsView,AcceptCaseRequestView,RejectCaseRequestView,CaseAIAnalyzeView
     )
 from . import views
 
@@ -52,4 +52,7 @@ urlpatterns = [
     path('assigned-all/', views.admin_assigned_all, name='admin-assigned-all'),
     path('disputes/', views.admin_disputes, name='admin-disputes'),
     path('admin-court-update/', views.admin_court_update, name='admin-court-update'),
+
+
+    path('<int:case_id>/ai-analyze/', CaseAIAnalyzeView.as_view(), name='case-ai-analyze'),
 ]

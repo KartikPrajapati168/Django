@@ -50,6 +50,7 @@ from .views import (
     LawFirmsListView,  # Add this
     AuthMeView,        # Add this
     ClientProfileUpdateView,
+    change_password,
     admin_all_clients, admin_all_lawfirms, admin_analytics, admin_dashboard_stats
 )
 
@@ -96,4 +97,7 @@ urlpatterns = [
     path('all-lawfirms/', admin_all_lawfirms, name='admin-all-lawfirms'),
     path('admin-analytics/', admin_analytics, name='admin-analytics'),
     path('admin-dashboard/', admin_dashboard_stats, name='admin-dashboard-stats'),
+
+
+    path('change-password/', change_password, name='change-password'),
 ]

@@ -5,7 +5,8 @@ from .views import (
     DocumentDetailView,
     DownloadDocumentView,
     MyDocumentsView,
-    CaseDocumentsView
+    CaseDocumentsView,
+    DocumentVerifyView
 )
 
 urlpatterns = [
@@ -20,4 +21,6 @@ urlpatterns = [
     
     # Case-specific documents
     path('case/<int:case_id>/', CaseDocumentsView.as_view(), name='case-documents'),
+
+    path('verify/', DocumentVerifyView.as_view(), name='document-verify'),
 ]

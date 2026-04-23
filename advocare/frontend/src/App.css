@@ -9466,3 +9466,579 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ============================================
+   CLIENT ONBOARDING PAGE STYLES
+   ============================================ */
+
+
+/* Container and layout */
+
+.onboarding-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+}
+
+.onboarding-page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 0.5rem;
+}
+
+.onboarding-page-subtitle {
+    color: #4a5568;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+
+/* Progress steps */
+
+.onboarding-progress {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.onboarding-progress-step {
+    flex: 1;
+    text-align: center;
+    min-width: 80px;
+}
+
+.onboarding-step-circle {
+    width: 40px;
+    height: 40px;
+    background: #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.5rem;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.3s;
+}
+
+.onboarding-step-circle.completed {
+    background: #2b6cb0;
+    color: white;
+}
+
+.onboarding-step-circle.active {
+    background: #3182ce;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.3);
+}
+
+.onboarding-step-label {
+    font-size: 0.85rem;
+    color: #4a5568;
+}
+
+.onboarding-step-label.completed {
+    color: #2b6cb0;
+    font-weight: 500;
+}
+
+.onboarding-step-label.active {
+    color: #3182ce;
+    font-weight: 600;
+}
+
+
+/* Form sections */
+
+.onboarding-form-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.onboarding-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.onboarding-section-title i {
+    color: #2b6cb0;
+}
+
+
+/* Info boxes */
+
+.onboarding-info-box {
+    background: #ebf8ff;
+    border-left: 4px solid #3182ce;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.onboarding-info-box i {
+    font-size: 1.25rem;
+    color: #3182ce;
+}
+
+.onboarding-info-content p {
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+}
+
+.onboarding-info-content small {
+    color: #4a5568;
+    font-size: 0.8rem;
+}
+
+
+/* Form rows and groups */
+
+.onboarding-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.onboarding-form-group {
+    margin-bottom: 1rem;
+}
+
+.onboarding-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #2d3748;
+    font-size: 0.9rem;
+}
+
+.onboarding-required::after {
+    content: '*';
+    color: #e53e3e;
+    margin-left: 0.25rem;
+}
+
+.onboarding-input,
+.onboarding-select,
+.onboarding-textarea {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.onboarding-input:focus,
+.onboarding-select:focus,
+.onboarding-textarea:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.onboarding-auto-filled {
+    background-color: #f7fafc;
+    border-color: #e2e8f0;
+    color: #4a5568;
+    cursor: not-allowed;
+}
+
+.onboarding-textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+
+/* Radio group */
+
+.onboarding-radio-group {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+.onboarding-radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.onboarding-radio-option input {
+    margin: 0;
+}
+
+
+/* Document upload cards grid */
+
+.onboarding-document-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.onboarding-document-card {
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fafbfc;
+    position: relative;
+}
+
+.onboarding-document-card:hover {
+    border-color: #3182ce;
+    background: #f7fafc;
+}
+
+.onboarding-document-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.onboarding-badge-required {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.onboarding-badge-optional {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.onboarding-document-icon {
+    font-size: 2rem;
+    color: #3182ce;
+    margin-bottom: 0.75rem;
+}
+
+.onboarding-document-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.onboarding-document-hint {
+    font-size: 0.7rem;
+    color: #718096;
+}
+
+.onboarding-file-input {
+    display: none;
+}
+
+
+/* File preview */
+
+.onboarding-file-preview {
+    margin-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 0.75rem;
+}
+
+.onboarding-file-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #edf2f7;
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.onboarding-file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.onboarding-file-name {
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.onboarding-file-size {
+    font-size: 0.7rem;
+    color: #718096;
+}
+
+.onboarding-file-remove {
+    cursor: pointer;
+    color: #e53e3e;
+    padding: 0.25rem;
+}
+
+
+/* Verification status messages */
+
+.verification-pending {
+    color: #d69e2e;
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+}
+
+.verification-success {
+    color: #38a169;
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+}
+
+.verification-error {
+    color: #e53e3e;
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
+}
+
+
+/* Checkbox options */
+
+.onboarding-checkbox-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+}
+
+.onboarding-checkbox-option input {
+    margin-top: 0.2rem;
+}
+
+
+/* Submit section */
+
+.onboarding-submit-section {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.onboarding-submit-btn {
+    background: #2b6cb0;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.onboarding-submit-btn:hover:not(:disabled) {
+    background: #2c5282;
+}
+
+.onboarding-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.verification-warning {
+    color: #e53e3e;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.onboarding-note {
+    margin-top: 1rem;
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+
+/* Header */
+
+.onboarding-header {
+    background: #2b6cb0;
+    color: white;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.onboarding-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.onboarding-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.onboarding-logo-icon {
+    background: white;
+    color: #2b6cb0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.onboarding-logo-text {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.onboarding-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.onboarding-user-avatar {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.logout-button {
+    margin-left: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.logout-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+
+/* Rejection banner */
+
+.rejection-banner {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 0.75rem 1.5rem;
+    margin: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #f5c6cb;
+    text-align: center;
+    position: sticky;
+    top: 70px;
+    z-index: 99;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.rejection-banner button {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #721c24;
+}
+
+
+/* Footer */
+
+.onboarding-footer {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f7fafc;
+    margin-top: 3rem;
+    border-top: 1px solid #e2e8f0;
+    font-size: 0.85rem;
+    color: #4a5568;
+}
+
+
+/* Loading spinner */
+
+.pending-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.pending-card {
+    text-align: center;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #2b6cb0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* Responsive */
+
+@media (max-width: 768px) {
+    .onboarding-form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    .onboarding-progress {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .onboarding-progress-step {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+    }
+    .onboarding-step-circle {
+        margin: 0;
+    }
+    .onboarding-document-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -67,11 +67,20 @@ function ClientPortal() {
     city: "",
   });
 
+  const [passwordData, setPasswordData] = useState({
+    current_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+
   // Assignment modal states
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedFirmForAssign, setSelectedFirmForAssign] = useState(null);
   const [selectedCaseToAssign, setSelectedCaseToAssign] = useState("");
   const [assigningCase, setAssigningCase] = useState(false);
+
+  const [caseDocuments, setCaseDocuments] = useState([]);
+  const [viewingDocumentsCase, setViewingDocumentsCase] = useState(null);
 
   const [newCase, setNewCase] = useState({
     title: "",
@@ -178,30 +187,107 @@ function ClientPortal() {
     }
   }, []);
 
+  // const loadUserProfile = async () => {
+  //   try {
+  //     const res = await API.get("/profiles/auth/me/");
+  //     setUserData(res.data);
+  //     setEditedProfile({
+  //       name: res.data.full_name  || "",
+  //       email: res.data.email || "",
+  //       phone: res.data.phone || "",
+  //       city: res.data.city || "",
+  //     });
+  //   } catch (err) {
+  //     console.error("Profile load failed", err);
+  //   }
+  // };
+
   const loadUserProfile = async () => {
     try {
       const res = await API.get("/profiles/auth/me/");
-      setUserData(res.data);
+      const user = res.data;
+      // Create a unified object with 'name' derived from 'full_name'
+      const userWithName = {
+        ...user,
+        name: user.full_name || user.name || user.email,
+      };
+      setUserData(userWithName);
       setEditedProfile({
-        name: res.data.name || "",
-        email: res.data.email || "",
-        phone: res.data.phone || "",
-        city: res.data.city || "",
+        name: userWithName.name,
+        email: user.email || "",
+        phone: user.phone || "",
+        city: user.city || "",
       });
     } catch (err) {
       console.error("Profile load failed", err);
     }
   };
 
+  // const updateClientProfile = async (updatedData) => {
+  //   try {
+  //     await API.patch("/profiles/client-profile/update/", updatedData);
+  //     await loadUserProfile();
+  //     alert("Profile updated successfully");
+  //     setProfileEditMode(false);
+  //   } catch (err) {
+  //     console.error("Update failed", err);
+  //     alert("Update failed: " + (err.response?.data?.detail || err.message));
+  //   }
+  // };
   const updateClientProfile = async (updatedData) => {
     try {
+      // First: update profile (name, email, phone, city)
       await API.patch("/profiles/client-profile/update/", updatedData);
-      await loadUserProfile();
-      alert("Profile updated successfully");
+    
+      // Second: if password fields are filled, change password
+      if (passwordData.new_password && passwordData.confirm_password) {
+        if (passwordData.new_password !== passwordData.confirm_password) {
+          alert("New password and confirm password do not match");
+          return;
+        }
+        if (passwordData.new_password.length < 6) {
+          alert("Password must be at least 6 characters");
+          return;
+        }
+        await API.post("/profiles/change-password/", {
+          current_password: passwordData.current_password,
+          new_password: passwordData.new_password
+        });
+        alert("Profile and password updated successfully!");
+      } else {
+        alert("Profile updated successfully!");
+      }
+
+
+      // const res = await API.get("/profiles/client-profile/");
+      // setUserData(res.data);
+      // setEditedProfile({
+      //   name: res.data.name || "",
+      //   email: res.data.email || "",
+      //   phone: res.data.phone || "",
+      //   city: res.data.city || "",
+      // });
+
+      // Refresh user data
+      const res = await API.get("/profiles/client-profile/");
+      const refreshedData = res.data;
+      const userWithName = {
+        ...refreshedData,
+        name: refreshedData.full_name || refreshedData.name || refreshedData.email,
+      };
+      setUserData(userWithName);
+      setEditedProfile({
+        name: userWithName.name,
+        email: refreshedData.email || "",
+        phone: refreshedData.phone || "",
+        city: refreshedData.city || "",
+      });
+      setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
       setProfileEditMode(false);
+      alert("Profile updated successfully!");
     } catch (err) {
       console.error("Update failed", err);
-      alert("Update failed: " + (err.response?.data?.detail || err.message));
+      alert(err.response?.data?.error || err.response?.data?.detail || "Update failed");
     }
   };
 
@@ -250,9 +336,21 @@ function ClientPortal() {
             navigate("/client-onboarding");
             return;
           }
-          setUserData(profileData);
+          // setUserData(profileData);
+          // setEditedProfile({
+          //   name: profileData.full_name  || "",
+          //   email: profileData.email || "",
+          //   phone: profileData.phone || "",
+          //   city: profileData.city || "",
+          // });
+          const userWithName = {
+            ...profileData,
+            name: profileData.full_name || profileData.name || profileData.email,
+          };
+
+          setUserData(userWithName);
           setEditedProfile({
-            name: profileData.name || "",
+            name: userWithName.name  || "",
             email: profileData.email || "",
             phone: profileData.phone || "",
             city: profileData.city || "",
@@ -821,8 +919,13 @@ function ClientPortal() {
     setSubmittingCase(false);
   };
 
-  const viewCaseDetails = (c) => {
+  // const viewCaseDetails = (c) => {
+  //   setSelectedCase(c);
+  //   setActiveView("case-detail");
+  // };
+  const viewCaseDetails = async (c) => {
     setSelectedCase(c);
+    await fetchCaseDocuments(c.id);
     setActiveView("case-detail");
   };
 
@@ -873,6 +976,51 @@ function ClientPortal() {
     }
   };
 
+  // const uploadDocument = async () => {
+  //   if (!selectedFile || !selectedDocCase) return;
+  //   if (selectedFile.size > 10 * 1024 * 1024) {
+  //     alert("File size exceeds 10MB limit");
+  //     return;
+  //   }
+  //   setUploadingDoc(true);
+
+  //   const fd = new FormData();
+  //   fd.append("file", selectedFile);
+  //   fd.append("doc_type", selectedDocType);
+  //   fd.append("case_id", selectedDocCase.id);
+
+  //   // Try multiple endpoints
+  //   const endpoints = [
+  //     "/documents/upload/",
+  //     "/cases/documents/upload/",
+  //     "/api/documents/upload/",
+  //   ];
+  //   let success = false;
+  //   let errorMsg = "";
+
+  //   for (const ep of endpoints) {
+  //     try {
+  //       await API.post(ep, fd, {
+  //         headers: { "Content-Type": "multipart/form-data" },
+  //       });
+  //       success = true;
+  //       break;
+  //     } catch (err) {
+  //       errorMsg = err.response?.data?.detail || err.message;
+  //       console.warn(`Upload to ${ep} failed:`, errorMsg);
+  //     }
+  //   }
+
+  //   setUploadingDoc(false);
+  //   if (success) {
+  //     alert("Document uploaded successfully!");
+  //     setShowDocModal(false);
+  //     setSelectedFile(null);
+  //     await loadCases(); // refresh to get updated documents list
+  //   } else {
+  //     alert(`Upload failed. ${errorMsg || "Check backend logs."}`);
+  //   }
+  // };
   const uploadDocument = async () => {
     if (!selectedFile || !selectedDocCase) return;
     if (selectedFile.size > 10 * 1024 * 1024) {
@@ -885,37 +1033,40 @@ function ClientPortal() {
     fd.append("file", selectedFile);
     fd.append("doc_type", selectedDocType);
     fd.append("case_id", selectedDocCase.id);
+    // ❌ Do NOT append 'description' – your model doesn't have it
 
-    // Try multiple endpoints
-    const endpoints = [
-      "/documents/upload/",
-      "/cases/documents/upload/",
-      "/api/documents/upload/",
-    ];
-    let success = false;
-    let errorMsg = "";
-
-    for (const ep of endpoints) {
-      try {
-        await API.post(ep, fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        success = true;
-        break;
-      } catch (err) {
-        errorMsg = err.response?.data?.detail || err.message;
-        console.warn(`Upload to ${ep} failed:`, errorMsg);
-      }
-    }
-
-    setUploadingDoc(false);
-    if (success) {
+    try {
+      await API.post("/documents/upload/", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       alert("Document uploaded successfully!");
       setShowDocModal(false);
       setSelectedFile(null);
-      await loadCases(); // refresh to get updated documents list
-    } else {
-      alert(`Upload failed. ${errorMsg || "Check backend logs."}`);
+      // Refresh documents if we are on case-detail or case-documents page
+      if (viewingDocumentsCase?.id === selectedDocCase.id) {
+        await fetchCaseDocuments(selectedDocCase.id);
+      }
+      if (selectedCase?.id === selectedDocCase.id) {
+        await fetchCaseDocuments(selectedDocCase.id);
+      }
+      await loadCases(); // Refresh cases
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert(`Upload failed: ${err.response?.data?.error || err.message}`);
+    } finally {
+      setUploadingDoc(false);
+    };
+  }
+
+  const fetchCaseDocuments = async (caseId) => {
+    try {
+      console.log("Fetching documents for case:", caseId);
+      const res = await API.get(`/documents/case/${caseId}/`);
+      console.log("API response:", res.data);
+      setCaseDocuments(res.data);
+    } catch (err) {
+      console.error("Failed to load documents", err);
+      setCaseDocuments([]);
     }
   };
 
@@ -1645,24 +1796,16 @@ function ClientPortal() {
                   marginBottom: "40px",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateCasePage(false);
-                    setCreateCaseError("");
-                  }}
-                  style={{
-                    padding: "12px 30px",
-                    borderRadius: "8px",
-                    border: "none",
-                    cursor: "pointer",
-                    background: "#6c757d",
-                    color: "white",
-                    fontSize: "16px",
-                  }}
-                >
-                  <i className="fas fa-times me-2"></i>Cancel
-                </button>
+                <button className="btn-outline btn-sm" onClick={() => {
+                  setProfileEditMode(false);
+                  setEditedProfile({
+                    name: userData?.name || "",
+                    email: userData?.email || "",
+                    phone: userData?.phone || "",
+                    city: userData?.city || "",
+                  });
+                  setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+                }}>Cancel</button>
                 <button
                   type="submit"
                   disabled={submittingCase}
@@ -3610,199 +3753,105 @@ function ClientPortal() {
 
           {/* PROFILE & SETTINGS - with Edit Button */}
           {activeView === "profile" && (
-            <div className="row">
-              <div className="col-lg-4">
-                <div className="content-card text-center">
-                  <div
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      borderRadius: "50%",
-                      background: "var(--primary)",
-                      color: "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "42px",
-                      fontWeight: "700",
-                      margin: "0 auto 15px",
-                    }}
-                  >
-                    {userData?.name?.charAt(0)?.toUpperCase() || "C"}
-                  </div>
-                  <h5 style={{ color: "var(--primary)" }}>{userData?.name}</h5>
-                  <p className="text-muted">{userData?.email}</p>
-                  <span
-                    style={{
-                      background: "#d4edda",
-                      color: "#155724",
-                      padding: "4px 15px",
-                      borderRadius: "20px",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                    }}
-                  >
-                    ✓ Approved Client
-                  </span>
-                  <div
-                    style={{
-                      marginTop: "20px",
-                      padding: "15px",
-                      background: "#f8f9fa",
-                      borderRadius: "8px",
-                      textAlign: "left",
-                    }}
-                  >
-                    <div style={{ fontSize: "14px", marginBottom: "8px" }}>
-                      <strong>Total Cases:</strong> {stats.totalCases}
-                    </div>
-                    <div style={{ fontSize: "14px", marginBottom: "8px" }}>
-                      <strong>Active Cases:</strong> {stats.activeCases}
-                    </div>
-                    <div style={{ fontSize: "14px" }}>
-                      <strong>Completed:</strong> {stats.completedCases}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="col-lg-8">
-                <div className="content-card">
-                  <div className="card-title">
-                    <span>
-                      <i className="fas fa-user me-2"></i>Personal Details
-                    </span>
-                    {!profileEditMode ? (
-                      <button
-                        className="btn-advocare btn-sm"
-                        onClick={() => setProfileEditMode(true)}
-                      >
-                        <i className="fas fa-edit me-1"></i>Edit Profile
-                      </button>
-                    ) : (
-                      <div className="d-flex gap-2">
-                        <button
-                          className="btn-outline btn-sm"
-                          onClick={() => {
-                            setProfileEditMode(false);
-                            setEditedProfile({
-                              name: userData?.name || "",
-                              email: userData?.email || "",
-                              phone: userData?.phone || "",
-                              city: userData?.city || "",
-                            });
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          className="btn-advocare btn-sm"
-                          onClick={() => updateClientProfile(editedProfile)}
-                        >
-                          Save Changes
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  <div className="row mb-3">
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">Full Name</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={
-                          profileEditMode
-                            ? editedProfile.name
-                            : userData?.name || ""
-                        }
-                        readOnly={!profileEditMode}
-                        onChange={(e) =>
-                          setEditedProfile({
-                            ...editedProfile,
-                            name: e.target.value,
-                          })
-                        }
-                        style={
-                          !profileEditMode ? { background: "#f8f9fa" } : {}
-                        }
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">Email</label>
-                      <input
-                        type="email"
-                        className="form-control"
-                        value={
-                          profileEditMode
-                            ? editedProfile.email
-                            : userData?.email || ""
-                        }
-                        readOnly={!profileEditMode}
-                        onChange={(e) =>
-                          setEditedProfile({
-                            ...editedProfile,
-                            email: e.target.value,
-                          })
-                        }
-                        style={
-                          !profileEditMode ? { background: "#f8f9fa" } : {}
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="row mb-3">
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">Phone</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={
-                          profileEditMode
-                            ? editedProfile.phone
-                            : userData?.phone || ""
-                        }
-                        readOnly={!profileEditMode}
-                        onChange={(e) =>
-                          setEditedProfile({
-                            ...editedProfile,
-                            phone: e.target.value,
-                          })
-                        }
-                        style={
-                          !profileEditMode ? { background: "#f8f9fa" } : {}
-                        }
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-bold">City</label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={
-                          profileEditMode
-                            ? editedProfile.city
-                            : userData?.city || ""
-                        }
-                        readOnly={!profileEditMode}
-                        onChange={(e) =>
-                          setEditedProfile({
-                            ...editedProfile,
-                            city: e.target.value,
-                          })
-                        }
-                        style={
-                          !profileEditMode ? { background: "#f8f9fa" } : {}
-                        }
-                      />
-                    </div>
-                  </div>
-                  <div className="alert alert-info">
-                    <i className="fas fa-info-circle me-2"></i>Status:{" "}
-                    <strong>✓ Approved & Active</strong>
-                  </div>
-                </div>
-              </div>
+  <div className="row">
+    <div className="col-lg-4">
+      <div className="content-card text-center">
+        <div style={{ width: "100px", height: "100px", borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "42px", fontWeight: "700", margin: "0 auto 15px" }}>
+          {userData?.name?.charAt(0)?.toUpperCase() || "C"}
+        </div>
+        <h5 style={{ color: "var(--primary)" }}>{userData?.name}</h5>
+        <p className="text-muted">{userData?.email}</p>
+        <span style={{ background: "#d4edda", color: "#155724", padding: "4px 15px", borderRadius: "20px", fontSize: "13px", fontWeight: "600" }}>✓ Approved Client</span>
+        <div style={{ marginTop: "20px", padding: "15px", background: "#f8f9fa", borderRadius: "8px", textAlign: "left" }}>
+          <div style={{ fontSize: "14px", marginBottom: "8px" }}><strong>Total Cases:</strong> {stats.totalCases}</div>
+          <div style={{ fontSize: "14px", marginBottom: "8px" }}><strong>Active Cases:</strong> {stats.activeCases}</div>
+          <div style={{ fontSize: "14px" }}><strong>Completed:</strong> {stats.completedCases}</div>
+        </div>
+      </div>
+    </div>
+    <div className="col-lg-8">
+      <div className="content-card">
+        <div className="card-title">
+          <span><i className="fas fa-user me-2"></i>Personal Details</span>
+          {!profileEditMode ? (
+            <button className="btn-advocare btn-sm" onClick={() => {
+              // Reset editedProfile with current user data
+              setEditedProfile({
+                name: userData?.name || "",
+                email: userData?.email || "",
+                phone: userData?.phone || "",
+                city: userData?.city || "",
+              });
+              setProfileEditMode(true);
+            }}>
+              <i className="fas fa-edit me-1"></i>Edit Profile
+            </button>
+          ) : (
+            <div className="d-flex gap-2">
+              <button className="btn-outline btn-sm" onClick={() => {
+                setProfileEditMode(false);
+                setEditedProfile({
+                  name: userData?.name || "",
+                  email: userData?.email || "",
+                  phone: userData?.phone || "",
+                  city: userData?.city || "",
+                });
+                setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
+              }}>Cancel</button>
+              <button className="btn-advocare btn-sm" onClick={() => updateClientProfile(editedProfile)}>Save Changes</button>
             </div>
           )}
+        </div>
+        <div className="row mb-3">
+          <div className="col-md-6">
+            <label className="form-label fw-bold">Full Name</label>
+            <input type="text" className="form-control" value={profileEditMode ? editedProfile.name : userData?.name || ""} readOnly={!profileEditMode} onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })} style={!profileEditMode ? { background: "#f8f9fa" } : {}} />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label fw-bold">Email</label>
+            <input type="email" className="form-control" value={profileEditMode ? editedProfile.email : userData?.email || ""} readOnly={!profileEditMode} onChange={(e) => setEditedProfile({ ...editedProfile, email: e.target.value })} style={!profileEditMode ? { background: "#f8f9fa" } : {}} />
+          </div>
+        </div>
+        <div className="row mb-3">
+          <div className="col-md-6">
+            <label className="form-label fw-bold">Phone</label>
+            <input type="text" className="form-control" value={profileEditMode ? editedProfile.phone : userData?.phone || ""} readOnly={!profileEditMode} onChange={(e) => setEditedProfile({ ...editedProfile, phone: e.target.value })} style={!profileEditMode ? { background: "#f8f9fa" } : {}} />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label fw-bold">City</label>
+            <input type="text" className="form-control" value={profileEditMode ? editedProfile.city : userData?.city || ""} readOnly={!profileEditMode} onChange={(e) => setEditedProfile({ ...editedProfile, city: e.target.value })} style={!profileEditMode ? { background: "#f8f9fa" } : {}} />
+          </div>
+        </div>
+
+        {/* ✅ Password change fields (only visible in edit mode) */}
+        {profileEditMode && (
+          <>
+            <hr className="my-4" />
+            <h6 className="mb-3"><i className="fas fa-lock me-2"></i>Change Password (Optional)</h6>
+            <div className="row mb-3">
+              <div className="col-md-12 mb-3">
+                <label className="form-label fw-bold">Current Password</label>
+                <input type="password" className="form-control" value={passwordData.current_password} onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })} placeholder="Enter current password" />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold">New Password</label>
+                <input type="password" className="form-control" value={passwordData.new_password} onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })} placeholder="Min 6 characters" />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label fw-bold">Confirm New Password</label>
+                <input type="password" className="form-control" value={passwordData.confirm_password} onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })} placeholder="Re-enter new password" />
+              </div>
+            </div>
+          </>
+        )}
+
+        <div className="alert alert-info mt-3">
+          <i className="fas fa-info-circle me-2"></i>Status: <strong>✓ Approved & Active</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
           {/* CASE DETAIL (unchanged) */}
           {activeView === "case-detail" && selectedCase && (
@@ -3891,50 +3940,35 @@ function ClientPortal() {
               </div>
               <div className="col-lg-4">
                 <div className="content-card mb-4">
-                  <h6 className="card-title">
-                    <i className="fas fa-file-upload me-2"></i>Documents
-                  </h6>
-                  {selectedCase.documents?.length > 0 ? (
-                    selectedCase.documents.map((doc) => (
-                      <div
-                        key={doc.id}
-                        style={{
-                          padding: "8px 0",
-                          borderBottom: "1px solid #e9ecef",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <span>
-                          <i
-                            className="fas fa-file-pdf me-2"
-                            style={{ color: "#dc3545" }}
-                          ></i>
-                          {doc.file_name || doc.name}
-                        </span>
-                        {(doc.file_url || doc.file) && (
-                          <button
-                            className="btn btn-sm btn-link"
-                            onClick={() =>
-                              window.open(doc.file_url || doc.file)
-                            }
-                          >
-                            Download
-                          </button>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <p>No documents uploaded yet.</p>
-                  )}
-                  <button
-                    className="btn-advocare w-100 mt-3"
-                    onClick={() => {
-                      setSelectedDocCase(selectedCase);
-                      setShowDocModal(true);
-                    }}
-                  >
+                  <div className="card-title" style={{ justifyContent: "space-between" }}>
+                    <h6 className="mb-0">
+                      <i className="fas fa-file-upload me-2"></i>Documents ({caseDocuments.length})
+                    </h6>
+                    <button
+  className="btn-advocare btn-sm"
+  onClick={async () => {
+    setViewingDocumentsCase(selectedCase);
+    await fetchCaseDocuments(selectedCase.id);   // ✅ refresh documents for this case
+    setActiveView("case-documents");
+  }}
+>
+  <i className="fas fa-external-link-alt me-1"></i>View All
+</button>
+                  </div>
+                  {caseDocuments.slice(0, 3).map((doc) => (
+                    <div key={doc.id} style={{ padding: "8px 0", borderBottom: "1px solid #e9ecef", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>
+                        <i className="fas fa-file-pdf me-2" style={{ color: "#dc3545" }}></i>
+                        {doc.file_name}
+                        <small className="text-muted ms-2">({doc.doc_type_display})</small>
+                      </span>
+                      <button className="btn btn-sm btn-link" onClick={() => window.open(doc.file_url)}>
+                        <i className="fas fa-download"></i> Download
+                      </button>
+                    </div>
+                  ))}
+                  {caseDocuments.length === 0 && <p>No documents uploaded yet.</p>}
+                  <button className="btn-advocare w-100 mt-3" onClick={() => { setSelectedDocCase(selectedCase); setShowDocModal(true); }}>
                     <i className="fas fa-upload me-2"></i>Upload Document
                   </button>
                 </div>
@@ -3986,6 +4020,54 @@ function ClientPortal() {
               </div>
             </div>
           )}
+          {activeView === "case-documents" && (
+  <div className="content-card">
+    <div className="card-title">
+      <button
+        className="btn-outline btn-sm"
+        onClick={() => {
+          setActiveView("case-detail");
+          setViewingDocumentsCase(null);
+        }}
+      >
+        <i className="fas fa-arrow-left me-2"></i>Back to Case
+      </button>
+      <h5 className="mb-0 ms-3">
+        Documents: {viewingDocumentsCase?.title}
+      </h5>
+    </div>
+    <div className="table-responsive">
+      <table className="data-table">
+        <thead>
+          <tr><th>File Name</th><th>Type</th><th>Uploaded</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {caseDocuments.length === 0 ? (
+            <tr><td colSpan={4} style={{ textAlign: "center", color: "#6c757d" }}>No documents uploaded yet</td></tr>
+          ) : (
+            caseDocuments.map((doc) => (
+              <tr key={doc.id}>
+                <td>{doc.file_name}</td>
+                <td>{doc.doc_type_display}</td>
+                <td>{formatDate(doc.uploaded_at)}</td>
+                <td>
+                  <button className="btn btn-sm btn-primary" onClick={() => window.open(doc.file_url)}>
+                    <i className="fas fa-download"></i> Download
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+    <div className="mt-3 text-center">
+      <button className="btn-advocare" onClick={() => { setSelectedDocCase(viewingDocumentsCase); setShowDocModal(true); }}>
+        <i className="fas fa-upload me-2"></i>Upload New Document
+      </button>
+    </div>
+  </div>
+)}
         </div>
       </div>
 

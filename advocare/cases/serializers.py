@@ -13,7 +13,10 @@ class CaseSerializer(serializers.ModelSerializer):
 
 class CourtUpdateSerializer(serializers.ModelSerializer):
     case_title = serializers.CharField(source='case.title', read_only=True)
+    case_id = serializers.IntegerField(source='case.id', read_only=True)
     client_id = serializers.IntegerField(source='case.client.id', read_only=True)
+    client_name = serializers.CharField(source='case.client.full_name', read_only=True)
+    
     class Meta:
         model = CourtUpdate
         fields = '__all__'

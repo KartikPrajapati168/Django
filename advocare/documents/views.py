@@ -23,7 +23,6 @@ class UploadDocumentView(APIView):
             file = request.FILES.get('file')
             doc_type = request.data.get('doc_type')
             case_id = request.data.get('case_id')
-            description = request.data.get('description', '')
 
             if not file:
                 return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
@@ -45,7 +44,6 @@ class UploadDocumentView(APIView):
                 uploaded_by=request.user,
                 file=file,
                 doc_type=doc_type,
-                description=description
             )
 
             # Link to case if provided
@@ -70,7 +68,6 @@ class UploadDocumentView(APIView):
                     'file_size': document.file_size,
                     'doc_type': document.doc_type,
                     'doc_type_display': document.get_doc_type_display(),
-                    'description': document.description,
                     'uploaded_at': document.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
                     'file_url': document.file.url
                 }
@@ -119,7 +116,6 @@ class ListDocumentsView(APIView):
                 'file_size': doc.file_size,
                 'doc_type': doc.doc_type,
                 'doc_type_display': doc.get_doc_type_display(),
-                'description': doc.description,
                 'uploaded_by': {
                     'id': doc.uploaded_by.id,
                     'name': doc.uploaded_by.full_name,
@@ -164,7 +160,6 @@ class DocumentDetailView(APIView):
             'file_size': document.file_size,
             'doc_type': document.doc_type,
             'doc_type_display': document.get_doc_type_display(),
-            'description': document.description,
             'uploaded_by': {
                 'id': document.uploaded_by.id,
                 'name': document.uploaded_by.full_name,
@@ -248,7 +243,6 @@ class MyDocumentsView(APIView):
                 'file_size': doc.file_size,
                 'doc_type': doc.doc_type,
                 'doc_type_display': doc.get_doc_type_display(),
-                'description': doc.description,
                 'case_id': doc.case.id if doc.case else None,
                 'case_title': doc.case.title if doc.case else None,
                 'uploaded_at': doc.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -281,10 +275,105 @@ class CaseDocumentsView(APIView):
                 'file_size': doc.file_size,
                 'doc_type': doc.doc_type,
                 'doc_type_display': doc.get_doc_type_display(),
-                'description': doc.description,
                 'uploaded_by': doc.uploaded_by.full_name,
                 'uploaded_at': doc.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'file_url': doc.file.url
             })
         
         return Response(data, status=status.HTTP_200_OK)
+    
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
+import os
+import tempfile
+
+from .utils.ocr_nlp import verify_document
+
+class DocumentVerifyView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        file_obj = request.data.get('document')
+        expected_type = request.data.get('expected_type')
+        
+        if not file_obj or not expected_type:
+            return Response({"error": "Both 'document' and 'expected_type' are required."}, status=400)
+        
+        # Extract all expected fields (frontend sends these)
+        extra_data = {
+            'expected_name': request.data.get('expected_name'),
+            'expected_address': request.data.get('expected_address'),
+            'expected_phone': request.data.get('expected_phone'),
+            'expected_firm_name': request.data.get('expected_firm_name'),
+            'expected_registration_no': request.data.get('expected_registration_no'),
+        }
+        # Remove None values
+        extra_data = {k: v for k, v in extra_data.items() if v is not None}
+        
+        # Save file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file_obj.name)[1]) as tmp_file:
+            for chunk in file_obj.chunks():
+                tmp_file.write(chunk)
+            tmp_path = tmp_file.name
+        
+        try:
+            result = verify_document(tmp_path, expected_type, **extra_data)
+            return Response(result)
+        finally:
+            os.unlink(tmp_path)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from rest_framework.permissions import IsAuthenticated
+# from rest_framework.parsers import MultiPartParser, FormParser
+# import os
+# import tempfile
+
+# from .utils.ocr_nlp import verify_document
+
+# class DocumentVerifyView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     def post(self, request, *args, **kwargs):
+#         file_obj = request.data.get('document')
+#         expected_type = request.data.get('expected_type')  # fir, notice, aadhar, pan, etc.
+        
+#         if not file_obj or not expected_type:
+#             return Response({"error": "Both 'document' and 'expected_type' are required."}, status=400)
+        
+#         # Save file temporarily
+#         with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file_obj.name)[1]) as tmp_file:
+#             for chunk in file_obj.chunks():
+#                 tmp_file.write(chunk)
+#             tmp_path = tmp_file.name
+        
+#         try:
+#             result = verify_document(tmp_path, expected_type)
+#             return Response(result)
+#         finally:
+#             os.unlink(tmp_path)
+
+
+
+
+
