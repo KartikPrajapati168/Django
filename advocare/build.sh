@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Install Node.js (needed for React build)
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt-get install -y nodejs
+
 # System dependencies install karo (OCR ke liye)
 apt-get update && apt-get install -y \
     tesseract-ocr \
