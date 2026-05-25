@@ -19,6 +19,8 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from contact.views import ContactView
+from django.urls import path, include, re_path   # ← re_path yahan add karo
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,7 +34,8 @@ urlpatterns = [
     path('contact/', ContactView.as_view(),name='contact'),
     # path("recommendations",include("recommendations.urls")),
     # path("users",include("users.urls"))
-]
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Serve media files in development
 if settings.DEBUG:
