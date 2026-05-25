@@ -107,6 +107,7 @@ function LoginForm() {
                     type="email"
                     className="auth-form-control"
                     value={email}
+                    autocomplete="off"
                     onChange={(e) => setEmail(e.target.value)}
                     required
                 />

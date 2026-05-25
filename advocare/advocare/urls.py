@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
+from contact.views import ContactView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +29,7 @@ urlpatterns = [
     # path("api/dashboards",include("dashboards.urls")),
     path("documents/",include("documents.urls")),
     path('chat/', include('chat.urls')),
+    path('contact/', ContactView.as_view(),name='contact'),
     # path("recommendations",include("recommendations.urls")),
     # path("users",include("users.urls"))
 ]

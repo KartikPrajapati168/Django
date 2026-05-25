@@ -4523,8 +4523,8 @@ body {
 }
 
 .homepage-about-card img {
-    width: 90px;
-    height: 90px;
+    width: 120px;
+    height: 120px;
     margin-bottom: 1.5rem;
     border-radius: 50%;
     border: 3px solid #7FDBFF;
@@ -4593,8 +4593,8 @@ body {
 }
 
 .homepage-feature-card img {
-    width: 70px;
-    height: 70px;
+    width: 120px;
+    height: 120px;
     margin-bottom: 1.5rem;
     border-radius: 50%;
     border: 2px solid #7FDBFF;
@@ -4738,8 +4738,8 @@ body {
 }
 
 .homepage-step img {
-    width: 70px;
-    height: 70px;
+    width: 120px;
+    height: 120px;
     margin-bottom: 1.5rem;
     border-radius: 50%;
     border: 2px solid #7FDBFF;
