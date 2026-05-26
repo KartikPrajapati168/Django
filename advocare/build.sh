@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # Install Node.js (for React build)
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
