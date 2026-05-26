@@ -10,12 +10,6 @@ apt-get update && apt-get install -y tesseract-ocr poppler-utils libpq-dev
 # Python dependencies
 pip install -r requirements.txt
 
-# Build React frontend
-cd frontend
-npm install
-npm run build
-cd ..
-
 # Collect static files
 python manage.py collectstatic --noinput
 
