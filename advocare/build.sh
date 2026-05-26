@@ -3,7 +3,7 @@ apt-get update && apt-get install -y tesseract-ocr poppler-utils libpq-dev
 pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
-python manage.py shell <<EOF
+python manage.py shell <<EOF2
 import os
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -13,4 +13,4 @@ password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'admin123')
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username, email, password)
     print(f"Superuser '{username}' created.")
-EOF
+EOF2
