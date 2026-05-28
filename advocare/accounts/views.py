@@ -4,11 +4,12 @@ from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
-
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from users.models import User
 from profiles.models import ClientProfile, LawfirmProfile, AdminProfile
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
