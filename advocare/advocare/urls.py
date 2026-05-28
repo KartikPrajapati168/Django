@@ -24,14 +24,14 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("profiles/", include("profiles.urls")),
-    path("accounts/",include("accounts.urls")),
-    path("cases/",include("cases.urls")),
+    path("api/profiles/", include("profiles.urls")),
+    path("api/accounts/",include("accounts.urls")),
+    path("api/cases/",include("cases.urls")),
     # path("api/core",include("core.urls")),
     # path("api/dashboards",include("dashboards.urls")),
-    path("documents/",include("documents.urls")),
-    path('chat/', include('chat.urls')),
-    path('contact/', ContactView.as_view(),name='contact'),
+    path("api/documents/",include("documents.urls")),
+    path('api/chat/', include('chat.urls')),
+    path('api/contact/', ContactView.as_view(),name='contact'),
     # path("recommendations",include("recommendations.urls")),
     # path("users",include("users.urls"))
     re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
