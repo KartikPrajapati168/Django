@@ -851,29 +851,330 @@ def contains_id_keyword(text_lower):
 #         return {"valid": False, "message": f"Unsupported document type: {expected_type}"}
 
 
+
+
+
+# WORKING BEFORE
+
+
+
+
+
+# import os
+# import re
+# import pytesseract
+# from PIL import Image, ImageEnhance
+# import pdf2image
+# from fuzzywuzzy import fuzz
+# import cv2
+# import numpy as np
+# import PyPDF2   # add this: pip install PyPDF2
+
+# # ========== CONFIGURATION ==========
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# OCR_LANG = 'eng'
+
+# def preprocess_image(image):
+#     """Improve OCR for low‑contrast text."""
+#     gray = image.convert('L')
+#     enhancer = ImageEnhance.Contrast(gray)
+#     gray = enhancer.enhance(2.0)
+#     img_np = np.array(gray)
+#     thresh = cv2.adaptiveThreshold(img_np, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+#                                    cv2.THRESH_BINARY, 11, 2)
+#     return Image.fromarray(thresh)
+
+# def extract_text_from_file(file_path):
+#     """Extract text from image or PDF. Uses PyPDF2 first for text‑based PDFs,
+#        then falls back to OCR (pdf2image + Tesseract) if needed."""
+#     ext = os.path.splitext(file_path)[1].lower()
+#     full_text = ""
+
+#     if ext in ['.jpg', '.jpeg', '.png']:
+#         image = Image.open(file_path)
+#         image = preprocess_image(image)
+#         full_text = pytesseract.image_to_string(image, lang=OCR_LANG, config='--oem 3 --psm 6')
+
+#     elif ext == '.pdf':
+#         # First try PyPDF2 (fast, no poppler needed)
+#         try:
+#             with open(file_path, 'rb') as f:
+#                 reader = PyPDF2.PdfReader(f)
+#                 for page in reader.pages:
+#                     page_text = page.extract_text()
+#                     if page_text:
+#                         full_text += page_text + "\n"
+#         except Exception as e:
+#             print(f"PyPDF2 extraction failed: {e}")
+
+#         # If PyPDF2 returned nothing (scanned PDF), fallback to OCR
+#         if not full_text.strip():
+#             try:
+#                 images = pdf2image.convert_from_path(file_path, dpi=400)
+#                 for img in images:
+#                     img = preprocess_image(img)
+#                     text = pytesseract.image_to_string(img, lang=OCR_LANG, config='--oem 3 --psm 6')
+#                     full_text += text + "\n"
+#             except Exception as e:
+#                 print(f"pdf2image OCR failed: {e} (poppler may be missing)")
+#                 # If poppler is missing, return empty and let the caller handle
+#                 return ""
+
+#     return full_text.strip()
+
+# # ---------- Helper extraction functions ----------
+# def extract_name(text):
+#     match = re.search(r'Name[:\s]+([A-Za-z\s\.]+)', text, re.IGNORECASE)
+#     if match:
+#         return match.group(1).strip()
+#     lines = text.split('\n')
+#     for line in lines:
+#         if re.match(r'^[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}$', line.strip()):
+#             return line.strip()
+#     return ""
+
+# def extract_address(text):
+#     lines = text.split('\n')
+#     for line in lines:
+#         if re.search(r'\d+.*(Road|Street|Nagari|Apartment|Sola|Naranpura|Ahmedabad|kalupur)', line, re.IGNORECASE):
+#             return line.strip()
+#     return ""
+
+# def extract_phone(text):
+#     match = re.search(r'(\+91[\s\-]?)?[6-9]\d{9}', text)
+#     return match.group(0) if match else ""
+
+# def extract_firm_name(text):
+#     match = re.search(r'Firm Name[:\s]+([A-Za-z0-9\s\.]+)', text, re.IGNORECASE)
+#     return match.group(1).strip() if match else ""
+
+# def extract_registration_number(text):
+#     match = re.search(r'Registration Number[:\s]+([A-Za-z0-9\-]+)', text, re.IGNORECASE)
+#     if match:
+#         return match.group(1).strip()
+#     tokens = re.findall(r'\b[A-Za-z0-9\-]{6,}\b', text)
+#     return tokens[0] if tokens else ""
+
+# # ---------- Main verification function ----------
+# def verify_document(file_path, expected_type, **kwargs):
+#     try:
+#         text = extract_text_from_file(file_path)
+#     except Exception as e:
+#         return {"valid": False, "message": str(e)}
+
+#     if not text:
+#         return {"valid": False, "message": "Could not read document. Please upload a clear image/PDF."}
+
+#     text_lower = text.lower()
+#     print(f"\n=== Extracted Text ({expected_type}) ===\n{text[:800]}\n=== END ===\n")
+
+#     # ----- BAR COUNCIL -----
+#     if expected_type == 'bar_council':
+#         patterns = [
+#             r'bar\s+council',
+#             r'the\s+bar\s+council',
+#             r'bar[\s\n]+council',
+#             r'bar\s*council'
+#         ]
+#         found = any(re.search(p, text_lower) for p in patterns)
+#         if not found:
+#             has_advocate = 'advocate' in text_lower
+#             has_number = re.search(r'\b\d{4,6}\b', text)
+#             has_enrolment = 'enrolment' in text_lower or 'enrollment' in text_lower
+#             if has_advocate or has_number and has_enrolment:
+#                 pass
+#             else:
+#                 return {"valid": False, "message": "Document does not appear to be a Bar Council certificate (missing 'bar council' keyword)."}
+
+#         expected_name = kwargs.get('expected_name', '')
+#         expected_address = kwargs.get('expected_address', '')
+#         expected_phone = kwargs.get('expected_phone', '')
+#         extracted_name = extract_name(text)
+#         extracted_address = extract_address(text)
+#         extracted_phone = extract_phone(text)
+#         errors = []
+#         if expected_name:
+#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
+#                 errors.append(f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'")
+#         if expected_address:
+#             if not extracted_address or fuzz.partial_ratio(expected_address.lower(), extracted_address.lower()) < 60:
+#                 errors.append(f"Address mismatch: expected '{expected_address}', found '{extracted_address or 'nothing'}'")
+#         if expected_phone:
+#             if not extracted_phone:
+#                 errors.append("Could not extract phone number.")
+#             else:
+#                 exp_phone = re.sub(r'\D', '', expected_phone)[-10:]
+#                 ext_phone = re.sub(r'\D', '', extracted_phone)[-10:]
+#                 if exp_phone != ext_phone:
+#                     errors.append(f"Phone mismatch: expected '{expected_phone}', found '{extracted_phone}'")
+#         if errors:
+#             return {"valid": False, "message": "; ".join(errors)}
+#         return {"valid": True, "message": "Bar Council certificate verified successfully."}
+
+#     # ----- FIRM REGISTRATION -----
+#     elif expected_type == 'firm_registration':
+#         if not re.search(r'registrar\s+of\s+firms', text_lower):
+#             if not ('firm name' in text_lower and 'registration number' in text_lower):
+#                 return {"valid": False, "message": "Document does not appear to be a firm registration certificate (missing 'Registrar of Firms' phrase)."}
+
+#         expected_firm = kwargs.get('expected_firm_name', '')
+#         expected_reg = kwargs.get('expected_registration_no', '')
+#         extracted_firm = extract_firm_name(text)
+#         extracted_reg = extract_registration_number(text)
+#         errors = []
+#         if expected_firm:
+#             if not extracted_firm or fuzz.partial_ratio(expected_firm.lower(), extracted_firm.lower()) < 70:
+#                 errors.append(f"Firm name mismatch: expected '{expected_firm}', found '{extracted_firm or 'nothing'}'")
+#         if expected_reg:
+#             if not extracted_reg or expected_reg.lower() != extracted_reg.lower():
+#                 errors.append(f"Registration number mismatch: expected '{expected_reg}', found '{extracted_reg or 'nothing'}'")
+#         if errors:
+#             return {"valid": False, "message": "; ".join(errors)}
+#         return {"valid": True, "message": "Firm registration verified successfully."}
+
+#     # ----- AADHAAR / ID PROOF -----
+#     elif expected_type in ['id_proof', 'aadhar']:
+#         if not any(kw in text_lower for kw in ['aadhaar', 'aadhar']):
+#             return {"valid": False, "message": "Document does not appear to be an Aadhaar card (missing 'aadhar' keyword)."}
+
+#         expected_name = kwargs.get('expected_name', '')
+#         if expected_name:
+#             extracted_name = extract_name(text)
+#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
+#                 return {"valid": False, "message": f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'"}
+#         return {"valid": True, "message": "Aadhaar card verified successfully."}
+
+#     # ----- FIR (First Information Report) -----
+#     elif expected_type == 'fir':
+#         if 'fir' not in text_lower:
+#             return {"valid": False, "message": "Document does not appear to be an FIR (missing 'FIR' keyword)."}
+#         return {"valid": True, "message": "FIR verified successfully."}
+
+#     # ----- LEGAL NOTICE -----
+#     elif expected_type == 'notice':
+#         if 'notice' not in text_lower:
+#             return {"valid": False, "message": "Document does not appear to be a legal notice (missing 'NOTICE' keyword)."}
+#         return {"valid": True, "message": "Legal notice verified successfully."}
+
+#     else:
+#         return {"valid": False, "message": f"Unsupported document type: {expected_type}"}
+
+
+# def verify_document(file_path, expected_type, **kwargs):
+#     try:
+#         text = extract_text_from_file(file_path)
+#     except Exception as e:
+#         return {"valid": False, "message": str(e)}
+
+#     if not text:
+#         return {"valid": False, "message": "Could not read document. Please upload a clear image/PDF."}
+
+#     text_lower = text.lower()
+
+#     # ----- BAR COUNCIL -----
+#     if expected_type == 'bar_council':
+#         # ✅ Must contain "bar council" keyword
+#         if 'bar council' not in text_lower:
+#             return {"valid": False, "message": "Document does not appear to be a Bar Council certificate (missing 'bar council' keyword)."}
+
+#         # Optional field validation (name, address, phone) – keep as before
+#         expected_name = kwargs.get('expected_name', '')
+#         expected_address = kwargs.get('expected_address', '')
+#         expected_phone = kwargs.get('expected_phone', '')
+#         extracted_name = extract_name(text)
+#         extracted_address = extract_address(text)
+#         extracted_phone = extract_phone(text)
+#         errors = []
+#         if expected_name:
+#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
+#                 errors.append(f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'")
+#         if expected_address:
+#             if not extracted_address or fuzz.partial_ratio(expected_address.lower(), extracted_address.lower()) < 60:
+#                 errors.append(f"Address mismatch: expected '{expected_address}', found '{extracted_address or 'nothing'}'")
+#         if expected_phone:
+#             if not extracted_phone:
+#                 errors.append("Could not extract phone number.")
+#             else:
+#                 exp_phone = re.sub(r'\D', '', expected_phone)[-10:]
+#                 ext_phone = re.sub(r'\D', '', extracted_phone)[-10:]
+#                 if exp_phone != ext_phone:
+#                     errors.append(f"Phone mismatch: expected '{expected_phone}', found '{extracted_phone}'")
+#         if errors:
+#             return {"valid": False, "message": "; ".join(errors)}
+#         return {"valid": True, "message": "Bar Council certificate verified successfully."}
+
+#     # ----- FIRM REGISTRATION -----
+#     elif expected_type == 'firm_registration':
+#         # ✅ Must contain "registrar of firms" keyword (case‑insensitive)
+#         if 'registrar of firms' not in text_lower:
+#             return {"valid": False, "message": "Document does not appear to be a firm registration certificate (missing 'Registrar of Firms' stamp or phrase)."}
+
+#         expected_firm = kwargs.get('expected_firm_name', '')
+#         expected_reg = kwargs.get('expected_registration_no', '')
+#         extracted_firm = extract_firm_name(text)
+#         extracted_reg = extract_registration_number(text)
+#         errors = []
+#         if expected_firm:
+#             if not extracted_firm or fuzz.partial_ratio(expected_firm.lower(), extracted_firm.lower()) < 70:
+#                 errors.append(f"Firm name mismatch: expected '{expected_firm}', found '{extracted_firm or 'nothing'}'")
+#         if expected_reg:
+#             if not extracted_reg or expected_reg.lower() != extracted_reg.lower():
+#                 errors.append(f"Registration number mismatch: expected '{expected_reg}', found '{extracted_reg or 'nothing'}'")
+#         if errors:
+#             return {"valid": False, "message": "; ".join(errors)}
+#         return {"valid": True, "message": "Firm registration verified successfully."}
+
+#     # ----- ID PROOF (Aadhaar / PAN / Passport) -----
+#     elif expected_type == 'id_proof':
+#         # ✅ Must contain "aadhaar" or "aadhar" keyword (exact word, not just fuzzy)
+#         id_keywords = ['aadhaar', 'aadhar', 'आधार', 'આધાર']
+#         keyword_found = any(kw in text_lower for kw in id_keywords)
+#         if not keyword_found:
+#             return {"valid": False, "message": "Document does not appear to be an Aadhaar card (missing 'Aadhaar' keyword)."}
+
+#         expected_name = kwargs.get('expected_name', '')
+#         extracted_name = extract_name(text)
+#         if expected_name:
+#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
+#                 return {"valid": False, "message": f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'"}
+#         return {"valid": True, "message": "ID proof (Aadhaar) verified successfully."}
+
+#     else:
+#         return {"valid": False, "message": f"Unsupported document type: {expected_type}"}
+
+
+
+
+
+
+
+
+
+
+
+
 import os
 import re
 import pytesseract
-from PIL import Image, ImageEnhance
+from PIL import Image, ImageEnhance, ImageFilter
 import pdf2image
 from fuzzywuzzy import fuzz
-import cv2
-import numpy as np
-import PyPDF2   # add this: pip install PyPDF2
+import PyPDF2
 
 # ========== CONFIGURATION ==========
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 OCR_LANG = 'eng'
 
 def preprocess_image(image):
-    """Improve OCR for low‑contrast text."""
+    """Improve OCR for low‑contrast text using PIL only (no OpenCV)."""
+    # Convert to grayscale
     gray = image.convert('L')
+    # Increase contrast
     enhancer = ImageEnhance.Contrast(gray)
     gray = enhancer.enhance(2.0)
-    img_np = np.array(gray)
-    thresh = cv2.adaptiveThreshold(img_np, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                   cv2.THRESH_BINARY, 11, 2)
-    return Image.fromarray(thresh)
+    # Apply a simple threshold using PIL (values > 128 become white)
+    gray = gray.point(lambda p: 255 if p > 128 else 0)
+    return gray
 
 def extract_text_from_file(file_path):
     """Extract text from image or PDF. Uses PyPDF2 first for text‑based PDFs,
@@ -882,9 +1183,12 @@ def extract_text_from_file(file_path):
     full_text = ""
 
     if ext in ['.jpg', '.jpeg', '.png']:
-        image = Image.open(file_path)
-        image = preprocess_image(image)
-        full_text = pytesseract.image_to_string(image, lang=OCR_LANG, config='--oem 3 --psm 6')
+        try:
+            image = Image.open(file_path)
+            image = preprocess_image(image)
+            full_text = pytesseract.image_to_string(image, lang=OCR_LANG, config='--oem 3 --psm 6')
+        except Exception as e:
+            return f"Error processing image: {e}"
 
     elif ext == '.pdf':
         # First try PyPDF2 (fast, no poppler needed)
@@ -908,12 +1212,11 @@ def extract_text_from_file(file_path):
                     full_text += text + "\n"
             except Exception as e:
                 print(f"pdf2image OCR failed: {e} (poppler may be missing)")
-                # If poppler is missing, return empty and let the caller handle
                 return ""
 
     return full_text.strip()
 
-# ---------- Helper extraction functions ----------
+# ---------- Helper extraction functions (unchanged) ----------
 def extract_name(text):
     match = re.search(r'Name[:\s]+([A-Za-z\s\.]+)', text, re.IGNORECASE)
     if match:
@@ -946,7 +1249,7 @@ def extract_registration_number(text):
     tokens = re.findall(r'\b[A-Za-z0-9\-]{6,}\b', text)
     return tokens[0] if tokens else ""
 
-# ---------- Main verification function ----------
+# ---------- Main verification function (unchanged except removed OpenCV reference) ----------
 def verify_document(file_path, expected_type, **kwargs):
     try:
         text = extract_text_from_file(file_path)
@@ -1049,102 +1352,6 @@ def verify_document(file_path, expected_type, **kwargs):
 
     else:
         return {"valid": False, "message": f"Unsupported document type: {expected_type}"}
-
-
-# def verify_document(file_path, expected_type, **kwargs):
-#     try:
-#         text = extract_text_from_file(file_path)
-#     except Exception as e:
-#         return {"valid": False, "message": str(e)}
-
-#     if not text:
-#         return {"valid": False, "message": "Could not read document. Please upload a clear image/PDF."}
-
-#     text_lower = text.lower()
-
-#     # ----- BAR COUNCIL -----
-#     if expected_type == 'bar_council':
-#         # ✅ Must contain "bar council" keyword
-#         if 'bar council' not in text_lower:
-#             return {"valid": False, "message": "Document does not appear to be a Bar Council certificate (missing 'bar council' keyword)."}
-
-#         # Optional field validation (name, address, phone) – keep as before
-#         expected_name = kwargs.get('expected_name', '')
-#         expected_address = kwargs.get('expected_address', '')
-#         expected_phone = kwargs.get('expected_phone', '')
-#         extracted_name = extract_name(text)
-#         extracted_address = extract_address(text)
-#         extracted_phone = extract_phone(text)
-#         errors = []
-#         if expected_name:
-#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
-#                 errors.append(f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'")
-#         if expected_address:
-#             if not extracted_address or fuzz.partial_ratio(expected_address.lower(), extracted_address.lower()) < 60:
-#                 errors.append(f"Address mismatch: expected '{expected_address}', found '{extracted_address or 'nothing'}'")
-#         if expected_phone:
-#             if not extracted_phone:
-#                 errors.append("Could not extract phone number.")
-#             else:
-#                 exp_phone = re.sub(r'\D', '', expected_phone)[-10:]
-#                 ext_phone = re.sub(r'\D', '', extracted_phone)[-10:]
-#                 if exp_phone != ext_phone:
-#                     errors.append(f"Phone mismatch: expected '{expected_phone}', found '{extracted_phone}'")
-#         if errors:
-#             return {"valid": False, "message": "; ".join(errors)}
-#         return {"valid": True, "message": "Bar Council certificate verified successfully."}
-
-#     # ----- FIRM REGISTRATION -----
-#     elif expected_type == 'firm_registration':
-#         # ✅ Must contain "registrar of firms" keyword (case‑insensitive)
-#         if 'registrar of firms' not in text_lower:
-#             return {"valid": False, "message": "Document does not appear to be a firm registration certificate (missing 'Registrar of Firms' stamp or phrase)."}
-
-#         expected_firm = kwargs.get('expected_firm_name', '')
-#         expected_reg = kwargs.get('expected_registration_no', '')
-#         extracted_firm = extract_firm_name(text)
-#         extracted_reg = extract_registration_number(text)
-#         errors = []
-#         if expected_firm:
-#             if not extracted_firm or fuzz.partial_ratio(expected_firm.lower(), extracted_firm.lower()) < 70:
-#                 errors.append(f"Firm name mismatch: expected '{expected_firm}', found '{extracted_firm or 'nothing'}'")
-#         if expected_reg:
-#             if not extracted_reg or expected_reg.lower() != extracted_reg.lower():
-#                 errors.append(f"Registration number mismatch: expected '{expected_reg}', found '{extracted_reg or 'nothing'}'")
-#         if errors:
-#             return {"valid": False, "message": "; ".join(errors)}
-#         return {"valid": True, "message": "Firm registration verified successfully."}
-
-#     # ----- ID PROOF (Aadhaar / PAN / Passport) -----
-#     elif expected_type == 'id_proof':
-#         # ✅ Must contain "aadhaar" or "aadhar" keyword (exact word, not just fuzzy)
-#         id_keywords = ['aadhaar', 'aadhar', 'आधार', 'આધાર']
-#         keyword_found = any(kw in text_lower for kw in id_keywords)
-#         if not keyword_found:
-#             return {"valid": False, "message": "Document does not appear to be an Aadhaar card (missing 'Aadhaar' keyword)."}
-
-#         expected_name = kwargs.get('expected_name', '')
-#         extracted_name = extract_name(text)
-#         if expected_name:
-#             if not extracted_name or fuzz.partial_ratio(expected_name.lower(), extracted_name.lower()) < 70:
-#                 return {"valid": False, "message": f"Name mismatch: expected '{expected_name}', found '{extracted_name or 'nothing'}'"}
-#         return {"valid": True, "message": "ID proof (Aadhaar) verified successfully."}
-
-#     else:
-#         return {"valid": False, "message": f"Unsupported document type: {expected_type}"}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
