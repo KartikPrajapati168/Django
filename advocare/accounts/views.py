@@ -1,18 +1,20 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from users.models import User
 from profiles.models import ClientProfile, LawfirmProfile, AdminProfile
 
-# @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
-    authentication_classes = []
     permission_classes = [AllowAny]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     @transaction.atomic
     def post(self, request):
@@ -67,21 +69,16 @@ class RegisterView(APIView):
         elif role == 'admin':
             if not secret_key:
                 return Response({'error': 'Secret key required for admin'}, status=400)
-            
-            # Create admin profile
             admin_profile = AdminProfile.objects.create(
                 user=user,
                 phone=phone,
                 secret_key_verified=True,
             )
             admin_profile.set_secret_key(secret_key)
-            
-            # ✅ CRITICAL FIX: Set admin permissions automatically
             user.is_staff = True
             user.is_superuser = True
             user.is_active = True
             user.save()
-            
         else:
             return Response({'error': 'Invalid role'}, status=400)
 
