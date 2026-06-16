@@ -9,8 +9,9 @@ from django.utils.decorators import method_decorator
 from users.models import User
 from profiles.models import ClientProfile, LawfirmProfile, AdminProfile
 
-@method_decorator(csrf_exempt, name='dispatch')
+# @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     @transaction.atomic
