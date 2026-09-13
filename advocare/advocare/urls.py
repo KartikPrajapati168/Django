@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/contact/', ContactView.as_view(),name='contact'),
     # path("recommendations",include("recommendations.urls")),
     # path("users",include("users.urls"))
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
+    # re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Serve media files in development
