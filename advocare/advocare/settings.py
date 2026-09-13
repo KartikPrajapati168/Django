@@ -154,10 +154,10 @@ SIMPLE_JWT = {
 }
 
 # ========== CORS ==========
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-if not DEBUG:
-    CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = DEBUG
+# if not DEBUG:
+#     CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='').split(',')
+# CORS_ALLOW_CREDENTIALS = True
 
 # ========== SECURITY HEADERS (Production) ==========
 if not DEBUG:
