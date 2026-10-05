@@ -1405,47 +1405,42 @@ def compact_ocr_text(text):
 # ============================================================
 
 def detect_aadhaar_keyword(text):
+    """
+    Robust Aadhaar keyword detection.
+    Handles OCR variations such as:
+    AADHAAR
+    AADHAR
+    ADHAAR
+    AADHER
+    UIDAI
+    Gujarati Aadhaar text
+    """
 
     if not text:
-
         return False
 
     text_lower = text.lower()
 
-    compact_text = compact_ocr_text(
-        text
-    )
-
     # --------------------------------------------------------
-    # Exact / common OCR variations
+    # 1. Direct keywords
     # --------------------------------------------------------
 
-    keywords = [
-
+    direct_keywords = [
         "aadhaar",
         "aadhar",
         "adhar",
         "adhaar",
-        "aaadhar",
         "aadher",
-        "aadharr",
-
+        "aaadhar",
+        "aadhaarr",
         "uidai",
-
-        "uniqueidentificationauthorityofindia",
-        "uniqueidentificationauthority",
-        "uniqueidentification",
-
-        "आधार",
-        "आधारकार्ड",
-
-        "આધાર",
-        "આધારકાર્ડ",
+        "unique identification authority of india",
+        "unique identification authority",
     ]
 
-    for keyword in keywords:
+    for keyword in direct_keywords:
 
-        if keyword in compact_text:
+        if keyword in text_lower:
 
             print(
                 "✅ Aadhaar keyword detected:",
@@ -1455,43 +1450,78 @@ def detect_aadhaar_keyword(text):
             return True
 
     # --------------------------------------------------------
-    # Word-level fuzzy matching
+    # 2. Remove spaces / punctuation
     # --------------------------------------------------------
+
+    compact_text = re.sub(
+        r"[^a-z0-9]",
+        "",
+        text_lower
+    )
+
+    compact_keywords = [
+        "aadhaar",
+        "aadhar",
+        "adhar",
+        "adhaar",
+        "aadher",
+        "aaadhar",
+        "uidai",
+        "uniqueidentificationauthorityofindia",
+        "uniqueidentificationauthority",
+    ]
+
+    for keyword in compact_keywords:
+
+        if keyword in compact_text:
+
+            print(
+                "✅ Aadhaar compact keyword detected:",
+                keyword
+            )
+
+            return True
+
+    # --------------------------------------------------------
+    # 3. OCR common mistakes
+    # --------------------------------------------------------
+
+    ocr_variations = [
+        "aadhaar",
+        "aadhar",
+        "adhar",
+        "adhaar",
+        "aadher",
+        "aaadhar",
+        "aadhaer",
+        "aadhaar",
+        "aadharr",
+        "aadharr",
+    ]
 
     words = re.findall(
         r"[A-Za-z]+",
         text_lower
     )
 
-    fuzzy_targets = [
-
-        "aadhaar",
-        "aadhar",
-        "adhar",
-        "adhaar",
-        "aaadhar",
-        "aadher",
-    ]
-
     for word in words:
 
-        # Skip very short OCR noise
         if len(word) < 4:
             continue
 
-        for target in fuzzy_targets:
+        for target in ocr_variations:
 
             score = fuzz.ratio(
                 word,
                 target
             )
 
-            if score >= 70:
+            if score >= 75:
 
                 print(
                     "✅ Aadhaar fuzzy match:",
                     word,
-                    "->",
+                    "→",
                     target,
                     "score:",
                     score
@@ -1500,26 +1530,37 @@ def detect_aadhaar_keyword(text):
                 return True
 
     # --------------------------------------------------------
-    # Partial fuzzy matching
+    # 4. UIDAI
     # --------------------------------------------------------
 
-    for target in fuzzy_targets:
+    if "uidai" in text_lower:
 
-        score = fuzz.partial_ratio(
-            target,
-            text_lower
+        print(
+            "✅ Aadhaar detected through UIDAI."
         )
 
-        if score >= 75:
+        return True
 
-            print(
-                "✅ Aadhaar partial fuzzy match:",
-                target,
-                "score:",
-                score
-            )
+    # --------------------------------------------------------
+    # 5. Unique Identification Authority
+    # --------------------------------------------------------
 
-            return True
+    if (
+        "unique identification authority" in text_lower
+        or
+        "uniqueidentificationauthority" in compact_text
+    ):
+
+        print(
+            "✅ Aadhaar detected through "
+            "Unique Identification Authority."
+        )
+
+        return True
+
+    print(
+        "❌ Aadhaar keyword not detected."
+    )
 
     return False
 
@@ -1584,139 +1625,105 @@ def detect_aadhaar_number(text):
 def detect_aadhaar_document(text):
 
     if not text:
-
         return False
 
     print("========================================")
     print("AADHAAR DOCUMENT DETECTION")
     print("========================================")
 
+    text_lower = text.lower()
+
     # --------------------------------------------------------
-    # Signal 1
-    # Aadhaar keyword
+    # SIGNAL 1: Aadhaar keyword
     # --------------------------------------------------------
 
-    keyword_found = detect_aadhaar_keyword(
-        text
+    keyword_found = detect_aadhaar_keyword(text)
+
+    # --------------------------------------------------------
+    # SIGNAL 2: Aadhaar number
+    # --------------------------------------------------------
+
+    aadhaar_number_found = detect_aadhaar_number(text)
+
+    # --------------------------------------------------------
+    # SIGNAL 3: UIDAI
+    # --------------------------------------------------------
+
+    uidai_found = (
+        "uidai" in text_lower
+        or
+        "unique identification authority" in text_lower
     )
+
+    # --------------------------------------------------------
+    # SIGNAL 4: Government of India
+    # --------------------------------------------------------
+
+    government_india_found = (
+        "government of india" in text_lower
+        or
+        "govt of india" in text_lower
+    )
+
+    # --------------------------------------------------------
+    # SIGNAL 5: Aadhaar-specific phrases
+    # --------------------------------------------------------
+
+    aadhaar_phrase_found = any(
+        phrase in text_lower
+        for phrase in [
+            "aadhar is proof",
+            "aadhaar is proof",
+            "aadhaar is unique",
+            "aadhaar number",
+            "your aadhaar",
+            "aadhar number",
+            "your aadhar",
+            "aadhaar letter",
+            "aadhaar services",
+            "aadhaar card",
+        ]
+    )
+
+    print("Keyword:", keyword_found)
+    print("Aadhaar Number:", aadhaar_number_found)
+    print("UIDAI:", uidai_found)
+    print("Government of India:", government_india_found)
+    print("Aadhaar Phrase:", aadhaar_phrase_found)
+
+    # --------------------------------------------------------
+    # Strong detection
+    # --------------------------------------------------------
 
     if keyword_found:
-
-        print(
-            "✅ Aadhaar detected by keyword."
-        )
-
+        print("✅ Aadhaar detected through keyword.")
         return True
 
-    # --------------------------------------------------------
-    # Signal 2
-    # Aadhaar number
-    # --------------------------------------------------------
+    if uidai_found and aadhaar_number_found:
+        print("✅ Aadhaar detected through UIDAI + number.")
+        return True
 
-    aadhaar_number_found = (
-        detect_aadhaar_number(
-            text
-        )
-    )
-
-    if aadhaar_number_found:
-
-        print(
-            "✅ Aadhaar detected by number."
-        )
-
+    if aadhaar_phrase_found:
+        print("✅ Aadhaar detected through Aadhaar phrase.")
         return True
 
     # --------------------------------------------------------
     # Supporting signals
     # --------------------------------------------------------
 
-    text_lower = text.lower()
-
-    uidai_found = (
-        "uidai" in text_lower
-        or "unique identification" in text_lower
-    )
-
-    government_india_found = (
-        "government of india" in text_lower
-        or "govt of india" in text_lower
-    )
-
-    dob_found = (
-        "date of birth" in text_lower
-        or re.search(
-            r"\bdob\b",
-            text_lower
-        )
-        is not None
-    )
-
-    name_found = bool(
-        re.search(
-            r"\bname\b",
-            text_lower
-        )
-    )
-
-    address_found = bool(
-        re.search(
-            r"\b("
-            r"address|"
-            r"ahmedabad|"
-            r"gujarat|"
-            r"india|"
-            r"nagar|"
-            r"road|"
-            r"street"
-            r")\b",
-            text_lower
-        )
-    )
-
-    signal_count = sum(
-        [
-            uidai_found,
-            government_india_found,
-            dob_found,
-            name_found,
-            address_found,
-        ]
-    )
+    supporting_signals = sum([
+        aadhaar_number_found,
+        uidai_found,
+        government_india_found,
+        aadhaar_phrase_found,
+    ])
 
     print(
-        "UIDAI:",
-        uidai_found
+        "Supporting signals:",
+        supporting_signals
     )
 
-    print(
-        "Government of India:",
-        government_india_found
-    )
-
-    print(
-        "DOB:",
-        dob_found
-    )
-
-    print(
-        "Name:",
-        name_found
-    )
-
-    print(
-        "Address:",
-        address_found
-    )
-
-    print(
-        "Supporting signal count:",
-        signal_count
-    )
-
-    # Require several supporting signals
-    # to avoid accepting arbitrary documents.
-    if signal_count >= 3:
+    if supporting_signals >= 2:
 
         print(
             "✅ Aadhaar detected using "
