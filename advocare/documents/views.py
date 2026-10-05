@@ -287,44 +287,237 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+
 import os
 import tempfile
+import traceback
 
-from .utils.ocr_nlp import verify_document
+from .utils.document_verifier import verify_document
+
 
 class DocumentVerifyView(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request, *args, **kwargs):
-        file_obj = request.data.get('document')
-        expected_type = request.data.get('expected_type')
-        
-        if not file_obj or not expected_type:
-            return Response({"error": "Both 'document' and 'expected_type' are required."}, status=400)
-        
-        # Extract all expected fields (frontend sends these)
+    permission_classes = [IsAuthenticated]
+
+    parser_classes = [
+        MultiPartParser,
+        FormParser,
+    ]
+
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs
+    ):
+
+        file_obj = request.data.get(
+            "document"
+        )
+
+        expected_type = request.data.get(
+            "expected_type"
+        )
+
+        if not file_obj:
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "Document file is required.",
+                    "extracted": {},
+                },
+                status=400
+            )
+
+        if not expected_type:
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "Expected document type is required.",
+                    "extracted": {},
+                },
+                status=400
+            )
+
+        # ----------------------------------------------------
+        # Extra data
+        # ----------------------------------------------------
+
         extra_data = {
-            'expected_name': request.data.get('expected_name'),
-            'expected_address': request.data.get('expected_address'),
-            'expected_phone': request.data.get('expected_phone'),
-            'expected_firm_name': request.data.get('expected_firm_name'),
-            'expected_registration_no': request.data.get('expected_registration_no'),
+
+            "expected_name":
+                request.data.get(
+                    "expected_name"
+                ),
+
+            "expected_address":
+                request.data.get(
+                    "expected_address"
+                ),
+
+            "expected_phone":
+                request.data.get(
+                    "expected_phone"
+                ),
+
+            "expected_firm_name":
+                request.data.get(
+                    "expected_firm_name"
+                ),
+
+            "expected_registration_no":
+                request.data.get(
+                    "expected_registration_no"
+                ),
         }
-        # Remove None values
-        extra_data = {k: v for k, v in extra_data.items() if v is not None}
-        
-        # Save file temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file_obj.name)[1]) as tmp_file:
-            for chunk in file_obj.chunks():
-                tmp_file.write(chunk)
-            tmp_path = tmp_file.name
-        
+
+        extra_data = {
+            key: value
+            for key, value
+            in extra_data.items()
+            if value not in (
+                None,
+                ""
+            )
+        }
+
+        # ----------------------------------------------------
+        # Save temporary file
+        # ----------------------------------------------------
+
+        extension = os.path.splitext(
+            file_obj.name
+        )[1].lower()
+
+        if extension not in (
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".pdf",
+        ):
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "Unsupported file type. "
+                        "Use PDF, JPG, JPEG or PNG.",
+                    "extracted": {},
+                },
+                status=400
+            )
+
+        tmp_path = None
+
         try:
-            result = verify_document(tmp_path, expected_type, **extra_data)
-            return Response(result)
+
+            with tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=extension
+            ) as tmp_file:
+
+                for chunk in file_obj.chunks():
+
+                    tmp_file.write(
+                        chunk
+                    )
+
+                tmp_path = tmp_file.name
+
+            print(
+                "========================================"
+            )
+
+            print(
+                "DOCUMENT TEMP FILE:"
+            )
+
+            print(
+                tmp_path
+            )
+
+            print(
+                "SIZE:",
+                os.path.getsize(
+                    tmp_path
+                )
+            )
+
+            print(
+                "========================================"
+            )
+
+            # ------------------------------------------------
+            # Verify
+            # ------------------------------------------------
+
+            result = verify_document(
+                tmp_path,
+                expected_type,
+                **extra_data
+            )
+
+            return Response(
+                result,
+                status=200
+            )
+
+        except Exception as e:
+
+            print(
+                "========================================"
+            )
+
+            print(
+                "❌ DOCUMENT VIEW ERROR"
+            )
+
+            print(
+                repr(e)
+            )
+
+            traceback.print_exc()
+
+            print(
+                "========================================"
+            )
+
+            return Response(
+                {
+                    "valid": False,
+
+                    "message":
+                        f"Document processing failed: {str(e)}",
+
+                    "extracted": {},
+                },
+                status=500
+            )
+
         finally:
-            os.unlink(tmp_path)
+
+            if (
+                tmp_path
+                and
+                os.path.exists(tmp_path)
+            ):
+
+                try:
+
+                    os.unlink(
+                        tmp_path
+                    )
+
+                except Exception as e:
+
+                    print(
+                        "Temporary file cleanup failed:",
+                        repr(e)
+                    )
 
 
 
