@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 
 import pytesseract
 from PIL import Image, ImageEnhance, ImageFilter
@@ -12,30 +13,50 @@ except ImportError:
 
 
 # ============================================================
-# TESSERACT CONFIGURATION
+# CONFIGURATION
 # ============================================================
 
-# Local Windows machine:
-# You can set TESSERACT_CMD if required.
-#
-# Render/Docker:
-# Tesseract is installed through Dockerfile and should be
-# available automatically as "tesseract".
-
-TESSERACT_CMD = os.getenv("TESSERACT_CMD")
+TESSERACT_CMD = os.getenv(
+    "TESSERACT_CMD"
+)
 
 if TESSERACT_CMD:
-    pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
+    pytesseract.pytesseract.tesseract_cmd = (
+        TESSERACT_CMD
+    )
 
 
-# OCR language
-#
-# eng       -> English
-# eng+guj   -> English + Gujarati
-#
-# Start with eng. If Gujarati documents are required,
-# set OCR_LANG=eng+guj in Render environment variables.
-OCR_LANG = os.getenv("OCR_LANG", "eng")
+OCR_LANG = os.getenv(
+    "OCR_LANG",
+    "eng"
+)
+
+
+# ============================================================
+# CHECK TESSERACT
+# ============================================================
+
+def check_tesseract():
+
+    try:
+
+        version = pytesseract.get_tesseract_version()
+
+        print(
+            "Tesseract version:",
+            version
+        )
+
+        return True
+
+    except Exception as e:
+
+        print(
+            "Tesseract check failed:",
+            repr(e)
+        )
+
+        return False
 
 
 # ============================================================
@@ -43,30 +64,31 @@ OCR_LANG = os.getenv("OCR_LANG", "eng")
 # ============================================================
 
 def preprocess_image(image):
-    """
-    Convert image to grayscale and improve contrast/sharpness.
-    """
 
-    gray = image.convert("L")
+    gray = image.convert(
+        "L"
+    )
 
-    # Improve contrast
-    gray = ImageEnhance.Contrast(gray).enhance(1.8)
+    gray = ImageEnhance.Contrast(
+        gray
+    ).enhance(1.8)
 
-    # Slight sharpening
-    gray = gray.filter(ImageFilter.SHARPEN)
+    gray = gray.filter(
+        ImageFilter.SHARPEN
+    )
 
     return gray
 
 
 def preprocess_threshold(image):
-    """
-    Convert image into black/white threshold image.
-    """
 
-    gray = preprocess_image(image)
+    gray = preprocess_image(
+        image
+    )
 
     return gray.point(
-        lambda p: 255 if p > 160 else 0
+        lambda p:
+            255 if p > 160 else 0
     )
 
 
@@ -74,35 +96,38 @@ def preprocess_threshold(image):
 # OCR
 # ============================================================
 
-def run_ocr(image, psm=6):
-    """
-    Run Tesseract OCR on an image.
-
-    psm:
-        6  -> Assume a uniform block of text
-        11 -> Sparse text
-    """
+def run_ocr(
+    image,
+    psm=6
+):
 
     try:
+
         text = pytesseract.image_to_string(
             image,
             lang=OCR_LANG,
-            config=f"--oem 3 --psm {psm}",
+            config=(
+                f"--oem 3 --psm {psm}"
+            ),
         )
 
         return text or ""
 
     except pytesseract.TesseractNotFoundError as e:
+
         raise RuntimeError(
-            "Tesseract OCR is not installed or not available on the server."
+            "Tesseract OCR is not installed "
+            "or cannot be found on the server."
         ) from e
 
     except pytesseract.TesseractError as e:
+
         raise RuntimeError(
             f"Tesseract OCR error: {e}"
         ) from e
 
     except Exception as e:
+
         raise RuntimeError(
             f"OCR failed: {e}"
         ) from e
@@ -112,145 +137,261 @@ def run_ocr(image, psm=6):
 # IMAGE OCR
 # ============================================================
 
-def extract_text_from_image(file_path):
-    """
-    Extract text from JPG/JPEG/PNG/WebP etc.
-    """
+def extract_text_from_image(
+    file_path
+):
+
+    print(
+        "Starting image OCR:",
+        file_path
+    )
 
     try:
-        image = Image.open(file_path)
 
-        # Make sure image is loaded before file gets closed
+        image = Image.open(
+            file_path
+        )
+
         image.load()
 
     except Exception as e:
+
         raise RuntimeError(
             f"Could not open image: {e}"
         ) from e
 
     texts = []
 
+    # --------------------------------------------------------
     # Original image
-    for psm in (6, 11):
-        text = run_ocr(image, psm=psm)
+    # --------------------------------------------------------
+
+    for psm in (
+        6,
+        11
+    ):
+
+        text = run_ocr(
+            image,
+            psm=psm
+        )
 
         if text.strip():
-            texts.append(text)
 
-    # Grayscale + contrast
-    processed = preprocess_image(image.copy())
+            texts.append(
+                text
+            )
 
-    for psm in (6, 11):
-        text = run_ocr(processed, psm=psm)
+    # --------------------------------------------------------
+    # Grayscale
+    # --------------------------------------------------------
+
+    processed = preprocess_image(
+        image.copy()
+    )
+
+    for psm in (
+        6,
+        11
+    ):
+
+        text = run_ocr(
+            processed,
+            psm=psm
+        )
 
         if text.strip():
-            texts.append(text)
 
-    # Threshold version
-    threshold = preprocess_threshold(image.copy())
+            texts.append(
+                text
+            )
 
-    text = run_ocr(threshold, psm=6)
+    # --------------------------------------------------------
+    # Threshold
+    # --------------------------------------------------------
+
+    threshold = preprocess_threshold(
+        image.copy()
+    )
+
+    text = run_ocr(
+        threshold,
+        psm=6
+    )
 
     if text.strip():
-        texts.append(text)
 
-    return "\n".join(texts).strip()
+        texts.append(
+            text
+        )
+
+    final_text = "\n".join(
+        texts
+    ).strip()
+
+    print(
+        "OCR text length:",
+        len(final_text)
+    )
+
+    return final_text
 
 
 # ============================================================
 # PDF TEXT EXTRACTION
 # ============================================================
 
-def extract_pdf_text_with_pypdf2(file_path):
-    """
-    Try extracting text directly from a text-based PDF.
-    """
+def extract_pdf_text_with_pypdf2(
+    file_path
+):
 
     if PyPDF2 is None:
+
+        print(
+            "PyPDF2 is not installed."
+        )
+
         return ""
 
-    full_text = []
+    texts = []
 
     try:
-        with open(file_path, "rb") as f:
 
-            reader = PyPDF2.PdfReader(f)
+        with open(
+            file_path,
+            "rb"
+        ) as f:
+
+            reader = PyPDF2.PdfReader(
+                f
+            )
+
+            print(
+                "PDF pages:",
+                len(reader.pages)
+            )
 
             for page in reader.pages:
 
                 try:
-                    page_text = page.extract_text() or ""
+
+                    page_text = (
+                        page.extract_text()
+                        or ""
+                    )
 
                     if page_text.strip():
-                        full_text.append(page_text)
+
+                        texts.append(
+                            page_text
+                        )
 
                 except Exception as e:
+
                     print(
-                        f"WARNING: Could not extract PDF page text: {e}"
+                        "PDF page extraction failed:",
+                        repr(e)
                     )
 
     except Exception as e:
+
         print(
-            f"WARNING: PyPDF2 failed: {e}"
+            "PyPDF2 failed:",
+            repr(e)
         )
 
-    return "\n".join(full_text).strip()
+        return ""
+
+    return "\n".join(
+        texts
+    ).strip()
 
 
 # ============================================================
 # PDF OCR
 # ============================================================
 
-def extract_text_from_pdf(file_path):
-    """
-    Extract text from PDF.
+def extract_text_from_pdf(
+    file_path
+):
 
-    First:
-        Try PyPDF2.
-
-    If PDF has no readable text:
-        Convert PDF pages into images using Poppler.
-        Then run Tesseract OCR.
-    """
+    print(
+        "Starting PDF processing:",
+        file_path
+    )
 
     # --------------------------------------------------------
-    # STEP 1: Try normal PDF text extraction
+    # STEP 1 - Direct PDF text
     # --------------------------------------------------------
 
-    text_from_pdf = extract_pdf_text_with_pypdf2(file_path)
+    direct_text = (
+        extract_pdf_text_with_pypdf2(
+            file_path
+        )
+    )
 
-    if text_from_pdf.strip():
-        return text_from_pdf.strip()
+    if direct_text.strip():
+
+        print(
+            "PDF text extracted using PyPDF2."
+        )
+
+        return direct_text.strip()
+
+    print(
+        "No usable PDF text found."
+    )
 
     # --------------------------------------------------------
-    # STEP 2: OCR PDF pages
+    # STEP 2 - PDF -> Image using Poppler
     # --------------------------------------------------------
 
     try:
 
-        images = pdf2image.convert_from_path(
-            file_path,
-            dpi=250,
-            fmt="jpeg",
+        images = (
+            pdf2image.convert_from_path(
+                file_path,
+                dpi=250,
+                fmt="jpeg"
+            )
         )
 
     except Exception as e:
 
+        print(
+            "PDF to image conversion failed:",
+            repr(e)
+        )
+
         raise RuntimeError(
-            "PDF could not be converted into images. "
-            "Make sure Poppler is installed on the server."
+            "Could not convert PDF to image. "
+            "Make sure Poppler is installed."
         ) from e
+
+    print(
+        "PDF converted to images:",
+        len(images)
+    )
 
     all_text = []
 
-    for page_number, image in enumerate(images, start=1):
+    for page_number, image in enumerate(
+        images,
+        start=1
+    ):
 
         print(
-            f"OCR processing PDF page {page_number}"
+            f"Processing PDF page {page_number}"
         )
 
-        # Original image
-        for psm in (6, 11):
+        # ----------------------------------------------------
+        # Original
+        # ----------------------------------------------------
+
+        for psm in (
+            6,
+            11
+        ):
 
             text = run_ocr(
                 image,
@@ -258,9 +399,15 @@ def extract_text_from_pdf(file_path):
             )
 
             if text.strip():
-                all_text.append(text)
 
-        # Preprocessed image
+                all_text.append(
+                    text
+                )
+
+        # ----------------------------------------------------
+        # Processed
+        # ----------------------------------------------------
+
         processed = preprocess_image(
             image.copy()
         )
@@ -271,21 +418,40 @@ def extract_text_from_pdf(file_path):
         )
 
         if text.strip():
-            all_text.append(text)
 
-    return "\n".join(all_text).strip()
+            all_text.append(
+                text
+            )
+
+    return "\n".join(
+        all_text
+    ).strip()
 
 
 # ============================================================
-# FILE TYPE DETECTION
+# FILE OCR
 # ============================================================
 
-def extract_text_from_file(file_path):
-    """
-    Automatically detect PDF/image and extract text.
-    """
+def extract_text_from_file(
+    file_path
+):
 
-    extension = os.path.splitext(file_path)[1].lower()
+    if not os.path.exists(
+        file_path
+    ):
+
+        raise RuntimeError(
+            "Temporary document file does not exist."
+        )
+
+    extension = os.path.splitext(
+        file_path
+    )[1].lower()
+
+    print(
+        "Processing extension:",
+        extension
+    )
 
     if extension == ".pdf":
 
@@ -317,16 +483,16 @@ def extract_text_from_file(file_path):
 # ============================================================
 
 def clean_text(text):
-    """
-    Basic OCR text cleanup.
-    """
 
     if not text:
+
         return ""
 
-    text = text.replace("\x00", " ")
+    text = text.replace(
+        "\x00",
+        " "
+    )
 
-    # Normalize spaces but preserve line breaks
     text = re.sub(
         r"[ \t]+",
         " ",
@@ -343,20 +509,23 @@ def clean_text(text):
 
 
 # ============================================================
-# FIELD EXTRACTION
+# NAME
 # ============================================================
 
 def extract_name(text):
-    """
-    Extract a name from OCR text.
-    """
 
-    text = clean_text(text)
+    text = clean_text(
+        text
+    )
 
     patterns = [
+
         r"\bName\s*[:\-]\s*([A-Za-z][A-Za-z .]{2,80})",
+
         r"\bFull\s*Name\s*[:\-]\s*([A-Za-z][A-Za-z .]{2,80})",
+
         r"\bApplicant\s*Name\s*[:\-]\s*([A-Za-z][A-Za-z .]{2,80})",
+
         r"\bCandidate\s*Name\s*[:\-]\s*([A-Za-z][A-Za-z .]{2,80})",
     ]
 
@@ -369,53 +538,30 @@ def extract_name(text):
         )
 
         if match:
-            return match.group(1).strip()
 
-    # Line-based fallback
-    lines = [
-        line.strip()
-        for line in text.splitlines()
-        if line.strip()
-    ]
-
-    for index, line in enumerate(lines):
-
-        if re.search(
-            r"\b(full\s+)?name\b",
-            line,
-            re.IGNORECASE
-        ):
-
-            # Example:
-            # Name
-            # Kartik Prajapati
-
-            if index + 1 < len(lines):
-
-                candidate = lines[index + 1]
-
-                if (
-                    len(candidate) >= 3
-                    and re.search(
-                        r"[A-Za-z]",
-                        candidate
-                    )
-                ):
-                    return candidate
+            return match.group(
+                1
+            ).strip()
 
     return None
 
 
-def extract_address(text):
-    """
-    Extract address from OCR text.
-    """
+# ============================================================
+# ADDRESS
+# ============================================================
 
-    text = clean_text(text)
+def extract_address(text):
+
+    text = clean_text(
+        text
+    )
 
     patterns = [
+
         r"\bAddress\s*[:\-]\s*(.+?)(?=\n(?:Phone|Mobile|Email|DOB|Date|Name)\b|$)",
+
         r"\bPermanent\s+Address\s*[:\-]\s*(.+?)(?=\n(?:Phone|Mobile|Email|DOB|Date|Name)\b|$)",
+
         r"\bResidential\s+Address\s*[:\-]\s*(.+?)(?=\n(?:Phone|Mobile|Email|DOB|Date|Name)\b|$)",
     ]
 
@@ -424,17 +570,19 @@ def extract_address(text):
         match = re.search(
             pattern,
             text,
-            flags=re.IGNORECASE | re.DOTALL
+            flags=(
+                re.IGNORECASE
+                |
+                re.DOTALL
+            )
         )
 
         if match:
 
-            address = match.group(1)
-
             address = re.sub(
                 r"\s+",
                 " ",
-                address
+                match.group(1)
             )
 
             return address.strip()
@@ -442,15 +590,20 @@ def extract_address(text):
     return None
 
 
-def extract_phone(text):
-    """
-    Extract Indian phone number.
-    """
+# ============================================================
+# PHONE
+# ============================================================
 
-    text = clean_text(text)
+def extract_phone(text):
+
+    text = clean_text(
+        text
+    )
 
     patterns = [
+
         r"(?:\+91[\s\-]?)?[6-9]\d{9}",
+
         r"\b[6-9]\d{9}\b",
     ]
 
@@ -469,26 +622,39 @@ def extract_phone(text):
                 match.group(0)
             )
 
-            if number.startswith("91") and len(number) == 12:
+            if (
+                number.startswith("91")
+                and
+                len(number) == 12
+            ):
+
                 number = number[-10:]
 
             if len(number) == 10:
+
                 return number
 
     return None
 
 
-def extract_firm_name(text):
-    """
-    Extract firm/company name.
-    """
+# ============================================================
+# FIRM NAME
+# ============================================================
 
-    text = clean_text(text)
+def extract_firm_name(text):
+
+    text = clean_text(
+        text
+    )
 
     patterns = [
+
         r"\bFirm\s*Name\s*[:\-]\s*(.+)",
+
         r"\bCompany\s*Name\s*[:\-]\s*(.+)",
+
         r"\bOrganization\s*Name\s*[:\-]\s*(.+)",
+
         r"\bOrganisation\s*Name\s*[:\-]\s*(.+)",
     ]
 
@@ -502,23 +668,33 @@ def extract_firm_name(text):
 
         if match:
 
-            value = match.group(1).splitlines()[0]
-
-            return value.strip()
+            return (
+                match.group(1)
+                .splitlines()[0]
+                .strip()
+            )
 
     return None
 
 
-def extract_registration_number(text):
-    """
-    Extract common registration number formats.
-    """
+# ============================================================
+# REGISTRATION NUMBER
+# ============================================================
 
-    text = clean_text(text)
+def extract_registration_number(
+    text
+):
+
+    text = clean_text(
+        text
+    )
 
     patterns = [
+
         r"\bRegistration\s*(?:No|Number|#)?\s*[:\-]?\s*([A-Z0-9\/\-]{4,30})",
+
         r"\bReg(?:istration)?\.?\s*(?:No|Number|#)?\s*[:\-]?\s*([A-Z0-9\/\-]{4,30})",
+
         r"\bCertificate\s*(?:No|Number|#)?\s*[:\-]?\s*([A-Z0-9\/\-]{4,30})",
     ]
 
@@ -531,6 +707,9 @@ def extract_registration_number(text):
         )
 
         if match:
-            return match.group(1).strip()
+
+            return match.group(
+                1
+            ).strip()
 
     return None

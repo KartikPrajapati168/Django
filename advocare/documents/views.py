@@ -1,44 +1,113 @@
+import os
+import mimetypes
+import tempfile
+import traceback
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
-from django.http import FileResponse, Http404
-import os
-import mimetypes
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from documents.models import Document
 from cases.models import Case
 from users.models import User
 
+from .utils.document_verifier import verify_document
+
+
+# ============================================================
+# UPLOAD DOCUMENT
+# ============================================================
 
 class UploadDocumentView(APIView):
     """Upload a document for a case"""
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
         try:
-            file = request.FILES.get('file')
-            doc_type = request.data.get('doc_type')
-            case_id = request.data.get('case_id')
+
+            file = request.FILES.get("file")
+            doc_type = request.data.get("doc_type")
+            case_id = request.data.get("case_id")
+
+            # ------------------------------------------------
+            # Validate file
+            # ------------------------------------------------
 
             if not file:
-                return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
-            
+
+                return Response(
+                    {
+                        "error": "No file provided"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             if not doc_type:
-                return Response({'error': 'Document type is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Validate file size (max 10MB)
+                return Response(
+                    {
+                        "error":
+                            "Document type is required"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ------------------------------------------------
+            # File size
+            # ------------------------------------------------
+
             if file.size > 10 * 1024 * 1024:
-                return Response({'error': 'File size cannot exceed 10MB'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Validate file type
-            allowed_types = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']
-            file_ext = file.name.split('.')[-1].lower()
+                return Response(
+                    {
+                        "error":
+                            "File size cannot exceed 10MB"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ------------------------------------------------
+            # File extension
+            # ------------------------------------------------
+
+            allowed_types = [
+                "pdf",
+                "jpg",
+                "jpeg",
+                "png",
+                "doc",
+                "docx",
+            ]
+
+            file_ext = (
+                file.name
+                .split(".")[-1]
+                .lower()
+            )
+
             if file_ext not in allowed_types:
-                return Response({'error': f'File type {file_ext} not allowed. Allowed: {", ".join(allowed_types)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+                return Response(
+                    {
+                        "error":
+                            f"File type {file_ext} not allowed. "
+                            f"Allowed: {', '.join(allowed_types)}"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ------------------------------------------------
+            # Create document
+            # ------------------------------------------------
 
             document = Document(
                 uploaded_by=request.user,
@@ -46,267 +115,686 @@ class UploadDocumentView(APIView):
                 doc_type=doc_type,
             )
 
-            # Link to case if provided
+            # ------------------------------------------------
+            # Link case
+            # ------------------------------------------------
+
             if case_id:
-                case = get_object_or_404(Case, id=case_id)
+
+                case = get_object_or_404(
+                    Case,
+                    id=case_id
+                )
+
+                # Client access
+                if (
+                    request.user.role == "client"
+                    and case.client != request.user
+                ):
+
+                    return Response(
+                        {
+                            "error":
+                                "You do not have access to this case"
+                        },
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
+                # Law firm access
+                if (
+                    request.user.role == "lawfirm"
+                    and case.law_firm != request.user
+                ):
+
+                    return Response(
+                        {
+                            "error":
+                                "You do not have access to this case"
+                        },
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+
                 document.case = case
-                
-                # Check if user has access to this case
-                if request.user.role == 'client' and case.client != request.user:
-                    return Response({'error': 'You do not have access to this case'}, status=status.HTTP_403_FORBIDDEN)
-                if request.user.role == 'lawfirm' and case.law_firm != request.user:
-                    return Response({'error': 'You do not have access to this case'}, status=status.HTTP_403_FORBIDDEN)
+
+            # ------------------------------------------------
+            # Save
+            # ------------------------------------------------
 
             document.save()
 
-            return Response({
-                'success': True,
-                'message': 'Document uploaded successfully',
-                'document': {
-                    'id': document.id,
-                    'file_name': document.file_name,
-                    'file_size': document.file_size,
-                    'doc_type': document.doc_type,
-                    'doc_type_display': document.get_doc_type_display(),
-                    'uploaded_at': document.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-                    'file_url': document.file.url
-                }
-            }, status=status.HTTP_201_CREATED)
+            return Response(
+                {
+                    "success": True,
+                    "message":
+                        "Document uploaded successfully",
+
+                    "document": {
+                        "id": document.id,
+                        "file_name": document.file_name,
+                        "file_size": document.file_size,
+                        "doc_type": document.doc_type,
+                        "doc_type_display":
+                            document.get_doc_type_display(),
+                        "uploaded_at":
+                            document.uploaded_at.strftime(
+                                "%Y-%m-%d %H:%M:%S"
+                            ),
+                        "file_url":
+                            document.file.url,
+                    },
+                },
+                status=status.HTTP_201_CREATED
+            )
 
         except Exception as e:
-            print(f"Error uploading document: {str(e)}")
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+            print(
+                "UPLOAD DOCUMENT ERROR:",
+                repr(e)
+            )
+
+            traceback.print_exc()
+
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+# ============================================================
+# LIST DOCUMENTS
+# ============================================================
 
 class ListDocumentsView(APIView):
     """Get all documents for a case or user"""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        case_id = request.query_params.get('case_id')
-        doc_type = request.query_params.get('doc_type')
+
+        case_id = request.query_params.get(
+            "case_id"
+        )
+
+        doc_type = request.query_params.get(
+            "doc_type"
+        )
 
         documents = Document.objects.all()
 
-        # Filter by case
+        # ------------------------------------------------
+        # Case filter
+        # ------------------------------------------------
+
         if case_id:
-            case = get_object_or_404(Case, id=case_id)
-            # Check access
-            if request.user.role == 'client' and case.client != request.user:
-                return Response({'error': 'You do not have access to these documents'}, status=status.HTTP_403_FORBIDDEN)
-            if request.user.role == 'lawfirm' and case.law_firm != request.user:
-                return Response({'error': 'You do not have access to these documents'}, status=status.HTTP_403_FORBIDDEN)
-            documents = documents.filter(case_id=case_id)
 
-        # Filter by document type
+            case = get_object_or_404(
+                Case,
+                id=case_id
+            )
+
+            if (
+                request.user.role == "client"
+                and case.client != request.user
+            ):
+
+                return Response(
+                    {
+                        "error":
+                            "You do not have access to these documents"
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            if (
+                request.user.role == "lawfirm"
+                and case.law_firm != request.user
+            ):
+
+                return Response(
+                    {
+                        "error":
+                            "You do not have access to these documents"
+                    },
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            documents = documents.filter(
+                case_id=case_id
+            )
+
+        # ------------------------------------------------
+        # Document type
+        # ------------------------------------------------
+
         if doc_type:
-            documents = documents.filter(doc_type=doc_type)
 
-        # Filter by user role
-        if request.user.role == 'client':
-            documents = documents.filter(case__client=request.user)
-        elif request.user.role == 'lawfirm':
-            documents = documents.filter(case__law_firm=request.user)
+            documents = documents.filter(
+                doc_type=doc_type
+            )
+
+        # ------------------------------------------------
+        # User role
+        # ------------------------------------------------
+
+        if request.user.role == "client":
+
+            documents = documents.filter(
+                case__client=request.user
+            )
+
+        elif request.user.role == "lawfirm":
+
+            documents = documents.filter(
+                case__law_firm=request.user
+            )
+
+        # ------------------------------------------------
+        # Response
+        # ------------------------------------------------
 
         data = []
+
         for doc in documents:
-            data.append({
-                'id': doc.id,
-                'file_name': doc.file_name,
-                'file_size': doc.file_size,
-                'doc_type': doc.doc_type,
-                'doc_type_display': doc.get_doc_type_display(),
-                'uploaded_by': {
-                    'id': doc.uploaded_by.id,
-                    'name': doc.uploaded_by.full_name,
-                    'role': doc.uploaded_by.role
-                },
-                'case_id': doc.case.id if doc.case else None,
-                'case_title': doc.case.title if doc.case else None,
-                'uploaded_at': doc.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'file_url': doc.file.url
-            })
 
-        return Response(data, status=status.HTTP_200_OK)
+            data.append(
+                {
+                    "id": doc.id,
+                    "file_name": doc.file_name,
+                    "file_size": doc.file_size,
+                    "doc_type": doc.doc_type,
+                    "doc_type_display":
+                        doc.get_doc_type_display(),
 
+                    "uploaded_by": {
+                        "id":
+                            doc.uploaded_by.id,
+
+                        "name":
+                            doc.uploaded_by.full_name,
+
+                        "role":
+                            doc.uploaded_by.role,
+                    },
+
+                    "case_id":
+                        doc.case.id
+                        if doc.case
+                        else None,
+
+                    "case_title":
+                        doc.case.title
+                        if doc.case
+                        else None,
+
+                    "uploaded_at":
+                        doc.uploaded_at.strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
+
+                    "file_url":
+                        doc.file.url,
+                }
+            )
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+
+# ============================================================
+# DOCUMENT DETAIL
+# ============================================================
 
 class DocumentDetailView(APIView):
-    """Get, update, or delete a specific document"""
+    """Get or delete a specific document"""
+
     permission_classes = [IsAuthenticated]
 
-    def get_document(self, document_id, user):
-        document = get_object_or_404(Document, id=document_id)
-        
-        # Check permissions
-        if user.role == 'admin':
+    def get_document(
+        self,
+        document_id,
+        user
+    ):
+
+        document = get_object_or_404(
+            Document,
+            id=document_id
+        )
+
+        # Admin
+        if user.role == "admin":
             return document
-        if user.role == 'client' and document.case and document.case.client == user:
+
+        # Client
+        if (
+            user.role == "client"
+            and document.case
+            and document.case.client == user
+        ):
             return document
-        if user.role == 'lawfirm' and document.case and document.case.law_firm == user:
+
+        # Law firm
+        if (
+            user.role == "lawfirm"
+            and document.case
+            and document.case.law_firm == user
+        ):
             return document
+
+        # Owner
         if document.uploaded_by == user:
             return document
-        
+
         return None
 
-    def get(self, request, document_id):
-        document = self.get_document(document_id, request.user)
-        if not document:
-            return Response({'error': 'You do not have access to this document'}, status=status.HTTP_403_FORBIDDEN)
+    def get(
+        self,
+        request,
+        document_id
+    ):
 
-        return Response({
-            'id': document.id,
-            'file_name': document.file_name,
-            'file_size': document.file_size,
-            'doc_type': document.doc_type,
-            'doc_type_display': document.get_doc_type_display(),
-            'uploaded_by': {
-                'id': document.uploaded_by.id,
-                'name': document.uploaded_by.full_name,
-                'role': document.uploaded_by.role
+        document = self.get_document(
+            document_id,
+            request.user
+        )
+
+        if not document:
+
+            return Response(
+                {
+                    "error":
+                        "You do not have access to this document"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return Response(
+            {
+                "id": document.id,
+                "file_name": document.file_name,
+                "file_size": document.file_size,
+                "doc_type": document.doc_type,
+                "doc_type_display":
+                    document.get_doc_type_display(),
+
+                "uploaded_by": {
+                    "id":
+                        document.uploaded_by.id,
+
+                    "name":
+                        document.uploaded_by.full_name,
+
+                    "role":
+                        document.uploaded_by.role,
+                },
+
+                "case_id":
+                    document.case.id
+                    if document.case
+                    else None,
+
+                "case_title":
+                    document.case.title
+                    if document.case
+                    else None,
+
+                "uploaded_at":
+                    document.uploaded_at.strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    ),
+
+                "file_url":
+                    document.file.url,
             },
-            'case_id': document.case.id if document.case else None,
-            'case_title': document.case.title if document.case else None,
-            'uploaded_at': document.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'file_url': document.file.url
-        }, status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK
+        )
 
-    def delete(self, request, document_id):
-        document = self.get_document(document_id, request.user)
+    def delete(
+        self,
+        request,
+        document_id
+    ):
+
+        document = self.get_document(
+            document_id,
+            request.user
+        )
+
         if not document:
-            return Response({'error': 'You do not have access to this document'}, status=status.HTTP_403_FORBIDDEN)
 
-        # Delete file from storage
+            return Response(
+                {
+                    "error":
+                        "You do not have access to this document"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         if document.file:
-            document.file.delete(save=False)
+
+            document.file.delete(
+                save=False
+            )
 
         document.delete()
-        return Response({'message': 'Document deleted successfully'}, status=status.HTTP_200_OK)
 
+        return Response(
+            {
+                "message":
+                    "Document deleted successfully"
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+# ============================================================
+# DOWNLOAD DOCUMENT
+# ============================================================
 
 class DownloadDocumentView(APIView):
     """Download a document file"""
+
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, document_id):
-        document = get_object_or_404(Document, id=document_id)
-        
-        # Check permissions
-        if request.user.role == 'admin':
-            pass
-        elif request.user.role == 'client' and document.case and document.case.client == request.user:
-            pass
-        elif request.user.role == 'lawfirm' and document.case and document.case.law_firm == request.user:
-            pass
-        elif document.uploaded_by == request.user:
-            pass
-        else:
-            return Response({'error': 'You do not have permission to download this document'}, status=status.HTTP_403_FORBIDDEN)
+    def get(
+        self,
+        request,
+        document_id
+    ):
 
-        # Check if file exists
+        document = get_object_or_404(
+            Document,
+            id=document_id
+        )
+
+        # ------------------------------------------------
+        # Permission
+        # ------------------------------------------------
+
+        allowed = False
+
+        if request.user.role == "admin":
+
+            allowed = True
+
+        elif (
+            request.user.role == "client"
+            and document.case
+            and document.case.client == request.user
+        ):
+
+            allowed = True
+
+        elif (
+            request.user.role == "lawfirm"
+            and document.case
+            and document.case.law_firm == request.user
+        ):
+
+            allowed = True
+
+        elif document.uploaded_by == request.user:
+
+            allowed = True
+
+        if not allowed:
+
+            return Response(
+                {
+                    "error":
+                        "You do not have permission to download this document"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # ------------------------------------------------
+        # File check
+        # ------------------------------------------------
+
         if not document.file:
-            return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(
+                {
+                    "error": "File not found"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
-            # Open the file
-            file_path = document.file.path
-            if os.path.exists(file_path):
-                # Determine content type
-                content_type, encoding = mimetypes.guess_type(file_path)
-                if content_type is None:
-                    content_type = 'application/octet-stream'
-                
-                # Return file response
-                response = FileResponse(open(file_path, 'rb'), content_type=content_type)
-                response['Content-Disposition'] = f'attachment; filename="{document.file_name}"'
-                return response
-            else:
-                return Response({'error': 'File not found on server'}, status=status.HTTP_404_NOT_FOUND)
-                
-        except Exception as e:
-            print(f"Error downloading document: {str(e)}")
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+            file_path = document.file.path
+
+            if not os.path.exists(file_path):
+
+                return Response(
+                    {
+                        "error":
+                            "File not found on server"
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            content_type, encoding = (
+                mimetypes.guess_type(file_path)
+            )
+
+            if content_type is None:
+
+                content_type = (
+                    "application/octet-stream"
+                )
+
+            response = FileResponse(
+                open(file_path, "rb"),
+                content_type=content_type
+            )
+
+            response[
+                "Content-Disposition"
+            ] = (
+                f'attachment; '
+                f'filename="{document.file_name}"'
+            )
+
+            return response
+
+        except Exception as e:
+
+            print(
+                "DOWNLOAD DOCUMENT ERROR:",
+                repr(e)
+            )
+
+            traceback.print_exc()
+
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+# ============================================================
+# MY DOCUMENTS
+# ============================================================
 
 class MyDocumentsView(APIView):
-    """Get all documents uploaded by the current user"""
+    """Get all documents uploaded by current user"""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        documents = Document.objects.filter(uploaded_by=request.user)
-        
-        data = []
-        for doc in documents:
-            data.append({
-                'id': doc.id,
-                'file_name': doc.file_name,
-                'file_size': doc.file_size,
-                'doc_type': doc.doc_type,
-                'doc_type_display': doc.get_doc_type_display(),
-                'case_id': doc.case.id if doc.case else None,
-                'case_title': doc.case.title if doc.case else None,
-                'uploaded_at': doc.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'file_url': doc.file.url
-            })
-        
-        return Response(data, status=status.HTTP_200_OK)
 
+        documents = Document.objects.filter(
+            uploaded_by=request.user
+        )
+
+        data = []
+
+        for doc in documents:
+
+            data.append(
+                {
+                    "id": doc.id,
+                    "file_name": doc.file_name,
+                    "file_size": doc.file_size,
+                    "doc_type": doc.doc_type,
+                    "doc_type_display":
+                        doc.get_doc_type_display(),
+
+                    "case_id":
+                        doc.case.id
+                        if doc.case
+                        else None,
+
+                    "case_title":
+                        doc.case.title
+                        if doc.case
+                        else None,
+
+                    "uploaded_at":
+                        doc.uploaded_at.strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
+
+                    "file_url":
+                        doc.file.url,
+                }
+            )
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+
+# ============================================================
+# CASE DOCUMENTS
+# ============================================================
 
 class CaseDocumentsView(APIView):
     """Get all documents for a specific case"""
+
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, case_id):
-        case = get_object_or_404(Case, id=case_id)
-        
-        # Check access
-        if request.user.role == 'client' and case.client != request.user:
-            return Response({'error': 'You do not have access to this case'}, status=status.HTTP_403_FORBIDDEN)
-        if request.user.role == 'lawfirm' and case.law_firm != request.user:
-            return Response({'error': 'You do not have access to this case'}, status=status.HTTP_403_FORBIDDEN)
-        
-        documents = Document.objects.filter(case=case)
-        
+    def get(
+        self,
+        request,
+        case_id
+    ):
+
+        case = get_object_or_404(
+            Case,
+            id=case_id
+        )
+
+        # ------------------------------------------------
+        # Access check
+        # ------------------------------------------------
+
+        if (
+            request.user.role == "client"
+            and case.client != request.user
+        ):
+
+            return Response(
+                {
+                    "error":
+                        "You do not have access to this case"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if (
+            request.user.role == "lawfirm"
+            and case.law_firm != request.user
+        ):
+
+            return Response(
+                {
+                    "error":
+                        "You do not have access to this case"
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        documents = Document.objects.filter(
+            case=case
+        )
+
         data = []
+
         for doc in documents:
-            data.append({
-                'id': doc.id,
-                'file_name': doc.file_name,
-                'file_size': doc.file_size,
-                'doc_type': doc.doc_type,
-                'doc_type_display': doc.get_doc_type_display(),
-                'uploaded_by': doc.uploaded_by.full_name,
-                'uploaded_at': doc.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'file_url': doc.file.url
-            })
-        
-        return Response(data, status=status.HTTP_200_OK)
-    
 
-import os
-import tempfile
-import traceback
+            data.append(
+                {
+                    "id": doc.id,
+                    "file_name": doc.file_name,
+                    "file_size": doc.file_size,
+                    "doc_type": doc.doc_type,
+                    "doc_type_display":
+                        doc.get_doc_type_display(),
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.parsers import MultiPartParser, FormParser
+                    "uploaded_by":
+                        doc.uploaded_by.full_name,
 
-from .utils.document_verifier import verify_document
+                    "uploaded_at":
+                        doc.uploaded_at.strftime(
+                            "%Y-%m-%d %H:%M:%S"
+                        ),
 
+                    "file_url":
+                        doc.file.url,
+                }
+            )
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK
+        )
+
+
+# ============================================================
+# DOCUMENT VERIFICATION / OCR
+# ============================================================
 
 class DocumentVerifyView(APIView):
+    """
+    Verify uploaded document using OCR.
+    Supports PDF, JPG, JPEG and PNG.
+    """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
     parser_classes = [
         MultiPartParser,
         FormParser,
     ]
 
-    def post(self, request, *args, **kwargs):
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs
+    ):
 
-        file_obj = request.data.get(
+        print("")
+        print("==========================================")
+        print("DOCUMENT VERIFY REQUEST")
+        print("==========================================")
+
+        # ------------------------------------------------
+        # Get uploaded file
+        # ------------------------------------------------
+
+        file_obj = request.FILES.get(
             "document"
         )
 
@@ -314,70 +802,106 @@ class DocumentVerifyView(APIView):
             "expected_type"
         )
 
-        # ----------------------------------------------------
-        # Required fields
-        # ----------------------------------------------------
+        print(
+            "User:",
+            request.user
+        )
+
+        print(
+            "File:",
+            getattr(
+                file_obj,
+                "name",
+                None
+            )
+        )
+
+        print(
+            "Expected type:",
+            expected_type
+        )
+
+        # ------------------------------------------------
+        # Required file
+        # ------------------------------------------------
 
         if not file_obj:
 
             return Response(
                 {
                     "valid": False,
-                    "error": (
-                        "Document file is required."
-                    ),
+                    "message":
+                        "Document file is required.",
+                    "extracted": {},
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST
             )
+
+        # ------------------------------------------------
+        # Required document type
+        # ------------------------------------------------
 
         if not expected_type:
 
             return Response(
                 {
                     "valid": False,
-                    "error": (
-                        "Document type is required."
-                    ),
+                    "message":
+                        "Expected document type is required.",
+                    "extracted": {},
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ----------------------------------------------------
-        # Extra verification data
-        # ----------------------------------------------------
+        # ------------------------------------------------
+        # Extra data
+        # ------------------------------------------------
 
         extra_data = {
-            "expected_name": request.data.get(
-                "expected_name"
-            ),
+            "expected_name":
+                request.data.get(
+                    "expected_name"
+                ),
 
-            "expected_address": request.data.get(
-                "expected_address"
-            ),
+            "expected_address":
+                request.data.get(
+                    "expected_address"
+                ),
 
-            "expected_phone": request.data.get(
-                "expected_phone"
-            ),
+            "expected_phone":
+                request.data.get(
+                    "expected_phone"
+                ),
 
-            "expected_firm_name": request.data.get(
-                "expected_firm_name"
-            ),
+            "expected_firm_name":
+                request.data.get(
+                    "expected_firm_name"
+                ),
 
-            "expected_registration_no": request.data.get(
-                "expected_registration_no"
-            ),
+            "expected_registration_no":
+                request.data.get(
+                    "expected_registration_no"
+                ),
         }
 
-        # Remove only None values
         extra_data = {
             key: value
-            for key, value in extra_data.items()
-            if value is not None
+            for key, value
+            in extra_data.items()
+            if value not in (
+                None,
+                ""
+            )
         }
 
-        # ----------------------------------------------------
-        # File extension
-        # ----------------------------------------------------
+        print(
+            "Verification data:",
+            extra_data
+        )
+
+        # ------------------------------------------------
+        # Extension
+        # ------------------------------------------------
 
         original_name = (
             getattr(
@@ -393,10 +917,10 @@ class DocumentVerifyView(APIView):
         )[1].lower()
 
         allowed_extensions = {
-            ".pdf",
             ".jpg",
             ".jpeg",
             ".png",
+            ".pdf",
             ".webp",
             ".bmp",
             ".tiff",
@@ -408,21 +932,37 @@ class DocumentVerifyView(APIView):
             return Response(
                 {
                     "valid": False,
-                    "error": (
-                        "Unsupported file format. "
-                        "Please upload PDF, JPG or PNG."
-                    ),
+                    "message":
+                        "Unsupported file type. "
+                        "Use PDF, JPG, JPEG or PNG.",
+                    "extracted": {},
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ----------------------------------------------------
-        # Temporary file
-        # ----------------------------------------------------
+        # ------------------------------------------------
+        # File size
+        # ------------------------------------------------
+
+        if file_obj.size > 10 * 1024 * 1024:
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "File size cannot exceed 10MB.",
+                    "extracted": {},
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         tmp_path = None
 
         try:
+
+            # ------------------------------------------------
+            # Create temporary file
+            # ------------------------------------------------
 
             with tempfile.NamedTemporaryFile(
                 delete=False,
@@ -430,36 +970,27 @@ class DocumentVerifyView(APIView):
             ) as tmp_file:
 
                 for chunk in file_obj.chunks():
-                    tmp_file.write(chunk)
+
+                    tmp_file.write(
+                        chunk
+                    )
 
                 tmp_path = tmp_file.name
 
             print(
-                "======================================"
+                "Temporary file:",
+                tmp_path
             )
 
             print(
-                "DOCUMENT VERIFICATION STARTED"
-            )
-
-            print(
-                f"File: {original_name}"
-            )
-
-            print(
-                f"Temporary path: {tmp_path}"
-            )
-
-            print(
-                f"Expected type: {expected_type}"
-            )
-
-            print(
-                "======================================"
+                "Temporary file size:",
+                os.path.getsize(
+                    tmp_path
+                )
             )
 
             # ------------------------------------------------
-            # Verify
+            # VERIFY DOCUMENT
             # ------------------------------------------------
 
             result = verify_document(
@@ -469,26 +1000,62 @@ class DocumentVerifyView(APIView):
             )
 
             print(
-                "DOCUMENT VERIFICATION RESULT:"
-            )
-
-            print(
+                "Verification result:",
                 result
             )
 
+            # ------------------------------------------------
+            # Make sure result is a dictionary
+            # ------------------------------------------------
+
+            if not isinstance(
+                result,
+                dict
+            ):
+
+                print(
+                    "ERROR: verify_document returned:",
+                    type(result)
+                )
+
+                return Response(
+                    {
+                        "valid": False,
+                        "message":
+                            "Document verification returned an invalid response.",
+                        "extracted": {},
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
             return Response(
                 result,
-                status=200
+                status=status.HTTP_200_OK
             )
 
         except Exception as e:
 
+            print("")
             print(
-                "DOCUMENT VERIFICATION EXCEPTION:"
+                "=========================================="
             )
 
             print(
-                repr(e)
+                "DOCUMENT VERIFY ERROR"
+            )
+
+            print(
+                "Exception type:",
+                type(e).__name__
+            )
+
+            print(
+                "Exception:",
+                str(e)
+            )
+
+            print(
+                "=========================================="
             )
 
             traceback.print_exc()
@@ -496,12 +1063,15 @@ class DocumentVerifyView(APIView):
             return Response(
                 {
                     "valid": False,
-                    "error": (
-                        "Document processing failed."
-                    ),
-                    "details": str(e),
+                    "message":
+                        "Document processing failed.",
+                    "error_type":
+                        type(e).__name__,
+                    "error":
+                        str(e),
+                    "extracted": {},
                 },
-                status=500,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
         finally:
@@ -510,8 +1080,10 @@ class DocumentVerifyView(APIView):
             # Delete temporary file
             # ------------------------------------------------
 
-            if tmp_path and os.path.exists(
+            if (
                 tmp_path
+                and
+                os.path.exists(tmp_path)
             ):
 
                 try:
@@ -520,12 +1092,17 @@ class DocumentVerifyView(APIView):
                         tmp_path
                     )
 
+                    print(
+                        "Temporary file deleted."
+                    )
+
                 except Exception as e:
 
                     print(
-                        "Could not delete temporary file:",
-                        e
+                        "Temporary file cleanup failed:",
+                        repr(e)
                     )
+
 
 
 

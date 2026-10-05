@@ -13,18 +13,18 @@ from .ocr_nlp import (
 
 
 # ============================================================
-# TEXT NORMALIZATION
+# NORMALIZE
 # ============================================================
 
 def normalize_text(value):
-    """
-    Normalize text for comparison.
-    """
 
     if not value:
+
         return ""
 
-    value = str(value).lower()
+    value = str(
+        value
+    ).lower()
 
     value = re.sub(
         r"[^a-z0-9]+",
@@ -50,41 +50,43 @@ def fuzzy_match(
     actual,
     threshold=70
 ):
-    """
-    Compare expected and OCR extracted values.
-    """
 
     if not expected or not actual:
+
         return False
 
-    expected_normalized = normalize_text(
+    expected = normalize_text(
         expected
     )
 
-    actual_normalized = normalize_text(
+    actual = normalize_text(
         actual
     )
 
-    if not expected_normalized or not actual_normalized:
+    if not expected or not actual:
+
         return False
 
-    if expected_normalized in actual_normalized:
+    if expected in actual:
+
         return True
 
     score = fuzz.token_set_ratio(
-        expected_normalized,
-        actual_normalized
+        expected,
+        actual
     )
 
     return score >= threshold
 
 
 # ============================================================
-# PHONE MATCH
+# PHONE
 # ============================================================
 
 def normalize_phone(phone):
+
     if not phone:
+
         return ""
 
     digits = re.sub(
@@ -93,54 +95,66 @@ def normalize_phone(phone):
         str(phone)
     )
 
-    if digits.startswith("91") and len(digits) == 12:
+    if (
+        digits.startswith("91")
+        and
+        len(digits) == 12
+    ):
+
         digits = digits[-10:]
 
     return digits
 
 
-def phone_match(expected, actual):
-    expected = normalize_phone(expected)
-    actual = normalize_phone(actual)
+def phone_match(
+    expected,
+    actual
+):
 
-    if not expected or not actual:
-        return False
+    expected = normalize_phone(
+        expected
+    )
 
-    return expected == actual
+    actual = normalize_phone(
+        actual
+    )
+
+    return (
+        bool(expected)
+        and
+        bool(actual)
+        and
+        expected == actual
+    )
 
 
 # ============================================================
-# AADHAAR DETECTION
+# AADHAAR
 # ============================================================
 
-def detect_aadhaar_keyword(text):
-    """
-    Detect Aadhaar-related words.
+def detect_aadhaar_keyword(
+    text
+):
 
-    OCR can produce:
-        Aadhaar
-        Aadhar
-        Aadhaar Card
-        Unique Identification
-        UIDAI
-    """
-
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     keywords = [
         "aadhaar",
         "aadhar",
         "uidai",
         "unique identification",
-        "unique identification authority",
     ]
 
     for keyword in keywords:
 
-        if normalize_text(keyword) in normalized:
+        if normalize_text(
+            keyword
+        ) in normalized:
+
             return True
 
-    # Fuzzy keyword detection
     words = normalized.split()
 
     for word in words:
@@ -162,48 +176,45 @@ def detect_aadhaar_keyword(text):
     return False
 
 
-def detect_aadhaar_number(text):
-    """
-    Detect 12-digit Aadhaar number.
-
-    Supports spaces:
-        1234 5678 9012
-
-    and continuous:
-        123456789012
-    """
+def detect_aadhaar_number(
+    text
+):
 
     if not text:
+
         return False
 
-    # Remove obvious non-digit separators
     matches = re.findall(
         r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b",
         text
     )
 
-    return bool(matches)
+    return bool(
+        matches
+    )
 
 
-def detect_aadhaar_document(text):
-    """
-    Aadhaar document is considered detected when either:
-        - Aadhaar keyword exists
-        - 12 digit Aadhaar-like number exists
-    """
+def detect_aadhaar_document(
+    text
+):
 
     return (
         detect_aadhaar_keyword(text)
-        or detect_aadhaar_number(text)
+        or
+        detect_aadhaar_number(text)
     )
 
 
 # ============================================================
-# DOCUMENT TYPE NORMALIZATION
+# DOCUMENT TYPE
 # ============================================================
 
-def normalize_document_type(document_type):
+def normalize_document_type(
+    document_type
+):
+
     if not document_type:
+
         return ""
 
     value = normalize_text(
@@ -212,40 +223,69 @@ def normalize_document_type(document_type):
 
     aliases = {
 
-        "aadhaar": "aadhaar",
-        "aadhar": "aadhaar",
-        "aadhaar card": "aadhaar",
+        "aadhaar":
+            "aadhaar",
 
-        "id proof": "aadhaar",
-        "identity proof": "aadhaar",
+        "aadhar":
+            "aadhaar",
 
-        "bar council": "bar_council",
-        "bar council certificate": "bar_council",
-        "bar council id": "bar_council",
+        "aadhaar card":
+            "aadhaar",
 
-        "firm registration": "firm_registration",
-        "firm registration certificate": "firm_registration",
-        "registration certificate": "firm_registration",
+        "id proof":
+            "aadhaar",
 
-        "fir": "fir",
-        "first information report": "fir",
+        "identity proof":
+            "aadhaar",
 
-        "notice": "notice",
-        "legal notice": "notice",
+        "bar council":
+            "bar_council",
+
+        "bar council certificate":
+            "bar_council",
+
+        "bar council id":
+            "bar_council",
+
+        "firm registration":
+            "firm_registration",
+
+        "firm registration certificate":
+            "firm_registration",
+
+        "registration certificate":
+            "firm_registration",
+
+        "fir":
+            "fir",
+
+        "first information report":
+            "fir",
+
+        "notice":
+            "notice",
     }
 
     return aliases.get(
         value,
-        value.replace(" ", "_")
+        value.replace(
+            " ",
+            "_"
+        )
     )
 
 
 # ============================================================
-# BAR COUNCIL DETECTION
+# DOCUMENT DETECTION
 # ============================================================
 
-def detect_bar_council(text):
-    normalized = normalize_text(text)
+def detect_bar_council(
+    text
+):
+
+    normalized = normalize_text(
+        text
+    )
 
     keywords = [
         "bar council",
@@ -255,20 +295,20 @@ def detect_bar_council(text):
         "advocate",
     ]
 
-    for keyword in keywords:
+    return any(
+        normalize_text(keyword)
+        in normalized
+        for keyword in keywords
+    )
 
-        if normalize_text(keyword) in normalized:
-            return True
 
-    return False
+def detect_firm_registration(
+    text
+):
 
-
-# ============================================================
-# FIRM REGISTRATION DETECTION
-# ============================================================
-
-def detect_firm_registration(text):
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     keywords = [
         "firm registration",
@@ -279,20 +319,20 @@ def detect_firm_registration(text):
         "firm",
     ]
 
-    for keyword in keywords:
+    return any(
+        normalize_text(keyword)
+        in normalized
+        for keyword in keywords
+    )
 
-        if normalize_text(keyword) in normalized:
-            return True
 
-    return False
+def detect_fir(
+    text
+):
 
-
-# ============================================================
-# FIR DETECTION
-# ============================================================
-
-def detect_fir(text):
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     keywords = [
         "first information report",
@@ -302,20 +342,20 @@ def detect_fir(text):
         "fir no",
     ]
 
-    for keyword in keywords:
+    return any(
+        normalize_text(keyword)
+        in normalized
+        for keyword in keywords
+    )
 
-        if normalize_text(keyword) in normalized:
-            return True
 
-    return False
+def detect_notice(
+    text
+):
 
-
-# ============================================================
-# NOTICE DETECTION
-# ============================================================
-
-def detect_notice(text):
-    normalized = normalize_text(text)
+    normalized = normalize_text(
+        text
+    )
 
     keywords = [
         "legal notice",
@@ -324,49 +364,57 @@ def detect_notice(text):
         "advocate notice",
     ]
 
-    for keyword in keywords:
+    return any(
+        normalize_text(keyword)
+        in normalized
+        for keyword in keywords
+    )
 
-        if normalize_text(keyword) in normalized:
-            return True
-
-    return False
-
-
-# ============================================================
-# GENERIC DOCUMENT DETECTION
-# ============================================================
 
 def detect_document_type(
     text,
     expected_type
 ):
+
     expected_type = normalize_document_type(
         expected_type
     )
 
     if expected_type == "aadhaar":
-        return detect_aadhaar_document(text)
+
+        return detect_aadhaar_document(
+            text
+        )
 
     if expected_type == "bar_council":
-        return detect_bar_council(text)
+
+        return detect_bar_council(
+            text
+        )
 
     if expected_type == "firm_registration":
-        return detect_firm_registration(text)
+
+        return detect_firm_registration(
+            text
+        )
 
     if expected_type == "fir":
-        return detect_fir(text)
+
+        return detect_fir(
+            text
+        )
 
     if expected_type == "notice":
-        return detect_notice(text)
 
-    # If unknown document type,
-    # don't automatically reject solely because
-    # there is no detector.
+        return detect_notice(
+            text
+        )
+
     return True
 
 
 # ============================================================
-# VERIFY DOCUMENT
+# MAIN VERIFICATION
 # ============================================================
 
 def verify_document(
@@ -374,28 +422,22 @@ def verify_document(
     expected_type,
     **kwargs
 ):
-    """
-    Main document verification function.
-    """
 
     expected_type = normalize_document_type(
         expected_type
     )
 
-    # --------------------------------------------------------
-    # Validate document type
-    # --------------------------------------------------------
-
     if not expected_type:
 
         return {
             "valid": False,
-            "message": "Document type is required.",
+            "message":
+                "Document type is required.",
             "extracted": {},
         }
 
     # --------------------------------------------------------
-    # OCR / Text extraction
+    # OCR
     # --------------------------------------------------------
 
     try:
@@ -407,100 +449,91 @@ def verify_document(
     except Exception as e:
 
         print(
-            f"DOCUMENT OCR ERROR: {repr(e)}"
+            "OCR/FILE EXTRACTION ERROR:",
+            repr(e)
         )
 
         return {
             "valid": False,
-            "message": str(e),
+            "message":
+                str(e),
             "extracted": {},
         }
 
     # --------------------------------------------------------
-    # No text
+    # Empty OCR
     # --------------------------------------------------------
 
     if not text or not text.strip():
 
         return {
             "valid": False,
-            "message": (
+            "message":
                 "Could not read document. "
-                "Upload a clear image/PDF."
-            ),
+                "Upload a clear image/PDF.",
             "extracted": {},
         }
-
-    # --------------------------------------------------------
-    # Clean OCR text
-    # --------------------------------------------------------
 
     text = text.strip()
 
     print(
-        "========== OCR TEXT START =========="
+        "OCR TEXT LENGTH:",
+        len(text)
+    )
+
+    print(
+        "OCR TEXT:"
     )
 
     print(
         text[:5000]
     )
 
-    print(
-        "=========== OCR TEXT END ==========="
-    )
-
     # --------------------------------------------------------
     # Extract fields
     # --------------------------------------------------------
 
-    extracted_name = extract_name(
-        text
-    )
-
-    extracted_address = extract_address(
-        text
-    )
-
-    extracted_phone = extract_phone(
-        text
-    )
-
-    extracted_firm_name = extract_firm_name(
-        text
-    )
-
-    extracted_registration_number = (
-        extract_registration_number(text)
-    )
-
     extracted = {
-        "name": extracted_name,
-        "address": extracted_address,
-        "phone": extracted_phone,
-        "firm_name": extracted_firm_name,
-        "registration_number": (
-            extracted_registration_number
-        ),
+
+        "name":
+            extract_name(text),
+
+        "address":
+            extract_address(text),
+
+        "phone":
+            extract_phone(text),
+
+        "firm_name":
+            extract_firm_name(text),
+
+        "registration_number":
+            extract_registration_number(text),
     }
 
-    # --------------------------------------------------------
-    # Document type detection
-    # --------------------------------------------------------
-
-    document_detected = detect_document_type(
-        text,
-        expected_type
+    print(
+        "EXTRACTED:",
+        extracted
     )
 
-    if not document_detected:
+    # --------------------------------------------------------
+    # Detect document
+    # --------------------------------------------------------
+
+    if not detect_document_type(
+        text,
+        expected_type
+    ):
 
         return {
             "valid": False,
-            "message": (
+
+            "message":
                 "Uploaded document does not appear "
-                "to be the selected document type."
-            ),
-            "extracted": extracted,
+                "to be the selected document type.",
+
+            "extracted":
+                extracted,
         }
 
     # --------------------------------------------------------
@@ -528,61 +561,41 @@ def verify_document(
     )
 
     # --------------------------------------------------------
-    # Validation results
+    # Checks
     # --------------------------------------------------------
 
     checks = {}
-
-    # --------------------------------------------------------
-    # NAME
-    # --------------------------------------------------------
 
     if expected_name:
 
         checks["name"] = fuzzy_match(
             expected_name,
-            extracted_name,
-            threshold=70
+            extracted["name"],
+            70
         )
-
-    # --------------------------------------------------------
-    # ADDRESS
-    # --------------------------------------------------------
 
     if expected_address:
 
         checks["address"] = fuzzy_match(
             expected_address,
-            extracted_address,
-            threshold=60
+            extracted["address"],
+            60
         )
-
-    # --------------------------------------------------------
-    # PHONE
-    # --------------------------------------------------------
 
     if expected_phone:
 
         checks["phone"] = phone_match(
             expected_phone,
-            extracted_phone
+            extracted["phone"]
         )
-
-    # --------------------------------------------------------
-    # FIRM NAME
-    # --------------------------------------------------------
 
     if expected_firm_name:
 
         checks["firm_name"] = fuzzy_match(
             expected_firm_name,
-            extracted_firm_name,
-            threshold=65
+            extracted["firm_name"],
+            65
         )
-
-    # --------------------------------------------------------
-    # REGISTRATION NUMBER
-    # --------------------------------------------------------
 
     if expected_registration_no:
 
@@ -591,36 +604,42 @@ def verify_document(
         )
 
         actual_reg = normalize_text(
-            extracted_registration_number
+            extracted["registration_number"]
         )
 
-        checks["registration_number"] = (
+        checks[
+            "registration_number"
+        ] = (
             bool(expected_reg)
-            and bool(actual_reg)
-            and (
+            and
+            bool(actual_reg)
+            and
+            (
                 expected_reg == actual_reg
-                or expected_reg in actual_reg
-                or actual_reg in expected_reg
+                or
+                expected_reg in actual_reg
+                or
+                actual_reg in expected_reg
             )
         )
 
     # --------------------------------------------------------
-    # If no expected fields were supplied
+    # No expected fields
     # --------------------------------------------------------
 
     if not checks:
 
         return {
             "valid": True,
-            "message": (
-                "Document read successfully."
-            ),
-            "extracted": extracted,
+            "message":
+                "Document read successfully.",
+            "extracted":
+                extracted,
             "checks": {},
         }
 
     # --------------------------------------------------------
-    # Overall result
+    # Final result
     # --------------------------------------------------------
 
     valid = all(
@@ -629,27 +648,29 @@ def verify_document(
 
     failed_checks = [
         key
-        for key, value in checks.items()
+        for key, value
+        in checks.items()
         if not value
     ]
 
-    if valid:
-
-        message = (
-            "Document verified successfully."
-        )
-
-    else:
-
-        message = (
-            "Document was read, but some details "
-            "could not be verified."
-        )
-
     return {
         "valid": valid,
-        "message": message,
-        "extracted": extracted,
-        "checks": checks,
-        "failed_checks": failed_checks,
+
+        "message":
+            (
+                "Document verified successfully."
+                if valid
+                else
+                "Document was read, but some details "
+                "could not be verified."
+            ),
+
+        "extracted":
+            extracted,
+
+        "checks":
+            checks,
+
+        "failed_checks":
+            failed_checks,
     }
