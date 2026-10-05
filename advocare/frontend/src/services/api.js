@@ -5,51 +5,48 @@ console.log("🔥 API URL:", process.env.REACT_APP_API_URL);
 const API = axios.create({
     baseURL: process.env.REACT_APP_API_URL,
     headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     },
 });
 
-console.log("🔥 Axios Base URL:", API.defaults.baseURL);
-
-// Request interceptor to add token
 API.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("access_token");
 
-        console.log("🔥 TOKEN:", token);
-        console.log("🔥 REQUEST URL:", config.url);
+        console.log("========== API REQUEST ==========");
+        console.log("URL:", config.baseURL + config.url);
+        console.log("TOKEN EXISTS:", !!token);
 
         if (token) {
+            config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
-            console.log("🔥 AUTH HEADER ADDED:", config.headers.Authorization);
+
+            console.log("✅ Authorization header added");
+        } else {
+            console.error("❌ access_token NOT FOUND in localStorage");
         }
+
+        console.log("=================================");
 
         return config;
     },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor to handle 401 errors
-API.interceptors.response.use(
-    (response) => {
-        return response;
-    },
     (error) => {
-        // Use traditional check instead of optional chaining
-        if (error.response && error.response.status === 401) {
-            localStorage.clear();
-            window.location.href = "/";
-        }
         return Promise.reject(error);
     }
 );
 
-// For file uploads - dynamic content type
-API.interceptors.request.use((config) => {
-    if (config.data instanceof FormData) {
-        config.headers['Content-Type'] = 'multipart/form-data';
+API.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.error(
+            "❌ API ERROR:",
+            error.response?.status,
+            error.config?.url
+        );
+
+        // Abhi debugging ke time automatic logout mat karo
+        return Promise.reject(error);
     }
-    return config;
-});
+);
 
 export default API;

@@ -195,27 +195,3 @@ function SignupClient() {
 }
 
 export default SignupClient;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
