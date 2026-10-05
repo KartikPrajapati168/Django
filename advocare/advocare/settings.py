@@ -1,12 +1,3 @@
-"""
-Django settings for AdvoCare project.
-
-Local development configuration:
-- Django REST Framework
-- JWT Authentication
-- React frontend on localhost:3000
-- PostgreSQL on localhost:5432
-"""
 
 import os
 from pathlib import Path
@@ -156,41 +147,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "advocare.wsgi.application"
 
 
-# ============================================================
-# DATABASE
-# ============================================================
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-
-#         "NAME": config(
-#             "DB_NAME",
-#             default="advocare_db"
-#         ),
-
-#         "USER": config(
-#             "DB_USER",
-#             default="postgres"
-#         ),
-
-#         "PASSWORD": config(
-#             "DB_PASSWORD",
-#             default="postgres"
-#         ),
-
-#         "HOST": config(
-#             "DB_HOST",
-#             default="localhost"
-#         ),
-
-#         "PORT": config(
-#             "DB_PORT",
-#             default="5432"
-#         ),
-#     }
-# }
-
 DATABASES = {
     "default": dj_database_url.parse(
         config("DATABASE_URL"),
@@ -313,16 +269,6 @@ SIMPLE_JWT = {
 }
 
 
-# ============================================================
-# CORS
-# ============================================================
-
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
-
-# CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
@@ -331,14 +277,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
-# ============================================================
-# CSRF
-# ============================================================
-
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://127.0.0.1:3000",
-# ]
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
