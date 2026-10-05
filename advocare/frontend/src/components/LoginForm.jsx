@@ -31,6 +31,9 @@ function LoginForm() {
                 payload.secret_key = secretKey;
             }
 
+            console.log("🔥 LOGIN API BASE URL:", API.defaults.baseURL);
+            console.log("🔥 LOGIN FULL URL:", API.defaults.baseURL + 'accounts/login/');
+
             const response = await API.post('accounts/login/', payload);
 
             if (response.data.access) {
