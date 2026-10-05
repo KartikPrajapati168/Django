@@ -1,7 +1,3 @@
-# ============================================================
-# document_verifier.py
-# ============================================================
-
 import re
 
 from fuzzywuzzy import fuzz
@@ -13,32 +9,36 @@ from .ocr_nlp import (
     extract_phone,
     extract_firm_name,
     extract_registration_number,
-    normalize_text,
-    normalize_document_type,
-    detect_aadhaar_document,
 )
 
 
 # ============================================================
-# SAFE PREVIEW
+# TEXT NORMALIZATION
 # ============================================================
 
-def safe_ocr_preview(text, limit=500):
+def normalize_text(value):
+    """
+    Normalize text for comparison.
+    """
 
-    if not text:
-
+    if not value:
         return ""
 
-    preview = text[:limit]
+    value = str(value).lower()
 
-    # Mask 12 digit numbers
-    preview = re.sub(
-        r"\d{4}[\s\-]?\d{4}[\s\-]?\d{4}",
-        "[ID-NUMBER-MASKED]",
-        preview
+    value = re.sub(
+        r"[^a-z0-9]+",
+        " ",
+        value
     )
 
-    return preview
+    value = re.sub(
+        r"\s+",
+        " ",
+        value
+    )
+
+    return value.strip()
 
 
 # ============================================================
@@ -50,114 +50,408 @@ def fuzzy_match(
     actual,
     threshold=70
 ):
+    """
+    Compare expected and OCR extracted values.
+    """
 
-    expected = normalize_text(
+    if not expected or not actual:
+        return False
+
+    expected_normalized = normalize_text(
         expected
     )
 
-    actual = normalize_text(
+    actual_normalized = normalize_text(
         actual
     )
 
-    if not expected or not actual:
+    if not expected_normalized or not actual_normalized:
+        return False
 
-        return False, 0
+    if expected_normalized in actual_normalized:
+        return True
 
     score = fuzz.token_set_ratio(
-        expected,
-        actual
+        expected_normalized,
+        actual_normalized
     )
 
-    return (
-        score >= threshold,
-        score
-    )
+    return score >= threshold
 
 
 # ============================================================
 # PHONE MATCH
 # ============================================================
 
-def phone_match(
-    expected,
-    actual
-):
+def normalize_phone(phone):
+    if not phone:
+        return ""
 
-    expected_digits = re.sub(
+    digits = re.sub(
         r"\D",
         "",
-        str(expected or "")
+        str(phone)
     )
 
-    actual_digits = re.sub(
-        r"\D",
-        "",
-        str(actual or "")
+    if digits.startswith("91") and len(digits) == 12:
+        digits = digits[-10:]
+
+    return digits
+
+
+def phone_match(expected, actual):
+    expected = normalize_phone(expected)
+    actual = normalize_phone(actual)
+
+    if not expected or not actual:
+        return False
+
+    return expected == actual
+
+
+# ============================================================
+# AADHAAR DETECTION
+# ============================================================
+
+def detect_aadhaar_keyword(text):
+    """
+    Detect Aadhaar-related words.
+
+    OCR can produce:
+        Aadhaar
+        Aadhar
+        Aadhaar Card
+        Unique Identification
+        UIDAI
+    """
+
+    normalized = normalize_text(text)
+
+    keywords = [
+        "aadhaar",
+        "aadhar",
+        "uidai",
+        "unique identification",
+        "unique identification authority",
+    ]
+
+    for keyword in keywords:
+
+        if normalize_text(keyword) in normalized:
+            return True
+
+    # Fuzzy keyword detection
+    words = normalized.split()
+
+    for word in words:
+
+        if fuzz.ratio(
+            word,
+            "aadhaar"
+        ) >= 75:
+
+            return True
+
+        if fuzz.ratio(
+            word,
+            "aadhar"
+        ) >= 75:
+
+            return True
+
+    return False
+
+
+def detect_aadhaar_number(text):
+    """
+    Detect 12-digit Aadhaar number.
+
+    Supports spaces:
+        1234 5678 9012
+
+    and continuous:
+        123456789012
+    """
+
+    if not text:
+        return False
+
+    # Remove obvious non-digit separators
+    matches = re.findall(
+        r"\b\d{4}[\s\-]?\d{4}[\s\-]?\d{4}\b",
+        text
     )
 
-    if (
-        len(expected_digits) > 10
-        and expected_digits.startswith("91")
-    ):
+    return bool(matches)
 
-        expected_digits = (
-            expected_digits[-10:]
-        )
 
-    if (
-        len(actual_digits) > 10
-        and actual_digits.startswith("91")
-    ):
-
-        actual_digits = (
-            actual_digits[-10:]
-        )
-
-    if not expected_digits:
-
-        return False
-
-    if not actual_digits:
-
-        return False
+def detect_aadhaar_document(text):
+    """
+    Aadhaar document is considered detected when either:
+        - Aadhaar keyword exists
+        - 12 digit Aadhaar-like number exists
+    """
 
     return (
-        expected_digits
-        == actual_digits
+        detect_aadhaar_keyword(text)
+        or detect_aadhaar_number(text)
     )
 
 
 # ============================================================
-# BAR COUNCIL
+# DOCUMENT TYPE NORMALIZATION
 # ============================================================
 
-def verify_bar_council(
+def normalize_document_type(document_type):
+    if not document_type:
+        return ""
+
+    value = normalize_text(
+        document_type
+    )
+
+    aliases = {
+
+        "aadhaar": "aadhaar",
+        "aadhar": "aadhaar",
+        "aadhaar card": "aadhaar",
+
+        "id proof": "aadhaar",
+        "identity proof": "aadhaar",
+
+        "bar council": "bar_council",
+        "bar council certificate": "bar_council",
+        "bar council id": "bar_council",
+
+        "firm registration": "firm_registration",
+        "firm registration certificate": "firm_registration",
+        "registration certificate": "firm_registration",
+
+        "fir": "fir",
+        "first information report": "fir",
+
+        "notice": "notice",
+        "legal notice": "notice",
+    }
+
+    return aliases.get(
+        value,
+        value.replace(" ", "_")
+    )
+
+
+# ============================================================
+# BAR COUNCIL DETECTION
+# ============================================================
+
+def detect_bar_council(text):
+    normalized = normalize_text(text)
+
+    keywords = [
+        "bar council",
+        "bar counsil",
+        "bar council of india",
+        "state bar council",
+        "advocate",
+    ]
+
+    for keyword in keywords:
+
+        if normalize_text(keyword) in normalized:
+            return True
+
+    return False
+
+
+# ============================================================
+# FIRM REGISTRATION DETECTION
+# ============================================================
+
+def detect_firm_registration(text):
+    normalized = normalize_text(text)
+
+    keywords = [
+        "firm registration",
+        "registration certificate",
+        "registered firm",
+        "registration number",
+        "registration no",
+        "firm",
+    ]
+
+    for keyword in keywords:
+
+        if normalize_text(keyword) in normalized:
+            return True
+
+    return False
+
+
+# ============================================================
+# FIR DETECTION
+# ============================================================
+
+def detect_fir(text):
+    normalized = normalize_text(text)
+
+    keywords = [
+        "first information report",
+        "fir",
+        "police station",
+        "fir number",
+        "fir no",
+    ]
+
+    for keyword in keywords:
+
+        if normalize_text(keyword) in normalized:
+            return True
+
+    return False
+
+
+# ============================================================
+# NOTICE DETECTION
+# ============================================================
+
+def detect_notice(text):
+    normalized = normalize_text(text)
+
+    keywords = [
+        "legal notice",
+        "notice",
+        "hereby notice",
+        "advocate notice",
+    ]
+
+    for keyword in keywords:
+
+        if normalize_text(keyword) in normalized:
+            return True
+
+    return False
+
+
+# ============================================================
+# GENERIC DOCUMENT DETECTION
+# ============================================================
+
+def detect_document_type(
     text,
+    expected_type
+):
+    expected_type = normalize_document_type(
+        expected_type
+    )
+
+    if expected_type == "aadhaar":
+        return detect_aadhaar_document(text)
+
+    if expected_type == "bar_council":
+        return detect_bar_council(text)
+
+    if expected_type == "firm_registration":
+        return detect_firm_registration(text)
+
+    if expected_type == "fir":
+        return detect_fir(text)
+
+    if expected_type == "notice":
+        return detect_notice(text)
+
+    # If unknown document type,
+    # don't automatically reject solely because
+    # there is no detector.
+    return True
+
+
+# ============================================================
+# VERIFY DOCUMENT
+# ============================================================
+
+def verify_document(
+    file_path,
+    expected_type,
     **kwargs
 ):
+    """
+    Main document verification function.
+    """
 
-    lower = text.lower()
+    expected_type = normalize_document_type(
+        expected_type
+    )
 
-    if not (
-        "bar council" in lower
-        or
-        (
-            "advocate" in lower
-            and
-            re.search(
-                r"\b\d{4,6}\b",
-                text
-            )
-        )
-    ):
+    # --------------------------------------------------------
+    # Validate document type
+    # --------------------------------------------------------
+
+    if not expected_type:
 
         return {
             "valid": False,
-            "message":
-                "Document does not appear to be "
-                "a Bar Council certificate.",
+            "message": "Document type is required.",
             "extracted": {},
         }
+
+    # --------------------------------------------------------
+    # OCR / Text extraction
+    # --------------------------------------------------------
+
+    try:
+
+        text = extract_text_from_file(
+            file_path
+        )
+
+    except Exception as e:
+
+        print(
+            f"DOCUMENT OCR ERROR: {repr(e)}"
+        )
+
+        return {
+            "valid": False,
+            "message": str(e),
+            "extracted": {},
+        }
+
+    # --------------------------------------------------------
+    # No text
+    # --------------------------------------------------------
+
+    if not text or not text.strip():
+
+        return {
+            "valid": False,
+            "message": (
+                "Could not read document. "
+                "Upload a clear image/PDF."
+            ),
+            "extracted": {},
+        }
+
+    # --------------------------------------------------------
+    # Clean OCR text
+    # --------------------------------------------------------
+
+    text = text.strip()
+
+    print(
+        "========== OCR TEXT START =========="
+    )
+
+    print(
+        text[:5000]
+    )
+
+    print(
+        "=========== OCR TEXT END ==========="
+    )
+
+    # --------------------------------------------------------
+    # Extract fields
+    # --------------------------------------------------------
 
     extracted_name = extract_name(
         text
@@ -171,6 +465,48 @@ def verify_bar_council(
         text
     )
 
+    extracted_firm_name = extract_firm_name(
+        text
+    )
+
+    extracted_registration_number = (
+        extract_registration_number(text)
+    )
+
+    extracted = {
+        "name": extracted_name,
+        "address": extracted_address,
+        "phone": extracted_phone,
+        "firm_name": extracted_firm_name,
+        "registration_number": (
+            extracted_registration_number
+        ),
+    }
+
+    # --------------------------------------------------------
+    # Document type detection
+    # --------------------------------------------------------
+
+    document_detected = detect_document_type(
+        text,
+        expected_type
+    )
+
+    if not document_detected:
+
+        return {
+            "valid": False,
+            "message": (
+                "Uploaded document does not appear "
+                "to be the selected document type."
+            ),
+            "extracted": extracted,
+        }
+
+    # --------------------------------------------------------
+    # Expected values
+    # --------------------------------------------------------
+
     expected_name = kwargs.get(
         "expected_name"
     )
@@ -183,803 +519,137 @@ def verify_bar_council(
         "expected_phone"
     )
 
-    errors = []
-
-    if expected_name:
-
-        valid, score = fuzzy_match(
-            expected_name,
-            extracted_name,
-            threshold=65
-        )
-
-        if not valid:
-
-            errors.append(
-                f"Name mismatch. "
-                f"Expected '{expected_name}', "
-                f"found '{extracted_name or 'nothing'}' "
-                f"(score {score})"
-            )
-
-    if expected_address:
-
-        valid, score = fuzzy_match(
-            expected_address,
-            extracted_address,
-            threshold=55
-        )
-
-        if not valid:
-
-            errors.append(
-                f"Address mismatch. "
-                f"Expected '{expected_address}', "
-                f"found '{extracted_address or 'nothing'}' "
-                f"(score {score})"
-            )
-
-    if expected_phone:
-
-        if not phone_match(
-            expected_phone,
-            extracted_phone
-        ):
-
-            errors.append(
-                f"Phone mismatch. "
-                f"Expected '{expected_phone}', "
-                f"found '{extracted_phone or 'nothing'}'"
-            )
-
-    if errors:
-
-        return {
-            "valid": False,
-            "message": "; ".join(errors),
-            "extracted": {
-                "name":
-                    extracted_name,
-
-                "address":
-                    extracted_address,
-
-                "phone":
-                    extracted_phone,
-            },
-        }
-
-    return {
-        "valid": True,
-
-        "message":
-            "Bar Council certificate "
-            "verified successfully.",
-
-        "extracted": {
-
-            "name":
-                extracted_name,
-
-            "address":
-                extracted_address,
-
-            "phone":
-                extracted_phone,
-        },
-    }
-
-
-# ============================================================
-# FIRM REGISTRATION
-# ============================================================
-
-def verify_firm_registration(
-    text,
-    **kwargs
-):
-
-    lower = text.lower()
-
-    valid_document = (
-
-        "registrar of firms" in lower
-
-        or
-
-        (
-            "firm name" in lower
-            and
-            "registration" in lower
-        )
-
-        or
-
-        (
-            "registration certificate"
-            in lower
-        )
-    )
-
-    if not valid_document:
-
-        return {
-            "valid": False,
-
-            "message":
-                "Document does not appear to be "
-                "a firm registration certificate.",
-
-            "extracted": {},
-        }
-
-    extracted_firm = (
-        extract_firm_name(text)
-    )
-
-    extracted_reg = (
-        extract_registration_number(
-            text
-        )
-    )
-
-    expected_firm = kwargs.get(
+    expected_firm_name = kwargs.get(
         "expected_firm_name"
     )
 
-    expected_reg = kwargs.get(
+    expected_registration_no = kwargs.get(
         "expected_registration_no"
     )
 
-    errors = []
-
-    if expected_firm:
-
-        valid, score = fuzzy_match(
-            expected_firm,
-            extracted_firm,
-            threshold=65
-        )
-
-        if not valid:
-
-            errors.append(
-                f"Firm name mismatch. "
-                f"Expected '{expected_firm}', "
-                f"found '{extracted_firm or 'nothing'}' "
-                f"(score {score})"
-            )
-
-    if expected_reg:
-
-        expected_normalized = (
-            normalize_text(
-                expected_reg
-            )
-        )
-
-        actual_normalized = (
-            normalize_text(
-                extracted_reg
-            )
-        )
-
-        if (
-            not actual_normalized
-            or
-            expected_normalized
-            != actual_normalized
-        ):
-
-            errors.append(
-                f"Registration number mismatch. "
-                f"Expected '{expected_reg}', "
-                f"found '{extracted_reg or 'nothing'}'"
-            )
-
-    if errors:
-
-        return {
-            "valid": False,
-            "message": "; ".join(errors),
-
-            "extracted": {
-
-                "firm_name":
-                    extracted_firm,
-
-                "registration_number":
-                    extracted_reg,
-            },
-        }
-
-    return {
-        "valid": True,
-
-        "message":
-            "Firm registration verified "
-            "successfully.",
-
-        "extracted": {
-
-            "firm_name":
-                extracted_firm,
-
-            "registration_number":
-                extracted_reg,
-        },
-    }
-
-
-# ============================================================
-# AADHAAR / ID PROOF
-# ============================================================
-
-def verify_aadhaar(
-    text,
-    **kwargs
-):
-
     # --------------------------------------------------------
-    # Detect Aadhaar
+    # Validation results
     # --------------------------------------------------------
 
-    if not detect_aadhaar_document(
-        text
-    ):
-
-        return {
-
-            "valid": False,
-
-            "message":
-                "Document does not appear to be "
-                "a valid Aadhaar / ID proof.",
-
-            "extracted": {},
-        }
+    checks = {}
 
     # --------------------------------------------------------
-    # Extract name
-    # --------------------------------------------------------
-
-    extracted_name = extract_name(
-        text
-    )
-
-    expected_name = kwargs.get(
-        "expected_name"
-    )
-
-    # --------------------------------------------------------
-    # Name verification
+    # NAME
     # --------------------------------------------------------
 
     if expected_name:
 
-        valid, score = fuzzy_match(
+        checks["name"] = fuzzy_match(
             expected_name,
             extracted_name,
-            threshold=65
+            threshold=70
         )
-
-        if not valid:
-
-            return {
-
-                "valid": False,
-
-                "message":
-                    f"Name mismatch. "
-                    f"Expected '{expected_name}', "
-                    f"found "
-                    f"'{extracted_name or 'nothing'}' "
-                    f"(score {score}).",
-
-                "extracted": {
-
-                    "name":
-                        extracted_name,
-                },
-            }
 
     # --------------------------------------------------------
-    # Success
+    # ADDRESS
     # --------------------------------------------------------
 
-    return {
+    if expected_address:
 
-        "valid": True,
+        checks["address"] = fuzzy_match(
+            expected_address,
+            extracted_address,
+            threshold=60
+        )
 
-        "message":
-            "Aadhaar / ID proof verified "
-            "successfully.",
+    # --------------------------------------------------------
+    # PHONE
+    # --------------------------------------------------------
 
-        "extracted": {
+    if expected_phone:
 
-            "name":
-                extracted_name,
-        },
-    }
+        checks["phone"] = phone_match(
+            expected_phone,
+            extracted_phone
+        )
 
+    # --------------------------------------------------------
+    # FIRM NAME
+    # --------------------------------------------------------
 
-# ============================================================
-# PAN
-# ============================================================
+    if expected_firm_name:
 
-def verify_pan(
-    text,
-    **kwargs
-):
-
-    lower = text.lower()
-
-    pan_match = re.search(
-        r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",
-        text.upper()
-    )
-
-    keyword_found = (
-        "income tax" in lower
-        or
-        "permanent account number"
-        in lower
-    )
-
-    if not (
-        keyword_found
-        or
-        pan_match
-    ):
-
-        return {
-
-            "valid": False,
-
-            "message":
-                "Document does not appear "
-                "to be a PAN card.",
-
-            "extracted": {},
-        }
-
-    extracted_name = extract_name(
-        text
-    )
-
-    expected_name = kwargs.get(
-        "expected_name"
-    )
-
-    if expected_name:
-
-        valid, score = fuzzy_match(
-            expected_name,
-            extracted_name,
+        checks["firm_name"] = fuzzy_match(
+            expected_firm_name,
+            extracted_firm_name,
             threshold=65
         )
 
-        if not valid:
+    # --------------------------------------------------------
+    # REGISTRATION NUMBER
+    # --------------------------------------------------------
 
-            return {
+    if expected_registration_no:
 
-                "valid": False,
+        expected_reg = normalize_text(
+            expected_registration_no
+        )
 
-                "message":
-                    f"Name mismatch. "
-                    f"Expected '{expected_name}', "
-                    f"found "
-                    f"'{extracted_name or 'nothing'}'.",
+        actual_reg = normalize_text(
+            extracted_registration_number
+        )
 
-                "extracted": {
+        checks["registration_number"] = (
+            bool(expected_reg)
+            and bool(actual_reg)
+            and (
+                expected_reg == actual_reg
+                or expected_reg in actual_reg
+                or actual_reg in expected_reg
+            )
+        )
 
-                    "name":
-                        extracted_name,
+    # --------------------------------------------------------
+    # If no expected fields were supplied
+    # --------------------------------------------------------
 
-                    "pan_number":
-                        pan_match.group(0)
-                        if pan_match
-                        else "",
-                },
-            }
-
-    return {
-
-        "valid": True,
-
-        "message":
-            "PAN document verified successfully.",
-
-        "extracted": {
-
-            "name":
-                extracted_name,
-
-            "pan_number":
-                pan_match.group(0)
-                if pan_match
-                else "",
-        },
-    }
-
-
-# ============================================================
-# PASSPORT
-# ============================================================
-
-def verify_passport(
-    text,
-    **kwargs
-):
-
-    lower = text.lower()
-
-    passport_found = any(
-        keyword in lower
-        for keyword in [
-
-            "passport",
-
-            "republic of india",
-
-            "nationality",
-
-            "place of birth",
-
-        ]
-    )
-
-    if not passport_found:
+    if not checks:
 
         return {
-
-            "valid": False,
-
-            "message":
-                "Document does not appear "
-                "to be a passport.",
-
-            "extracted": {},
+            "valid": True,
+            "message": (
+                "Document read successfully."
+            ),
+            "extracted": extracted,
+            "checks": {},
         }
 
-    extracted_name = extract_name(
-        text
+    # --------------------------------------------------------
+    # Overall result
+    # --------------------------------------------------------
+
+    valid = all(
+        checks.values()
     )
 
-    expected_name = kwargs.get(
-        "expected_name"
-    )
-
-    if expected_name:
-
-        valid, score = fuzzy_match(
-            expected_name,
-            extracted_name,
-            threshold=65
-        )
-
-        if not valid:
-
-            return {
-
-                "valid": False,
-
-                "message":
-                    f"Name mismatch. "
-                    f"Expected '{expected_name}', "
-                    f"found "
-                    f"'{extracted_name or 'nothing'}'.",
-
-                "extracted": {
-
-                    "name":
-                        extracted_name,
-                },
-            }
-
-    return {
-
-        "valid": True,
-
-        "message":
-            "Passport verified successfully.",
-
-        "extracted": {
-
-            "name":
-                extracted_name,
-        },
-    }
-
-
-# ============================================================
-# FIR
-# ============================================================
-
-def verify_fir(
-    text
-):
-
-    lower = text.lower()
-
-    if (
-        "fir" not in lower
-        and
-        "first information report"
-        not in lower
-    ):
-
-        return {
-
-            "valid": False,
-
-            "message":
-                "Document does not appear "
-                "to be an FIR.",
-
-            "extracted": {},
-        }
-
-    return {
-
-        "valid": True,
-
-        "message":
-            "FIR verified successfully.",
-
-        "extracted": {},
-    }
-
-
-# ============================================================
-# LEGAL NOTICE
-# ============================================================
-
-def verify_notice(
-    text
-):
-
-    lower = text.lower()
-
-    if "notice" not in lower:
-
-        return {
-
-            "valid": False,
-
-            "message":
-                "Document does not appear "
-                "to be a legal notice.",
-
-            "extracted": {},
-        }
-
-    return {
-
-        "valid": True,
-
-        "message":
-            "Legal notice verified successfully.",
-
-        "extracted": {},
-    }
-
-
-# ============================================================
-# MAIN VERIFY DOCUMENT
-# ============================================================
-
-def verify_document(
-    file_path,
-    expected_type,
-    **kwargs
-):
-
-    print(
-        "========================================"
-    )
-
-    print(
-        "DOCUMENT VERIFICATION STARTED"
-    )
-
-    print(
-        "FILE:",
-        file_path
-    )
-
-    print(
-        "EXPECTED TYPE:",
-        expected_type
-    )
-
-    print(
-        "========================================"
-    )
-
-    # ========================================================
-    # 1. OCR
-    # ========================================================
-
-    try:
-
-        text = extract_text_from_file(
-            file_path
-        )
-
-    except Exception as e:
-
-        print(
-            "❌ OCR / DOCUMENT ERROR:"
-        )
-
-        print(
-            repr(e)
-        )
-
-        return {
-
-            "valid": False,
-
-            "message":
-                f"Document processing failed: {str(e)}",
-
-            "extracted": {},
-        }
-
-    # ========================================================
-    # 2. EMPTY OCR
-    # ========================================================
-
-    if not text:
-
-        return {
-
-            "valid": False,
-
-            "message":
-                "Could not read document. "
-                "Upload a clear image/PDF.",
-
-            "extracted": {},
-        }
-
-    # ========================================================
-    # 3. OCR DEBUG
-    # ========================================================
-
-    print(
-        "========================================"
-    )
-
-    print(
-        "OCR SUCCESS"
-    )
-
-    print(
-        "OCR CHARACTERS:",
-        len(text)
-    )
-
-    print(
-        "OCR PREVIEW:",
-        safe_ocr_preview(text)
-    )
-
-    print(
-        "========================================"
-    )
-
-    # ========================================================
-    # 4. DOCUMENT TYPE
-    # ========================================================
-
-    doc_type = normalize_document_type(
-        expected_type
-    )
-
-    print(
-        "NORMALIZED DOCUMENT TYPE:",
-        doc_type
-    )
-
-    # ========================================================
-    # 5. VERIFY
-    # ========================================================
-
-    if doc_type in (
-        "aadhaar",
-        "id_proof",
-    ):
-
-        result = verify_aadhaar(
-            text,
-            **kwargs
-        )
-
-    elif doc_type == "pan":
-
-        result = verify_pan(
-            text,
-            **kwargs
-        )
-
-    elif doc_type == "passport":
-
-        result = verify_passport(
-            text,
-            **kwargs
-        )
-
-    elif doc_type == "bar_council":
-
-        result = verify_bar_council(
-            text,
-            **kwargs
-        )
-
-    elif doc_type == "firm_registration":
-
-        result = verify_firm_registration(
-            text,
-            **kwargs
-        )
-
-    elif doc_type == "fir":
-
-        result = verify_fir(
-            text
-        )
-
-    elif doc_type == "notice":
-
-        result = verify_notice(
-            text
+    failed_checks = [
+        key
+        for key, value in checks.items()
+        if not value
+    ]
+
+    if valid:
+
+        message = (
+            "Document verified successfully."
         )
 
     else:
 
-        return {
-
-            "valid": False,
-
-            "message":
-                f"Unsupported document type: "
-                f"{expected_type}",
-
-            "extracted": {},
-        }
-
-    # ========================================================
-    # 6. FINAL RESULT
-    # ========================================================
-
-    print(
-        "========================================"
-    )
-
-    print(
-        "DOCUMENT VERIFICATION RESULT"
-    )
-
-    print(
-        "VALID:",
-        result.get(
-            "valid",
-            False
+        message = (
+            "Document was read, but some details "
+            "could not be verified."
         )
-    )
 
-    print(
-        "MESSAGE:",
-        result.get(
-            "message",
-            ""
-        )
-    )
-
-    print(
-        "========================================"
-    )
-
-    return result
+    return {
+        "valid": valid,
+        "message": message,
+        "extracted": extracted,
+        "checks": checks,
+        "failed_checks": failed_checks,
+    }

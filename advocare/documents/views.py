@@ -283,14 +283,14 @@ class CaseDocumentsView(APIView):
         return Response(data, status=status.HTTP_200_OK)
     
 
+import os
+import tempfile
+import traceback
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-
-import os
-import tempfile
-import traceback
 
 from .utils.document_verifier import verify_document
 
@@ -304,12 +304,7 @@ class DocumentVerifyView(APIView):
         FormParser,
     ]
 
-    def post(
-        self,
-        request,
-        *args,
-        **kwargs
-    ):
+    def post(self, request, *args, **kwargs):
 
         file_obj = request.data.get(
             "document"
@@ -319,16 +314,20 @@ class DocumentVerifyView(APIView):
             "expected_type"
         )
 
+        # ----------------------------------------------------
+        # Required fields
+        # ----------------------------------------------------
+
         if not file_obj:
 
             return Response(
                 {
                     "valid": False,
-                    "message":
-                        "Document file is required.",
-                    "extracted": {},
+                    "error": (
+                        "Document file is required."
+                    ),
                 },
-                status=400
+                status=400,
             )
 
         if not expected_type:
@@ -336,80 +335,90 @@ class DocumentVerifyView(APIView):
             return Response(
                 {
                     "valid": False,
-                    "message":
-                        "Expected document type is required.",
-                    "extracted": {},
+                    "error": (
+                        "Document type is required."
+                    ),
                 },
-                status=400
+                status=400,
             )
 
         # ----------------------------------------------------
-        # Extra data
+        # Extra verification data
         # ----------------------------------------------------
 
         extra_data = {
+            "expected_name": request.data.get(
+                "expected_name"
+            ),
 
-            "expected_name":
-                request.data.get(
-                    "expected_name"
-                ),
+            "expected_address": request.data.get(
+                "expected_address"
+            ),
 
-            "expected_address":
-                request.data.get(
-                    "expected_address"
-                ),
+            "expected_phone": request.data.get(
+                "expected_phone"
+            ),
 
-            "expected_phone":
-                request.data.get(
-                    "expected_phone"
-                ),
+            "expected_firm_name": request.data.get(
+                "expected_firm_name"
+            ),
 
-            "expected_firm_name":
-                request.data.get(
-                    "expected_firm_name"
-                ),
-
-            "expected_registration_no":
-                request.data.get(
-                    "expected_registration_no"
-                ),
+            "expected_registration_no": request.data.get(
+                "expected_registration_no"
+            ),
         }
 
+        # Remove only None values
         extra_data = {
             key: value
-            for key, value
-            in extra_data.items()
-            if value not in (
-                None,
-                ""
-            )
+            for key, value in extra_data.items()
+            if value is not None
         }
 
         # ----------------------------------------------------
-        # Save temporary file
+        # File extension
         # ----------------------------------------------------
 
+        original_name = (
+            getattr(
+                file_obj,
+                "name",
+                "document"
+            )
+            or "document"
+        )
+
         extension = os.path.splitext(
-            file_obj.name
+            original_name
         )[1].lower()
 
-        if extension not in (
+        allowed_extensions = {
+            ".pdf",
             ".jpg",
             ".jpeg",
             ".png",
-            ".pdf",
-        ):
+            ".webp",
+            ".bmp",
+            ".tiff",
+            ".tif",
+        }
+
+        if extension not in allowed_extensions:
 
             return Response(
                 {
                     "valid": False,
-                    "message":
-                        "Unsupported file type. "
-                        "Use PDF, JPG, JPEG or PNG.",
-                    "extracted": {},
+                    "error": (
+                        "Unsupported file format. "
+                        "Please upload PDF, JPG or PNG."
+                    ),
                 },
-                status=400
+                status=400,
             )
+
+        # ----------------------------------------------------
+        # Temporary file
+        # ----------------------------------------------------
 
         tmp_path = None
 
@@ -421,34 +430,32 @@ class DocumentVerifyView(APIView):
             ) as tmp_file:
 
                 for chunk in file_obj.chunks():
-
-                    tmp_file.write(
-                        chunk
-                    )
+                    tmp_file.write(chunk)
 
                 tmp_path = tmp_file.name
 
             print(
-                "========================================"
+                "======================================"
             )
 
             print(
-                "DOCUMENT TEMP FILE:"
+                "DOCUMENT VERIFICATION STARTED"
             )
 
             print(
-                tmp_path
+                f"File: {original_name}"
             )
 
             print(
-                "SIZE:",
-                os.path.getsize(
-                    tmp_path
-                )
+                f"Temporary path: {tmp_path}"
             )
 
             print(
-                "========================================"
+                f"Expected type: {expected_type}"
+            )
+
+            print(
+                "======================================"
             )
 
             # ------------------------------------------------
@@ -461,6 +468,14 @@ class DocumentVerifyView(APIView):
                 **extra_data
             )
 
+            print(
+                "DOCUMENT VERIFICATION RESULT:"
+            )
+
+            print(
+                result
+            )
+
             return Response(
                 result,
                 status=200
@@ -469,11 +484,7 @@ class DocumentVerifyView(APIView):
         except Exception as e:
 
             print(
-                "========================================"
-            )
-
-            print(
-                "❌ DOCUMENT VIEW ERROR"
+                "DOCUMENT VERIFICATION EXCEPTION:"
             )
 
             print(
@@ -482,28 +493,25 @@ class DocumentVerifyView(APIView):
 
             traceback.print_exc()
 
-            print(
-                "========================================"
-            )
-
             return Response(
                 {
                     "valid": False,
-
-                    "message":
-                        f"Document processing failed: {str(e)}",
-
-                    "extracted": {},
+                    "error": (
+                        "Document processing failed."
+                    ),
+                    "details": str(e),
                 },
-                status=500
+                status=500,
             )
 
         finally:
 
-            if (
+            # ------------------------------------------------
+            # Delete temporary file
+            # ------------------------------------------------
+
+            if tmp_path and os.path.exists(
                 tmp_path
-                and
-                os.path.exists(tmp_path)
             ):
 
                 try:
@@ -515,10 +523,9 @@ class DocumentVerifyView(APIView):
                 except Exception as e:
 
                     print(
-                        "Temporary file cleanup failed:",
-                        repr(e)
+                        "Could not delete temporary file:",
+                        e
                     )
-
 
 
 
