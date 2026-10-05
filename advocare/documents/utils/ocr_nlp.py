@@ -397,80 +397,141 @@ from fuzzywuzzy import fuzz
 # CONFIGURATION
 # ============================================================
 
-# ------------------------------------------------------------
+# ============================================================
 # TESSERACT CONFIGURATION
-# ------------------------------------------------------------
-# Local Windows:
-#   C:\Program Files\Tesseract-OCR\tesseract.exe
-#
-# Render/Linux:
-#   /usr/bin/tesseract
-#
-# We first check environment variable TESSERACT_CMD.
-# If not present, we automatically search for tesseract.
-# ------------------------------------------------------------
+# ============================================================
 
 TESSERACT_CMD = os.getenv("TESSERACT_CMD")
 
-if TESSERACT_CMD:
-    if os.path.exists(TESSERACT_CMD):
-        pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
-else:
-    # Windows
-    windows_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-    if os.path.exists(windows_tesseract):
-        pytesseract.pytesseract.tesseract_cmd = windows_tesseract
+def configure_tesseract():
+    """
+    Configure Tesseract for both Windows and Linux/Render.
+    """
 
-    # Linux / Render
-    elif shutil.which("tesseract"):
-        pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract")
+    # --------------------------------------------------------
+    # 1. Environment variable
+    # --------------------------------------------------------
+
+    if TESSERACT_CMD:
+        if os.path.exists(TESSERACT_CMD):
+            pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
+            print("✅ Tesseract from environment variable:")
+            print(TESSERACT_CMD)
+            return
+
+    # --------------------------------------------------------
+    # 2. Windows
+    # --------------------------------------------------------
+
+    windows_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+    ]
+
+    for path in windows_paths:
+
+        if os.path.exists(path):
+
+            pytesseract.pytesseract.tesseract_cmd = path
+
+            print("✅ Windows Tesseract found:")
+            print(path)
+
+            return
+
+    # --------------------------------------------------------
+    # 3. Linux / Render
+    # --------------------------------------------------------
+
+    linux_tesseract = shutil.which("tesseract")
+
+    if linux_tesseract:
+
+        pytesseract.pytesseract.tesseract_cmd = (
+            linux_tesseract
+        )
+
+        print("✅ Linux Tesseract found:")
+        print(linux_tesseract)
+
+        return
+
+    print(
+        "⚠️ Tesseract executable was not found during configuration."
+    )
 
 
-# ------------------------------------------------------------
+configure_tesseract()
+
+
+# ============================================================
 # OCR LANGUAGE
-# ------------------------------------------------------------
-#
-# Default:
-#     eng+guj
-#
-# If Gujarati language data is not installed, automatically
-# fallback to English.
-# ------------------------------------------------------------
+# ============================================================
 
-DEFAULT_OCR_LANG = os.getenv("OCR_LANG", "eng+guj")
+REQUESTED_OCR_LANG = os.getenv(
+    "OCR_LANG",
+    "eng+guj"
+)
 
 
 def get_ocr_language():
     """
-    Check installed Tesseract languages and select
-    the best available OCR language.
+    Select the best available Tesseract language.
+
+    Preferred:
+        eng+guj
+
+    Fallback:
+        eng
     """
 
     try:
-        installed_languages = pytesseract.get_languages(config="")
 
-        print("Available Tesseract languages:", installed_languages)
+        installed_languages = pytesseract.get_languages(
+            config=""
+        )
 
-        # User explicitly configured OCR_LANG
-        requested_languages = DEFAULT_OCR_LANG.split("+")
+        print(
+            "Available Tesseract languages:",
+            installed_languages
+        )
 
-        # If all requested languages are installed
-        if all(lang in installed_languages for lang in requested_languages):
-            return DEFAULT_OCR_LANG
+        requested = REQUESTED_OCR_LANG.split("+")
 
-        # Gujarati unavailable -> English fallback
-        if "eng" in installed_languages:
+        # All requested languages available
+        if all(
+            language in installed_languages
+            for language in requested
+        ):
+
             print(
-                f"WARNING: '{DEFAULT_OCR_LANG}' not available. "
-                "Falling back to 'eng'."
+                "✅ OCR language:",
+                REQUESTED_OCR_LANG
             )
+
+            return REQUESTED_OCR_LANG
+
+        # English available
+        if "eng" in installed_languages:
+
+            print(
+                f"⚠️ {REQUESTED_OCR_LANG} unavailable."
+            )
+
+            print(
+                "Using English OCR."
+            )
+
             return "eng"
 
     except Exception as e:
-        print("Could not detect Tesseract languages:", e)
 
-    # Final fallback
+        print(
+            "⚠️ Could not detect OCR languages:",
+            repr(e)
+        )
+
     return "eng"
 
 
@@ -478,27 +539,37 @@ OCR_LANG = get_ocr_language()
 
 
 # ============================================================
-# HELPER - CHECK TESSERACT
+# TESSERACT CHECK
 # ============================================================
 
 def check_tesseract():
     """
-    Verify that Tesseract OCR is installed and accessible.
+    Check whether Tesseract is available.
     """
 
     try:
+
         version = pytesseract.get_tesseract_version()
 
         print("========================================")
-        print("TESSERACT VERSION:", version)
-        print("TESSERACT PATH:", pytesseract.pytesseract.tesseract_cmd)
-        print("OCR LANGUAGE:", OCR_LANG)
+        print("TESSERACT CHECK")
+        print("VERSION:", version)
+        print(
+            "PATH:",
+            pytesseract.pytesseract.tesseract_cmd
+        )
+        print("LANGUAGE:", OCR_LANG)
         print("========================================")
 
         return True
 
     except Exception as e:
-        print("❌ Tesseract check failed:", repr(e))
+
+        print(
+            "❌ Tesseract check failed:",
+            repr(e)
+        )
+
         return False
 
 
@@ -506,82 +577,235 @@ def check_tesseract():
 # IMAGE PREPROCESSING
 # ============================================================
 
-def preprocess_image(image):
+def preprocess_grayscale(image):
     """
-    Improve OCR accuracy.
-
-    Steps:
-    1. Convert to grayscale
-    2. Increase contrast
-    3. Sharpen image
-    4. Apply binary threshold
+    Convert image to grayscale and improve contrast.
     """
 
-    # Convert image to grayscale
     image = image.convert("L")
 
-    # Increase contrast
-    enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(2.0)
+    enhancer = ImageEnhance.Contrast(
+        image
+    )
 
-    # Sharpen
-    image = image.filter(ImageFilter.SHARPEN)
+    image = enhancer.enhance(1.8)
 
-    # Binary threshold
+    image = image.filter(
+        ImageFilter.SHARPEN
+    )
+
+    return image
+
+
+def preprocess_threshold(image):
+    """
+    Create high contrast black/white version.
+    """
+
+    image = preprocess_grayscale(
+        image
+    )
+
     threshold = 150
 
     image = image.point(
-        lambda p: 255 if p > threshold else 0
+        lambda pixel: (
+            255
+            if pixel > threshold
+            else 0
+        )
     )
 
     return image
 
 
 # ============================================================
-# OCR FOR IMAGE
+# OCR SINGLE IMAGE
 # ============================================================
 
-def extract_text_from_image(file_path):
-    """
-    Extract OCR text from JPG/JPEG/PNG image.
-    """
+def run_ocr(image, psm):
+
+    config = (
+        f"--oem 3 --psm {psm}"
+    )
 
     try:
-        print("========================================")
-        print("OCR IMAGE:", file_path)
-        print("OCR LANGUAGE:", OCR_LANG)
-        print("========================================")
-
-        image = Image.open(file_path)
-
-        print(
-            "Image size:",
-            image.size
-        )
-
-        image = preprocess_image(image)
-
-        # PSM 11 works better for documents containing
-        # multiple separated text blocks.
-        custom_config = r"--oem 3 --psm 11"
 
         text = pytesseract.image_to_string(
             image,
             lang=OCR_LANG,
-            config=custom_config
+            config=config
         )
 
-        print("OCR characters:", len(text))
+        return text or ""
 
-        return text.strip()
+    except Exception as e:
+
+        print(
+            f"❌ OCR PSM {psm} failed:",
+            repr(e)
+        )
+
+        return ""
+
+
+# ============================================================
+# OCR IMAGE
+# ============================================================
+
+def extract_text_from_image(file_path):
+    """
+    OCR JPG/JPEG/PNG using multiple image versions
+    and multiple Tesseract page segmentation modes.
+    """
+
+    print("========================================")
+    print("IMAGE OCR STARTED")
+    print("FILE:", file_path)
+    print("LANGUAGE:", OCR_LANG)
+    print("========================================")
+
+    try:
+
+        original = Image.open(
+            file_path
+        )
+
+        print(
+            "IMAGE SIZE:",
+            original.size
+        )
+
+        # ----------------------------------------------------
+        # Create multiple versions
+        # ----------------------------------------------------
+
+        grayscale = preprocess_grayscale(
+            original.copy()
+        )
+
+        threshold = preprocess_threshold(
+            original.copy()
+        )
+
+        all_text = []
+
+        # ----------------------------------------------------
+        # PASS 1
+        # Original image
+        # ----------------------------------------------------
+
+        print(
+            "🔎 OCR original image"
+        )
+
+        for psm in [6, 11, 12]:
+
+            text = run_ocr(
+                original,
+                psm
+            )
+
+            if text.strip():
+
+                print(
+                    f"Original PSM {psm}:",
+                    len(text),
+                    "characters"
+                )
+
+                all_text.append(text)
+
+        # ----------------------------------------------------
+        # PASS 2
+        # Grayscale
+        # ----------------------------------------------------
+
+        print(
+            "🔎 OCR grayscale image"
+        )
+
+        for psm in [6, 11, 12]:
+
+            text = run_ocr(
+                grayscale,
+                psm
+            )
+
+            if text.strip():
+
+                print(
+                    f"Grayscale PSM {psm}:",
+                    len(text),
+                    "characters"
+                )
+
+                all_text.append(text)
+
+        # ----------------------------------------------------
+        # PASS 3
+        # Threshold
+        # ----------------------------------------------------
+
+        print(
+            "🔎 OCR threshold image"
+        )
+
+        for psm in [6, 11, 12]:
+
+            text = run_ocr(
+                threshold,
+                psm
+            )
+
+            if text.strip():
+
+                print(
+                    f"Threshold PSM {psm}:",
+                    len(text),
+                    "characters"
+                )
+
+                all_text.append(text)
+
+        # ----------------------------------------------------
+        # Combine
+        # ----------------------------------------------------
+
+        final_text = "\n".join(
+            all_text
+        )
+
+        final_text = final_text.strip()
+
+        print("========================================")
+        print(
+            "FINAL IMAGE OCR CHARACTERS:",
+            len(final_text)
+        )
+        print("========================================")
+
+        if not final_text:
+
+            raise Exception(
+                "No readable text was found in image."
+            )
+
+        return final_text
 
     except pytesseract.TesseractNotFoundError:
+
         raise Exception(
-            "Tesseract OCR is not installed or cannot be found."
+            "Tesseract OCR is not installed or "
+            "cannot be found."
         )
 
     except Exception as e:
-        print("❌ Image OCR error:", repr(e))
+
+        print(
+            "❌ Image OCR error:",
+            repr(e)
+        )
 
         raise Exception(
             f"Image OCR failed: {str(e)}"
@@ -589,33 +813,47 @@ def extract_text_from_image(file_path):
 
 
 # ============================================================
-# OCR FOR PDF
+# OCR PDF
 # ============================================================
 
 def extract_text_from_pdf(file_path):
     """
-    Convert PDF pages to images using Poppler and then
-    perform OCR on every page.
+    Convert PDF pages into images using Poppler
+    and perform multiple OCR passes.
     """
 
+    print("========================================")
+    print("PDF OCR STARTED")
+    print("FILE:", file_path)
+    print("LANGUAGE:", OCR_LANG)
+    print("========================================")
+
     try:
-        print("========================================")
-        print("OCR PDF:", file_path)
-        print("OCR LANGUAGE:", OCR_LANG)
-        print("========================================")
 
+        # ----------------------------------------------------
         # Check Poppler
-        pdftoppm_path = shutil.which("pdftoppm")
+        # ----------------------------------------------------
 
-        if not pdftoppm_path:
+        pdftoppm = shutil.which(
+            "pdftoppm"
+        )
+
+        if not pdftoppm:
+
             raise Exception(
                 "Poppler is not installed. "
-                "Install poppler-utils on Render/Linux."
+                "Install poppler-utils on Render."
             )
 
-        print("Poppler path:", pdftoppm_path)
+        print(
+            "✅ Poppler:",
+            pdftoppm
+        )
 
-        # Convert PDF pages into images
+        # ----------------------------------------------------
+        # Convert PDF
+        # ----------------------------------------------------
+
         images = pdf2image.convert_from_path(
             file_path,
             dpi=300,
@@ -623,37 +861,130 @@ def extract_text_from_pdf(file_path):
         )
 
         print(
-            f"✅ PDF converted into {len(images)} image(s)"
+            "PDF PAGES:",
+            len(images)
         )
 
-        full_text = ""
+        all_text = []
 
-        for index, img in enumerate(images):
+        # ----------------------------------------------------
+        # Process each page
+        # ----------------------------------------------------
 
-            print(
-                f"🔎 Processing PDF page {index + 1}"
-            )
-
-            img = preprocess_image(img)
-
-            text = pytesseract.image_to_string(
-                img,
-                lang=OCR_LANG,
-                config=r"--oem 3 --psm 11"
-            )
+        for page_number, original in enumerate(
+            images,
+            start=1
+        ):
 
             print(
-                f"✅ Page {index + 1} OCR characters:",
-                len(text)
+                "========================================"
             )
 
-            full_text += text + "\n"
+            print(
+                f"🔎 PROCESSING PDF PAGE {page_number}"
+            )
 
-        return full_text.strip()
+            print(
+                "========================================"
+            )
+
+            grayscale = preprocess_grayscale(
+                original.copy()
+            )
+
+            threshold = preprocess_threshold(
+                original.copy()
+            )
+
+            # Original
+            for psm in [6, 11, 12]:
+
+                text = run_ocr(
+                    original,
+                    psm
+                )
+
+                if text.strip():
+
+                    print(
+                        f"Page {page_number} "
+                        f"Original PSM {psm}: "
+                        f"{len(text)} characters"
+                    )
+
+                    all_text.append(
+                        text
+                    )
+
+            # Grayscale
+            for psm in [6, 11, 12]:
+
+                text = run_ocr(
+                    grayscale,
+                    psm
+                )
+
+                if text.strip():
+
+                    print(
+                        f"Page {page_number} "
+                        f"Gray PSM {psm}: "
+                        f"{len(text)} characters"
+                    )
+
+                    all_text.append(
+                        text
+                    )
+
+            # Threshold
+            for psm in [6, 11, 12]:
+
+                text = run_ocr(
+                    threshold,
+                    psm
+                )
+
+                if text.strip():
+
+                    print(
+                        f"Page {page_number} "
+                        f"Threshold PSM {psm}: "
+                        f"{len(text)} characters"
+                    )
+
+                    all_text.append(
+                        text
+                    )
+
+        # ----------------------------------------------------
+        # Combine
+        # ----------------------------------------------------
+
+        final_text = "\n".join(
+            all_text
+        ).strip()
+
+        print("========================================")
+        print(
+            "FINAL PDF OCR CHARACTERS:",
+            len(final_text)
+        )
+        print("========================================")
+
+        if not final_text:
+
+            raise Exception(
+                "No readable text was found in PDF."
+            )
+
+        return final_text
 
     except Exception as e:
 
-        print("❌ PDF OCR error:", repr(e))
+        print(
+            "❌ PDF OCR error:",
+            repr(e)
+        )
 
         raise Exception(
             f"PDF OCR failed: {str(e)}"
@@ -661,12 +992,12 @@ def extract_text_from_pdf(file_path):
 
 
 # ============================================================
-# EXTRACT TEXT FROM IMAGE / PDF
+# MAIN OCR FUNCTION
 # ============================================================
 
 def extract_text_from_file(file_path):
     """
-    Main OCR function.
+    Main document OCR function.
 
     Supported:
         JPG
@@ -676,65 +1007,47 @@ def extract_text_from_file(file_path):
     """
 
     if not os.path.exists(file_path):
+
         raise Exception(
             f"File does not exist: {file_path}"
         )
 
-    ext = os.path.splitext(file_path)[1].lower()
+    extension = os.path.splitext(
+        file_path
+    )[1].lower()
 
     print("========================================")
-    print("DOCUMENT OCR STARTED")
+    print("DOCUMENT OCR")
     print("FILE:", file_path)
-    print("EXTENSION:", ext)
+    print("EXTENSION:", extension)
     print("========================================")
 
-    # Check Tesseract
     if not check_tesseract():
-        raise Exception(
-            "Tesseract OCR is not available on the server."
-        )
-
-    try:
-
-        if ext in [".jpg", ".jpeg", ".png"]:
-
-            text = extract_text_from_image(
-                file_path
-            )
-
-        elif ext == ".pdf":
-
-            text = extract_text_from_pdf(
-                file_path
-            )
-
-        else:
-
-            raise Exception(
-                "Unsupported document format. "
-                "Only PDF, JPG, JPEG and PNG are supported."
-            )
-
-        text = text.strip()
-
-        print("========================================")
-        print("FINAL OCR TEXT LENGTH:", len(text))
-        print("========================================")
-
-        if not text:
-            raise Exception(
-                "No readable text was found in the document."
-            )
-
-        return text
-
-    except Exception as e:
-
-        print("❌ OCR extraction error:", repr(e))
 
         raise Exception(
-            f"OCR failed: {str(e)}"
+            "Tesseract OCR is not available."
         )
+
+    if extension in [
+        ".jpg",
+        ".jpeg",
+        ".png"
+    ]:
+
+        return extract_text_from_image(
+            file_path
+        )
+
+    if extension == ".pdf":
+
+        return extract_text_from_pdf(
+            file_path
+        )
+
+    raise Exception(
+        "Unsupported document format. "
+        "Only PDF, JPG, JPEG and PNG are supported."
+    )
 
 
 # ============================================================
@@ -742,44 +1055,49 @@ def extract_text_from_file(file_path):
 # ============================================================
 
 def extract_name(text):
-    """
-    Extract person's name from OCR text.
-    """
 
     if not text:
         return ""
 
+    # --------------------------------------------------------
     # Name: Kartik Prajapati
-    match = re.search(
-        r"\bName\s*[:\-]\s*([A-Za-z][A-Za-z\s\.]{2,80})",
-        text,
-        re.IGNORECASE
-    )
+    # --------------------------------------------------------
 
-    if match:
-        return match.group(1).strip()
+    patterns = [
 
-    # Name without colon
-    match = re.search(
-        r"\bName\s+([A-Za-z][A-Za-z\s\.]{2,80})",
-        text,
-        re.IGNORECASE
-    )
+        r"\bName\s*[:\-]\s*"
+        r"([A-Za-z][A-Za-z\s\.]{2,80})",
 
-    if match:
-        return match.group(1).strip()
+        r"\bName\s+"
+        r"([A-Za-z][A-Za-z\s\.]{2,80})",
 
-    # Fallback: find lines that look like a person's name
-    lines = text.splitlines()
+    ]
 
-    for line in lines:
+    for pattern in patterns:
+
+        match = re.search(
+            pattern,
+            text,
+            re.IGNORECASE
+        )
+
+        if match:
+
+            return match.group(
+                1
+            ).strip()
+
+    # --------------------------------------------------------
+    # Fallback line detection
+    # --------------------------------------------------------
+
+    for line in text.splitlines():
 
         line = line.strip()
 
         if not line:
             continue
 
-        # Remove common OCR symbols
         cleaned = re.sub(
             r"[^A-Za-z\s\.]",
             "",
@@ -788,15 +1106,29 @@ def extract_name(text):
 
         words = cleaned.split()
 
-        if 2 <= len(words) <= 4:
+        if not (
+            2 <= len(words) <= 4
+        ):
+            continue
 
-            if all(
-                re.match(
-                    r"^[A-Za-z][A-Za-z\.]*$",
-                    word
-                )
-                for word in words
-            ):
+        if all(
+            re.match(
+                r"^[A-Za-z][A-Za-z\.]*$",
+                word
+            )
+            for word in words
+        ):
+
+            # Avoid common headings
+            ignored = {
+                "government of india",
+                "unique identification authority",
+                "date of birth",
+                "aadhaar card",
+            }
+
+            if cleaned.lower() not in ignored:
+
                 return cleaned
 
     return ""
@@ -807,9 +1139,6 @@ def extract_name(text):
 # ============================================================
 
 def extract_address(text):
-    """
-    Try to extract address from OCR text.
-    """
 
     if not text:
         return ""
@@ -833,7 +1162,9 @@ def extract_address(text):
         "kalupur",
         "chandkheda",
         "bodakdev",
-        "vastrapur"
+        "vastrapur",
+        "pincode",
+        "pin code",
     ]
 
     for line in lines:
@@ -843,12 +1174,13 @@ def extract_address(text):
         if not line:
             continue
 
-        line_lower = line.lower()
+        lower = line.lower()
 
         if any(
-            keyword in line_lower
+            keyword in lower
             for keyword in address_keywords
         ):
+
             return line
 
     # Generic fallback
@@ -856,9 +1188,13 @@ def extract_address(text):
 
         line = line.strip()
 
-        if re.search(r"\d{3,6}", line):
+        if len(line) > 15:
 
-            if len(line) > 15:
+            if re.search(
+                r"\d{3,6}",
+                line
+            ):
+
                 return line
 
     return ""
@@ -869,44 +1205,45 @@ def extract_address(text):
 # ============================================================
 
 def extract_phone(text):
-    """
-    Extract Indian mobile number.
-    """
 
     if not text:
         return ""
 
     # +91 9876543210
     match = re.search(
-        r"(?:\+91[\s\-]?)?([6-9]\d{9})",
+        r"(?:\+91[\s\-]?)?"
+        r"([6-9]\d{9})",
         text
     )
 
     if match:
 
-        phone = match.group(1)
-
-        return phone
+        return match.group(
+            1
+        )
 
     return ""
 
 
 # ============================================================
-# FIRM NAME EXTRACTION
+# FIRM NAME
 # ============================================================
 
 def extract_firm_name(text):
-    """
-    Extract firm/company name.
-    """
 
     if not text:
         return ""
 
     patterns = [
-        r"\bFirm\s*Name\s*[:\-]\s*([A-Za-z0-9\s\.\-&]+)",
-        r"\bCompany\s*Name\s*[:\-]\s*([A-Za-z0-9\s\.\-&]+)",
-        r"\bOrganization\s*Name\s*[:\-]\s*([A-Za-z0-9\s\.\-&]+)"
+
+        r"\bFirm\s*Name\s*[:\-]\s*"
+        r"([A-Za-z0-9\s\.\-&]+)",
+
+        r"\bCompany\s*Name\s*[:\-]\s*"
+        r"([A-Za-z0-9\s\.\-&]+)",
+
+        r"\bOrganization\s*Name\s*[:\-]\s*"
+        r"([A-Za-z0-9\s\.\-&]+)",
     ]
 
     for pattern in patterns:
@@ -918,26 +1255,32 @@ def extract_firm_name(text):
         )
 
         if match:
-            return match.group(1).strip()
+
+            return match.group(
+                1
+            ).strip()
 
     return ""
 
 
 # ============================================================
-# REGISTRATION NUMBER EXTRACTION
+# REGISTRATION NUMBER
 # ============================================================
 
 def extract_registration_number(text):
-    """
-    Extract registration number.
-    """
 
     if not text:
         return ""
 
     patterns = [
-        r"Registration\s*(?:No|Number)?\s*[:\-]\s*([A-Za-z0-9\-\/]+)",
-        r"Reg\.?\s*(?:No|Number)?\s*[:\-]\s*([A-Za-z0-9\-\/]+)"
+
+        r"Registration\s*"
+        r"(?:No|Number)?\s*[:\-]\s*"
+        r"([A-Za-z0-9\-\/]+)",
+
+        r"Reg\.?\s*"
+        r"(?:No|Number)?\s*[:\-]\s*"
+        r"([A-Za-z0-9\-\/]+)",
     ]
 
     for pattern in patterns:
@@ -949,64 +1292,21 @@ def extract_registration_number(text):
         )
 
         if match:
-            return match.group(1).strip()
 
-    # Generic fallback
+            return match.group(
+                1
+            ).strip()
+
     tokens = re.findall(
         r"\b[A-Za-z0-9\-\/]{6,}\b",
         text
     )
 
     if tokens:
+
         return tokens[0]
 
     return ""
-
-
-# ============================================================
-# DOCUMENT KEYWORD CHECK
-# ============================================================
-
-def contains_id_keyword(text_lower):
-    """
-    Detect Aadhaar / PAN / Passport keywords.
-    """
-
-    if not text_lower:
-        return False
-
-    keywords = [
-        "aadhaar",
-        "aadhar",
-        "adhar",
-        "pan",
-        "passport",
-        "आधार",
-        "આધાર"
-    ]
-
-    # Exact match
-    for keyword in keywords:
-
-        if keyword in text_lower:
-            return True
-
-    # Fuzzy match
-    for keyword in [
-        "aadhaar",
-        "aadhar",
-        "adhar"
-    ]:
-
-        score = fuzz.partial_ratio(
-            keyword,
-            text_lower
-        )
-
-        if score >= 80:
-            return True
-
-    return False
 
 
 # ============================================================
@@ -1014,23 +1314,21 @@ def contains_id_keyword(text_lower):
 # ============================================================
 
 def normalize_text(value):
-    """
-    Normalize text before comparison.
-    """
 
     if value is None:
+
         return ""
 
-    value = str(value).lower()
+    value = str(
+        value
+    ).lower()
 
-    # Remove extra spaces
     value = re.sub(
         r"\s+",
         " ",
         value
     )
 
-    # Remove punctuation
     value = re.sub(
         r"[^a-z0-9\s]",
         "",
@@ -1041,18 +1339,556 @@ def normalize_text(value):
 
 
 # ============================================================
-# FUZZY TEXT MATCH
+# NORMALIZE DOCUMENT TYPE
 # ============================================================
 
-def fuzzy_match(expected, actual, threshold=70):
-    """
-    Compare expected value with OCR value.
-    """
+def normalize_document_type(
+    expected_type
+):
 
-    expected = normalize_text(expected)
-    actual = normalize_text(actual)
+    if not expected_type:
+
+        return ""
+
+    value = str(
+        expected_type
+    ).strip().lower()
+
+    aliases = {
+
+        "aadhar": "aadhaar",
+        "adhar": "aadhaar",
+        "aadhaar card": "aadhaar",
+        "aadhar card": "aadhaar",
+        "aadhaarcard": "aadhaar",
+
+        "pan card": "pan",
+
+        "passport copy": "passport",
+
+        "firm": "firm_registration",
+        "firm registration": "firm_registration",
+        "registration": "firm_registration",
+        "registration certificate":
+            "firm_registration",
+    }
+
+    return aliases.get(
+        value,
+        value
+    )
+
+
+# ============================================================
+# AADHAAR KEYWORD NORMALIZATION
+# ============================================================
+
+def compact_ocr_text(text):
+
+    if not text:
+        return ""
+
+    text = str(
+        text
+    ).lower()
+
+    # Remove spaces and punctuation
+    return re.sub(
+        r"[^a-z0-9\u0900-\u097F\u0A80-\u0AFF]",
+        "",
+        text
+    )
+
+
+# ============================================================
+# AADHAAR KEYWORD DETECTION
+# ============================================================
+
+def detect_aadhaar_keyword(text):
+
+    if not text:
+
+        return False
+
+    text_lower = text.lower()
+
+    compact_text = compact_ocr_text(
+        text
+    )
+
+    # --------------------------------------------------------
+    # Exact / common OCR variations
+    # --------------------------------------------------------
+
+    keywords = [
+
+        "aadhaar",
+        "aadhar",
+        "adhar",
+        "adhaar",
+        "aaadhar",
+        "aadher",
+        "aadharr",
+
+        "uidai",
+
+        "uniqueidentificationauthorityofindia",
+        "uniqueidentificationauthority",
+        "uniqueidentification",
+
+        "आधार",
+        "आधारकार्ड",
+
+        "આધાર",
+        "આધારકાર્ડ",
+    ]
+
+    for keyword in keywords:
+
+        if keyword in compact_text:
+
+            print(
+                "✅ Aadhaar keyword detected:",
+                keyword
+            )
+
+            return True
+
+    # --------------------------------------------------------
+    # Word-level fuzzy matching
+    # --------------------------------------------------------
+
+    words = re.findall(
+        r"[A-Za-z]+",
+        text_lower
+    )
+
+    fuzzy_targets = [
+
+        "aadhaar",
+        "aadhar",
+        "adhar",
+        "adhaar",
+        "aaadhar",
+        "aadher",
+    ]
+
+    for word in words:
+
+        # Skip very short OCR noise
+        if len(word) < 4:
+            continue
+
+        for target in fuzzy_targets:
+
+            score = fuzz.ratio(
+                word,
+                target
+            )
+
+            if score >= 70:
+
+                print(
+                    "✅ Aadhaar fuzzy match:",
+                    word,
+                    "->",
+                    target,
+                    "score:",
+                    score
+                )
+
+                return True
+
+    # --------------------------------------------------------
+    # Partial fuzzy matching
+    # --------------------------------------------------------
+
+    for target in fuzzy_targets:
+
+        score = fuzz.partial_ratio(
+            target,
+            text_lower
+        )
+
+        if score >= 75:
+
+            print(
+                "✅ Aadhaar partial fuzzy match:",
+                target,
+                "score:",
+                score
+            )
+
+            return True
+
+    return False
+
+
+# ============================================================
+# AADHAAR NUMBER DETECTION
+# ============================================================
+
+def detect_aadhaar_number(text):
+
+    if not text:
+
+        return False
+
+    # --------------------------------------------------------
+    # 123456789012
+    # --------------------------------------------------------
+
+    direct_matches = re.findall(
+        r"(?<!\d)\d{12}(?!\d)",
+        text
+    )
+
+    if direct_matches:
+
+        print(
+            "✅ 12-digit Aadhaar-like number detected."
+        )
+
+        return True
+
+    # --------------------------------------------------------
+    # 1234 5678 9012
+    # --------------------------------------------------------
+
+    spaced = re.search(
+        r"(?<!\d)"
+        r"\d{4}"
+        r"[\s\-]+"
+        r"\d{4}"
+        r"[\s\-]+"
+        r"\d{4}"
+        r"(?!\d)",
+        text
+    )
+
+    if spaced:
+
+        print(
+            "✅ Spaced 12-digit Aadhaar-like number detected."
+        )
+
+        return True
+
+    return False
+
+
+# ============================================================
+# AADHAAR DOCUMENT DETECTION
+# ============================================================
+
+def detect_aadhaar_document(text):
+
+    if not text:
+
+        return False
+
+    print("========================================")
+    print("AADHAAR DOCUMENT DETECTION")
+    print("========================================")
+
+    # --------------------------------------------------------
+    # Signal 1
+    # Aadhaar keyword
+    # --------------------------------------------------------
+
+    keyword_found = detect_aadhaar_keyword(
+        text
+    )
+
+    if keyword_found:
+
+        print(
+            "✅ Aadhaar detected by keyword."
+        )
+
+        return True
+
+    # --------------------------------------------------------
+    # Signal 2
+    # Aadhaar number
+    # --------------------------------------------------------
+
+    aadhaar_number_found = (
+        detect_aadhaar_number(
+            text
+        )
+    )
+
+    if aadhaar_number_found:
+
+        print(
+            "✅ Aadhaar detected by number."
+        )
+
+        return True
+
+    # --------------------------------------------------------
+    # Supporting signals
+    # --------------------------------------------------------
+
+    text_lower = text.lower()
+
+    uidai_found = (
+        "uidai" in text_lower
+        or "unique identification" in text_lower
+    )
+
+    government_india_found = (
+        "government of india" in text_lower
+        or "govt of india" in text_lower
+    )
+
+    dob_found = (
+        "date of birth" in text_lower
+        or re.search(
+            r"\bdob\b",
+            text_lower
+        )
+        is not None
+    )
+
+    name_found = bool(
+        re.search(
+            r"\bname\b",
+            text_lower
+        )
+    )
+
+    address_found = bool(
+        re.search(
+            r"\b("
+            r"address|"
+            r"ahmedabad|"
+            r"gujarat|"
+            r"india|"
+            r"nagar|"
+            r"road|"
+            r"street"
+            r")\b",
+            text_lower
+        )
+    )
+
+    signal_count = sum(
+        [
+            uidai_found,
+            government_india_found,
+            dob_found,
+            name_found,
+            address_found,
+        ]
+    )
+
+    print(
+        "UIDAI:",
+        uidai_found
+    )
+
+    print(
+        "Government of India:",
+        government_india_found
+    )
+
+    print(
+        "DOB:",
+        dob_found
+    )
+
+    print(
+        "Name:",
+        name_found
+    )
+
+    print(
+        "Address:",
+        address_found
+    )
+
+    print(
+        "Supporting signal count:",
+        signal_count
+    )
+
+    # Require several supporting signals
+    # to avoid accepting arbitrary documents.
+    if signal_count >= 3:
+
+        print(
+            "✅ Aadhaar detected using "
+            "multiple supporting signals."
+        )
+
+        return True
+
+    print(
+        "❌ Aadhaar document not detected."
+    )
+
+    return False
+
+
+# ============================================================
+# DOCUMENT KEYWORD CHECK
+# ============================================================
+
+def contains_id_keyword(
+    text_lower
+):
+
+    if not text_lower:
+
+        return False
+
+    if detect_aadhaar_keyword(
+        text_lower
+    ):
+
+        return True
+
+    other_keywords = [
+        "pan",
+        "passport",
+    ]
+
+    return any(
+        keyword in text_lower
+        for keyword in other_keywords
+    )
+
+
+# ============================================================
+# DOCUMENT TYPE VALIDATION
+# ============================================================
+
+def validate_document_type(
+    text,
+    expected_type
+):
+
+    if not text:
+
+        return False
+
+    document_type = normalize_document_type(
+        expected_type
+    )
+
+    print("========================================")
+    print("DOCUMENT TYPE VALIDATION")
+    print("EXPECTED TYPE:", document_type)
+    print("========================================")
+
+    # --------------------------------------------------------
+    # AADHAAR
+    # --------------------------------------------------------
+
+    if document_type == "aadhaar":
+
+        return detect_aadhaar_document(
+            text
+        )
+
+    # --------------------------------------------------------
+    # PAN
+    # --------------------------------------------------------
+
+    if document_type == "pan":
+
+        text_lower = text.lower()
+
+        keyword_found = any(
+            keyword in text_lower
+            for keyword in [
+                "income tax",
+                "income-tax",
+                "permanent account number",
+            ]
+        )
+
+        pan_number_found = bool(
+            re.search(
+                r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",
+                text.upper()
+            )
+        )
+
+        return (
+            keyword_found
+            or pan_number_found
+        )
+
+    # --------------------------------------------------------
+    # PASSPORT
+    # --------------------------------------------------------
+
+    if document_type == "passport":
+
+        text_lower = text.lower()
+
+        keywords = [
+            "passport",
+            "republic of india",
+            "nationality",
+            "place of birth",
+        ]
+
+        return any(
+            keyword in text_lower
+            for keyword in keywords
+        )
+
+    # --------------------------------------------------------
+    # FIRM REGISTRATION
+    # --------------------------------------------------------
+
+    if document_type == "firm_registration":
+
+        text_lower = text.lower()
+
+        keywords = [
+            "registration",
+            "registered",
+            "firm",
+            "company",
+            "certificate",
+            "llp",
+            "gst",
+        ]
+
+        return any(
+            keyword in text_lower
+            for keyword in keywords
+        )
+
+    # Unknown document type
+    return True
+
+
+# ============================================================
+# FUZZY MATCH
+# ============================================================
+
+def fuzzy_match(
+    expected,
+    actual,
+    threshold=70
+):
+
+    expected = normalize_text(
+        expected
+    )
+
+    actual = normalize_text(
+        actual
+    )
 
     if not expected or not actual:
+
         return False, 0
 
     score = fuzz.token_set_ratio(
@@ -1060,17 +1896,20 @@ def fuzzy_match(expected, actual, threshold=70):
         actual
     )
 
-    return score >= threshold, score
+    return (
+        score >= threshold,
+        score
+    )
 
 
 # ============================================================
 # PHONE MATCH
 # ============================================================
 
-def phone_match(expected, actual):
-    """
-    Compare phone numbers by digits only.
-    """
+def phone_match(
+    expected,
+    actual
+):
 
     expected_digits = re.sub(
         r"\D",
@@ -1084,134 +1923,33 @@ def phone_match(expected, actual):
         str(actual or "")
     )
 
-    # Remove +91 prefix
-    if expected_digits.startswith("91") and len(expected_digits) > 10:
-        expected_digits = expected_digits[-10:]
+    # Remove country code
+    if (
+        expected_digits.startswith("91")
+        and len(expected_digits) > 10
+    ):
 
-    if actual_digits.startswith("91") and len(actual_digits) > 10:
-        actual_digits = actual_digits[-10:]
+        expected_digits = (
+            expected_digits[-10:]
+        )
+
+    if (
+        actual_digits.startswith("91")
+        and len(actual_digits) > 10
+    ):
+
+        actual_digits = (
+            actual_digits[-10:]
+        )
 
     if not expected_digits or not actual_digits:
+
         return False
 
-    return expected_digits == actual_digits
-
-
-# ============================================================
-# DOCUMENT TYPE NORMALIZATION
-# ============================================================
-
-def normalize_document_type(expected_type):
-    """
-    Normalize document type coming from frontend.
-    """
-
-    if not expected_type:
-        return ""
-
-    value = str(expected_type).strip().lower()
-
-    aliases = {
-        "aadhar": "aadhaar",
-        "adhar": "aadhaar",
-        "aadhaar card": "aadhaar",
-        "aadhar card": "aadhaar",
-
-        "pan card": "pan",
-
-        "passport copy": "passport",
-
-        "firm": "firm_registration",
-        "firm registration": "firm_registration",
-        "registration": "firm_registration",
-        "registration certificate": "firm_registration",
-    }
-
-    return aliases.get(
-        value,
-        value
+    return (
+        expected_digits
+        == actual_digits
     )
-
-
-# ============================================================
-# DOCUMENT KEYWORD VALIDATION
-# ============================================================
-
-def validate_document_type(text, expected_type):
-    """
-    Check whether OCR text appears to belong to the
-    expected document type.
-    """
-
-    text_lower = text.lower()
-
-    document_type = normalize_document_type(
-        expected_type
-    )
-
-    if document_type == "aadhaar":
-
-        keywords = [
-            "aadhaar",
-            "aadhar",
-            "adhar",
-            "uidai",
-            "आधार",
-            "આધાર"
-        ]
-
-        return any(
-            keyword in text_lower
-            for keyword in keywords
-        )
-
-    if document_type == "pan":
-
-        keywords = [
-            "income tax",
-            "income-tax",
-            "permanent account number",
-            "pan"
-        ]
-
-        return any(
-            keyword in text_lower
-            for keyword in keywords
-        )
-
-    if document_type == "passport":
-
-        keywords = [
-            "passport",
-            "republic of india",
-            "nationality",
-            "place of birth"
-        ]
-
-        return any(
-            keyword in text_lower
-            for keyword in keywords
-        )
-
-    if document_type == "firm_registration":
-
-        keywords = [
-            "registration",
-            "registered",
-            "firm",
-            "company",
-            "certificate",
-            "llp",
-            "gst"
-        ]
-
-        return any(
-            keyword in text_lower
-            for keyword in keywords
-        )
-
-    # Unknown type
-    return True
 
 
 # ============================================================
@@ -1227,23 +1965,21 @@ def verify_document(
     expected_firm_name=None,
     expected_registration_no=None
 ):
-    """
-    Main document verification function.
-
-    Returns a dictionary suitable for Django REST Framework.
-    """
 
     print("========================================")
     print("DOCUMENT VERIFICATION STARTED")
     print("FILE:", file_path)
-    print("EXPECTED TYPE:", expected_type)
+    print(
+        "EXPECTED TYPE:",
+        expected_type
+    )
     print("========================================")
 
     try:
 
-        # ----------------------------------------------------
+        # ====================================================
         # 1. OCR
-        # ----------------------------------------------------
+        # ====================================================
 
         text = extract_text_from_file(
             file_path
@@ -1254,32 +1990,46 @@ def verify_document(
             return {
                 "success": False,
                 "verified": False,
-                "error": "Could not read document."
+                "error": (
+                    "Could not read document."
+                ),
             }
 
         print("========================================")
-        print("OCR TEXT")
-        print(text[:3000])
+        print(
+            "OCR TEXT LENGTH:",
+            len(text)
+        )
         print("========================================")
 
-        text_lower = text.lower()
+        # IMPORTANT:
+        # Do NOT print complete OCR text in production.
+        # It may contain Aadhaar number/address/DOB.
+        #
+        # For debugging, only print first 500 chars.
+        print(
+            "OCR PREVIEW:",
+            text[:500]
+        )
 
-        # ----------------------------------------------------
+        # ====================================================
         # 2. DOCUMENT TYPE
-        # ----------------------------------------------------
+        # ====================================================
 
         document_type = normalize_document_type(
             expected_type
         )
 
-        document_type_valid = validate_document_type(
-            text,
-            document_type
+        document_type_valid = (
+            validate_document_type(
+                text,
+                document_type
+            )
         )
 
-        # ----------------------------------------------------
+        # ====================================================
         # 3. EXTRACT INFORMATION
-        # ----------------------------------------------------
+        # ====================================================
 
         extracted_name = extract_name(
             text
@@ -1293,17 +2043,21 @@ def verify_document(
             text
         )
 
-        extracted_firm_name = extract_firm_name(
-            text
+        extracted_firm_name = (
+            extract_firm_name(
+                text
+            )
         )
 
         extracted_registration_no = (
-            extract_registration_number(text)
+            extract_registration_number(
+                text
+            )
         )
 
-        # ----------------------------------------------------
+        # ====================================================
         # 4. MATCH RESULTS
-        # ----------------------------------------------------
+        # ====================================================
 
         name_verified = None
         name_score = None
@@ -1318,33 +2072,39 @@ def verify_document(
 
         registration_verified = None
 
-        # ----------------------------------------------------
+        # ====================================================
         # NAME
-        # ----------------------------------------------------
+        # ====================================================
 
         if expected_name:
 
-            name_verified, name_score = fuzzy_match(
+            (
+                name_verified,
+                name_score
+            ) = fuzzy_match(
                 expected_name,
                 extracted_name,
                 threshold=65
             )
 
-        # ----------------------------------------------------
+        # ====================================================
         # ADDRESS
-        # ----------------------------------------------------
+        # ====================================================
 
         if expected_address:
 
-            address_verified, address_score = fuzzy_match(
+            (
+                address_verified,
+                address_score
+            ) = fuzzy_match(
                 expected_address,
                 extracted_address,
                 threshold=55
             )
 
-        # ----------------------------------------------------
+        # ====================================================
         # PHONE
-        # ----------------------------------------------------
+        # ====================================================
 
         if expected_phone:
 
@@ -1353,21 +2113,24 @@ def verify_document(
                 extracted_phone
             )
 
-        # ----------------------------------------------------
-        # FIRM NAME
-        # ----------------------------------------------------
+        # ====================================================
+        # FIRM
+        # ====================================================
 
         if expected_firm_name:
 
-            firm_verified, firm_score = fuzzy_match(
+            (
+                firm_verified,
+                firm_score
+            ) = fuzzy_match(
                 expected_firm_name,
                 extracted_firm_name,
                 threshold=65
             )
 
-        # ----------------------------------------------------
-        # REGISTRATION NUMBER
-        # ----------------------------------------------------
+        # ====================================================
+        # REGISTRATION
+        # ====================================================
 
         if expected_registration_no:
 
@@ -1380,121 +2143,144 @@ def verify_document(
             )
 
             registration_verified = (
-                expected_reg != ""
-                and actual_reg != ""
+                bool(expected_reg)
+                and bool(actual_reg)
                 and (
-                    expected_reg == actual_reg
-                    or expected_reg in actual_reg
-                    or actual_reg in expected_reg
+                    expected_reg
+                    == actual_reg
+                    or expected_reg
+                    in actual_reg
+                    or actual_reg
+                    in expected_reg
                 )
             )
 
-        # ----------------------------------------------------
-        # 5. DETERMINE FINAL VERIFICATION
-        # ----------------------------------------------------
+        # ====================================================
+        # 5. FINAL VERIFICATION
+        # ====================================================
 
-        verification_checks = []
+        checks = []
 
-        # Document type
-        verification_checks.append(
-            document_type_valid
+        # Document type must always be valid
+        checks.append(
+            bool(document_type_valid)
         )
 
-        # Only add checks when frontend supplied
-        # expected values.
-
         if expected_name:
-            verification_checks.append(
+
+            checks.append(
                 bool(name_verified)
             )
 
         if expected_address:
-            verification_checks.append(
+
+            checks.append(
                 bool(address_verified)
             )
 
         if expected_phone:
-            verification_checks.append(
+
+            checks.append(
                 bool(phone_verified)
             )
 
         if expected_firm_name:
-            verification_checks.append(
+
+            checks.append(
                 bool(firm_verified)
             )
 
         if expected_registration_no:
-            verification_checks.append(
+
+            checks.append(
                 bool(registration_verified)
             )
 
-        # At least one check must exist
-        if verification_checks:
+        verified = all(
+            checks
+        )
 
-            verified = all(
-                verification_checks
-            )
-
-        else:
-
-            # If no expected information was provided,
-            # only OCR/document type is used.
-            verified = bool(
-                document_type_valid
-            )
-
-        # ----------------------------------------------------
+        # ====================================================
         # 6. RESULT
-        # ----------------------------------------------------
+        # ====================================================
 
         result = {
+
             "success": True,
 
             "verified": verified,
 
             "document_type": document_type,
 
-            "document_type_valid": document_type_valid,
+            "document_type_valid":
+                document_type_valid,
 
             "extracted_data": {
-                "name": extracted_name,
-                "address": extracted_address,
-                "phone": extracted_phone,
-                "firm_name": extracted_firm_name,
-                "registration_number": extracted_registration_no,
+
+                "name":
+                    extracted_name,
+
+                "address":
+                    extracted_address,
+
+                "phone":
+                    extracted_phone,
+
+                "firm_name":
+                    extracted_firm_name,
+
+                "registration_number":
+                    extracted_registration_no,
             },
 
             "verification": {
+
                 "name": {
-                    "verified": name_verified,
-                    "score": name_score,
+                    "verified":
+                        name_verified,
+                    "score":
+                        name_score,
                 },
 
                 "address": {
-                    "verified": address_verified,
-                    "score": address_score,
+                    "verified":
+                        address_verified,
+                    "score":
+                        address_score,
                 },
 
                 "phone": {
-                    "verified": phone_verified,
+                    "verified":
+                        phone_verified,
                 },
 
                 "firm_name": {
-                    "verified": firm_verified,
-                    "score": firm_score,
+                    "verified":
+                        firm_verified,
+                    "score":
+                        firm_score,
                 },
 
                 "registration_number": {
-                    "verified": registration_verified,
+                    "verified":
+                        registration_verified,
                 },
             },
 
-            "ocr_text": text,
+            # DO NOT return full OCR text.
+            # It can contain sensitive Aadhaar information.
+            "ocr_text_available": True,
         }
 
         print("========================================")
-        print("DOCUMENT VERIFICATION RESULT")
-        print(result)
+        print(
+            "DOCUMENT VERIFICATION RESULT"
+        )
+        print("VERIFIED:", verified)
+        print(
+            "DOCUMENT TYPE VALID:",
+            document_type_valid
+        )
         print("========================================")
 
         return result
@@ -1502,13 +2288,21 @@ def verify_document(
     except Exception as e:
 
         print("========================================")
-        print("❌ DOCUMENT VERIFICATION FAILED")
-        print("ERROR:", repr(e))
+        print(
+            "❌ DOCUMENT VERIFICATION FAILED"
+        )
+        print(
+            "ERROR:",
+            repr(e)
+        )
         print("========================================")
 
         return {
+
             "success": False,
+
             "verified": False,
+
             "error": str(e),
         }
 
