@@ -42,9 +42,10 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-]   
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
 
 # ============================================================
@@ -359,6 +360,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 if not DEBUG:
 
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
 
     SESSION_COOKIE_SECURE = True
@@ -368,3 +370,4 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
     SECURE_BROWSER_XSS_FILTER = True
+    
