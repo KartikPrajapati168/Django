@@ -15,14 +15,18 @@ console.log("🔥 Axios Base URL:", API.defaults.baseURL);
 API.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("access_token");
+
+        console.log("🔥 TOKEN:", token);
+        console.log("🔥 REQUEST URL:", config.url);
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+            console.log("🔥 AUTH HEADER ADDED:", config.headers.Authorization);
         }
+
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 // Response interceptor to handle 401 errors
