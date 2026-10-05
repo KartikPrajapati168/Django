@@ -32,18 +32,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #     "DJANGO_SECRET_KEY",
 #     default="django-insecure-development-key-change-this"
 # )
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
 # DEBUG = config(
 #     "DEBUG",
 #     default=True,
 #     cast=bool
 # )
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     host.strip()
-    for host in os.environ.get("ALLOWED_HOSTS", "").split(",")
+    for host in config("ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
 
@@ -193,11 +193,10 @@ WSGI_APPLICATION = "advocare.wsgi.application"
 
 DATABASES = {
     "default": dj_database_url.parse(
-        os.environ.get("DATABASE_URL"),
+        config("DATABASE_URL"),
         conn_max_age=600,
     )
 }
-
 
 # ============================================================
 # PASSWORD VALIDATION
@@ -327,10 +326,7 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get(
-        "CORS_ALLOWED_ORIGINS",
-        ""
-    ).split(",")
+    for origin in config("CORS_ALLOWED_ORIGINS", default="").split(",")
     if origin.strip()
 ]
 
@@ -346,10 +342,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ.get(
-        "CSRF_TRUSTED_ORIGINS",
-        ""
-    ).split(",")
+    for origin in config("CSRF_TRUSTED_ORIGINS", default="").split(",")
     if origin.strip()
 ]
 
