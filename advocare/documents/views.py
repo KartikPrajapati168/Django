@@ -18,7 +18,6 @@ from documents.models import Document
 from cases.models import Case
 from users.models import User
 
-from .utils.document_verifier import verify_document
 
 
 # ============================================================
@@ -763,11 +762,19 @@ class CaseDocumentsView(APIView):
 # DOCUMENT VERIFICATION / OCR
 # ============================================================
 
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+
+import os
+import tempfile
+import traceback
+
+from .utils.ocr_nlp import verify_document
+
+
 class DocumentVerifyView(APIView):
-    """
-    Verify uploaded document using OCR.
-    Supports PDF, JPG, JPEG and PNG.
-    """
 
     permission_classes = [
         IsAuthenticated
@@ -785,14 +792,9 @@ class DocumentVerifyView(APIView):
         **kwargs
     ):
 
-        print("")
         print("==========================================")
         print("DOCUMENT VERIFY REQUEST")
         print("==========================================")
-
-        # ------------------------------------------------
-        # Get uploaded file
-        # ------------------------------------------------
 
         file_obj = request.FILES.get(
             "document"
@@ -804,16 +806,14 @@ class DocumentVerifyView(APIView):
 
         print(
             "User:",
-            request.user
+            request.user.email
         )
 
         print(
             "File:",
-            getattr(
-                file_obj,
-                "name",
-                None
-            )
+            file_obj.name
+            if file_obj
+            else None
         )
 
         print(
@@ -821,9 +821,9 @@ class DocumentVerifyView(APIView):
             expected_type
         )
 
-        # ------------------------------------------------
-        # Required file
-        # ------------------------------------------------
+        # ====================================================
+        # Validate file
+        # ====================================================
 
         if not file_obj:
 
@@ -834,12 +834,8 @@ class DocumentVerifyView(APIView):
                         "Document file is required.",
                     "extracted": {},
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=400
             )
-
-        # ------------------------------------------------
-        # Required document type
-        # ------------------------------------------------
 
         if not expected_type:
 
@@ -850,14 +846,59 @@ class DocumentVerifyView(APIView):
                         "Expected document type is required.",
                     "extracted": {},
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=400
             )
 
-        # ------------------------------------------------
-        # Extra data
-        # ------------------------------------------------
+        # ====================================================
+        # File size
+        # ====================================================
+
+        if file_obj.size > 10 * 1024 * 1024:
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "File size cannot exceed 10MB.",
+                    "extracted": {},
+                },
+                status=400
+            )
+
+        # ====================================================
+        # File extension
+        # ====================================================
+
+        extension = os.path.splitext(
+            file_obj.name
+        )[1].lower()
+
+        allowed_extensions = (
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".pdf",
+        )
+
+        if extension not in allowed_extensions:
+
+            return Response(
+                {
+                    "valid": False,
+                    "message":
+                        "Unsupported file type. "
+                        "Use PDF, JPG, JPEG or PNG.",
+                    "extracted": {},
+                },
+                status=400
+            )
+
+        # ====================================================
+        # Extra verification data
+        # ====================================================
 
         extra_data = {
+
             "expected_name":
                 request.data.get(
                     "expected_name"
@@ -899,70 +940,13 @@ class DocumentVerifyView(APIView):
             extra_data
         )
 
-        # ------------------------------------------------
-        # Extension
-        # ------------------------------------------------
-
-        original_name = (
-            getattr(
-                file_obj,
-                "name",
-                "document"
-            )
-            or "document"
-        )
-
-        extension = os.path.splitext(
-            original_name
-        )[1].lower()
-
-        allowed_extensions = {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".pdf",
-            ".webp",
-            ".bmp",
-            ".tiff",
-            ".tif",
-        }
-
-        if extension not in allowed_extensions:
-
-            return Response(
-                {
-                    "valid": False,
-                    "message":
-                        "Unsupported file type. "
-                        "Use PDF, JPG, JPEG or PNG.",
-                    "extracted": {},
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # ------------------------------------------------
-        # File size
-        # ------------------------------------------------
-
-        if file_obj.size > 10 * 1024 * 1024:
-
-            return Response(
-                {
-                    "valid": False,
-                    "message":
-                        "File size cannot exceed 10MB.",
-                    "extracted": {},
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # ====================================================
+        # Temporary file
+        # ====================================================
 
         tmp_path = None
 
         try:
-
-            # ------------------------------------------------
-            # Create temporary file
-            # ------------------------------------------------
 
             with tempfile.NamedTemporaryFile(
                 delete=False,
@@ -989,9 +973,18 @@ class DocumentVerifyView(APIView):
                 )
             )
 
-            # ------------------------------------------------
-            # VERIFY DOCUMENT
-            # ------------------------------------------------
+            print(
+                "Processing extension:",
+                extension
+            )
+
+            print(
+                "Starting document verification..."
+            )
+
+            # =================================================
+            # OCR + AI verification
+            # =================================================
 
             result = verify_document(
                 tmp_path,
@@ -1000,85 +993,56 @@ class DocumentVerifyView(APIView):
             )
 
             print(
-                "Verification result:",
+                "Document verification completed."
+            )
+
+            print(
+                "Result:",
                 result
             )
 
-            # ------------------------------------------------
-            # Make sure result is a dictionary
-            # ------------------------------------------------
-
-            if not isinstance(
-                result,
-                dict
-            ):
-
-                print(
-                    "ERROR: verify_document returned:",
-                    type(result)
-                )
-
-                return Response(
-                    {
-                        "valid": False,
-                        "message":
-                            "Document verification returned an invalid response.",
-                        "extracted": {},
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                )
-
             return Response(
                 result,
-                status=status.HTTP_200_OK
+                status=200
             )
 
         except Exception as e:
 
-            print("")
-            print(
-                "=========================================="
-            )
-
+            print("==========================================")
             print(
                 "DOCUMENT VERIFY ERROR"
             )
 
             print(
-                "Exception type:",
+                "Error type:",
                 type(e).__name__
             )
 
             print(
-                "Exception:",
+                "Error:",
                 str(e)
             )
 
-            print(
-                "=========================================="
-            )
-
             traceback.print_exc()
+
+            print("==========================================")
 
             return Response(
                 {
                     "valid": False,
                     "message":
-                        "Document processing failed.",
-                    "error_type":
-                        type(e).__name__,
-                    "error":
-                        str(e),
+                        "Document processing failed: "
+                        + str(e),
                     "extracted": {},
                 },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=500
             )
 
         finally:
 
-            # ------------------------------------------------
-            # Delete temporary file
-            # ------------------------------------------------
+            # =================================================
+            # Cleanup temporary file
+            # =================================================
 
             if (
                 tmp_path
@@ -1093,7 +1057,8 @@ class DocumentVerifyView(APIView):
                     )
 
                     print(
-                        "Temporary file deleted."
+                        "Temporary file deleted:",
+                        tmp_path
                     )
 
                 except Exception as e:
